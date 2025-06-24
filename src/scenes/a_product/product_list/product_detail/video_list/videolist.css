@@ -1,0 +1,44 @@
+.video-list {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+  }
+  
+  h1 {
+    text-align: center;
+    color: #f9d9d9;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  th, td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #747070;
+  }
+  
+  th {
+    background-color: #4d4747;
+  }
+  
+  button {
+    margin-right: 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  
+  input[type="checkbox"] {
+    cursor: pointer;
+  }
+  
+  .video-player {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .video-player iframe {
+    border: none;
+  }

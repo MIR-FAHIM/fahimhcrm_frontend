@@ -1,0 +1,43 @@
+/* Ensure each status circle has a proper connection line */
+.connecting-line {
+    position: absolute;
+    height: 2px;
+    width: calc(100% - 3rem); /* Adjust width for the circle padding */
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  /* Optional: You can adjust the width of the status circle and the connecting line */
+  .status-circle {
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.25rem; /* Increase size of text in the circle */
+    border-radius: 50%;
+    border: 2px solid #9ca3af; /* Light gray border */
+  }
+  
+  /* Change colors for different statuses */
+  .status-circle.completed {
+    background-color: #16a34a; /* Green */
+    color: white;
+  }
+  
+  .status-circle.selected {
+    background-color: #fbbf24; /* Yellow for selected status */
+    color: white;
+  }
+  
+  /* Make the connecting line green or gray */
+  .connecting-line {
+    position: absolute;
+    height: 2px;
+    width: calc(100% - 3rem); /* To account for circle width */
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
