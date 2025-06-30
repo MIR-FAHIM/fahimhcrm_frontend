@@ -93,11 +93,13 @@ import {
  UserFeaturePermission,
  NotificationPage,
  WarehouseList,
+ AddNotice,
 } from "./scenes";
 
 const AppRouter = () => {
   return (
-    <Router>
+    // <Router basename="/hcrm">
+ <Router >
      
       <Routes>
       <Route path="/login" element={<Login />}></Route>
@@ -193,6 +195,7 @@ const AppRouter = () => {
           <Route path="/user-feature-permission" element={<UserFeaturePermission />} />
           <Route path="/notification-page" element={<NotificationPage />} />
           <Route path="/warehouse-list" element={<WarehouseList />} />
+          <Route path="/add-notices" element={<AddNotice />} />
         
         </Route>
       </Routes>

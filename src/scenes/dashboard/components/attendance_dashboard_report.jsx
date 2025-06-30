@@ -27,7 +27,8 @@ import {
   Task,
   Badge,
   HomeWork, // Icon for Work From Home
-  LocationOn, // Icon for Field
+  LocationOn,
+  CheckBoxRounded, // Icon for Field
 } from "@mui/icons-material";
 import { tokens } from "../../../theme";
 
@@ -48,6 +49,12 @@ function DashboardAttendanceReport({ dashboardReport }) {
 
   const attendanceData = [
     {
+      label: "Present",
+      value: dashboardReport.present,
+      icon: <CheckBoxRounded sx={{ fontSize: 40 }} />,
+      color: activityColors.workingHours,
+    },
+    {
       label: "Absent",
       value: dashboardReport.absent_count,
       icon: <Warning sx={{ fontSize: 40 }} />,
@@ -59,12 +66,7 @@ function DashboardAttendanceReport({ dashboardReport }) {
       icon: <AccessTimeOutlined sx={{ fontSize: 40 }} />,
       color: activityColors.late,
     },
-    {
-      label: "Working Hours",
-      value: `${dashboardReport.total_working_hours} min`,
-      icon: <AccessTimeOutlined sx={{ fontSize: 40 }} />,
-      color: activityColors.workingHours,
-    },
+    
     {
       label: "WFH",
       value: dashboardReport.work_from_home_count,

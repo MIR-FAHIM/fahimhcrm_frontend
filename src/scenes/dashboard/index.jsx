@@ -70,6 +70,7 @@ function Dashboard() {
   const [showLateModal, setShowLateModal] = useState(false);
   const [showAdjust, setAdjust] = useState(false);
   const [reasonTitle, setReasonTitle] = useState('');
+  const [testText, setTestText] = useState('');
   const [error, setError] = useState(null);
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -97,14 +98,27 @@ function Dashboard() {
 
 
   const handleCheckInOut = async () => {
+if(permissions.task == false){
 
-    if (isCheckIn === false) {
+  setTestText("i am here");
+  if (isCheckIn === false) {
+      await handleCheckInWithoutLocation();
+
+    } else {
+      await handleCheckOutWithOutLocation();
+
+    }
+}else{
+  setTestText("i am not here");
+  if (isCheckIn === false) {
       await handleCheckIn();
 
     } else {
       await handleCheckOut();
 
     }
+}
+  
   }
   const handlePressStart = () => {
     setPressing(true);
@@ -164,12 +178,39 @@ function Dashboard() {
       console.error("Check-in failed", e);
     }
   };
+  const handleCheckInWithoutLocation = async () => {
+    
+    try {
+      const response = await checkInNow({
+        user_id: userID,
+        check_in_time: "2025-03-11T05:47:10.000000Z",
+        check_in_location: "No Address",
+        check_in_lat: "23.78055764",
+        check_in_lon: "90.42252348",
+
+      });
+      if (response.status === 'success') {
+        setAttendanceID(response.attendance.id);
+        if (response.attendance.is_late === 1) {
+          setReasonTitle("Add Your Late Reason.")
+          setShowLateModal(true); // Show modal if late
+        } else {
+          navigate('/check-in-out');
+        }
+
+      } else {
+        { errorMessage && <Snackbar open={errorMessage} message={errorMessage} /> }
+      }
+    } catch (e) {
+      console.error("Check-in failed", e);
+    }
+  };
   const handleRequestAdjustment = async (data) => {
 
     try {
       const response = await requestAdjustment(data);
       if (response.status === 'success') {
-alert('Request for time adjustmented stored');
+        alert('Request for time adjustmented stored');
 
       } else {
         { errorMessage && <Snackbar open={errorMessage} message={errorMessage} /> }
@@ -411,12 +452,39 @@ alert('Request for time adjustmented stored');
       console.error("Check-in failed", e);
     }
   };
+  const handleCheckOutWithOutLocation = async () => {
+    try {
+      const response = await checkOutNow({
+        user_id: userID,
+        check_out_time: "2025-03-11T05:47:10.000000Z",
+        check_out_location: "No Address",
+        check_out_lat: "23.78055764",
+        check_out_lon: "90.42252348",
+        attendance_id: todayAttendance.id,
+      });
+      if (response.status === 'success') {
+        setAttendanceID(response.attendance.id);
+        if (response.attendance.is_early_leave === 0) {
+
+          setReasonTitle("Add Early Leave Reason.")
+          setShowLateModal(true); // Show modal if late
+        } else {
+          navigate('/check-in-out');
+        }
+
+      }
+    } catch (e) {
+      console.error("Check-in failed", e);
+    }
+  };
+
+
   return (
     <Box m="20px">
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-       
+
         <Header
-          title={<Typography variant="h5">Dashboard</Typography>}
+          title={<Typography variant="h5">{testText}</Typography>}
           subtitle={
             <>
               <Typography variant="subtitle2" color="text.secondary">
@@ -425,23 +493,31 @@ alert('Request for time adjustmented stored');
                   : "Please long press to check in to get started."}
               </Typography>
 
-              <Link
-                component="button" // Makes it clickable like a button
-                onClick={(event) => {
-                  event.preventDefault();
-                  handleNavigation(todayAttendance?.check_in_lat, todayAttendance?.check_in_lon);
-                }}
-                underline="hover" // Optional: adds underline on hover
-                sx={{ mt: 1, display: 'inline-block' }} // Adds spacing and ensures proper layout
-              >
-                <Typography variant="body2" color="primary">
-                  {address}
-                </Typography>
-               
-              </Link>
-                <Typography variant="body2" color="red">
-                  {error}
-                </Typography>
+
+
+              {permissions.task && (
+                <>
+                  {address ? (
+                    <Link
+                      component="button"
+                      onClick={(event) => {
+                        event.preventDefault();
+                        handleNavigation(todayAttendance?.check_in_lat, todayAttendance?.check_in_lon);
+                      }}
+                      underline="hover"
+                      sx={{ mt: 1, display: 'inline-block' }}
+                    >
+                      <Typography variant="body2" color="primary">
+                        {address}
+                      </Typography>
+                    </Link>
+                  ) : (
+                    <Typography variant="body2" color="red">
+                      {error}
+                    </Typography>
+                  )}
+                </>
+              )}
             </>
           }
 

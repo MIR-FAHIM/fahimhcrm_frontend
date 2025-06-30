@@ -12,7 +12,7 @@ import ProfileComponent from "./profile_components/profile_components";
 import { useNavigate } from "react-router-dom";
 import TaskComponents from "./profile_components/task_components";
 import { updateProductInfo } from "../../../api/controller/api_controller";
-
+import { useProfile } from '../../provider/profile_context';
 
 
 
@@ -35,6 +35,7 @@ const EmpProfile = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [imageUrl, setImageUrl] = useState(null);
 const [permissions, setPermissions] = useState({});
+  const { userProfileData, setUserProfileData, profileLoading } = useProfile();
   const handleGetModulePermission = async () => {
     try {
 
@@ -63,6 +64,7 @@ const [permissions, setPermissions] = useState({});
             const res = await logOut(userID);
 
             if (res?.status === 'success') {  // Optional chaining to avoid errors
+                setUserProfileData(null);
                 navigate('/login');
             } else {
                 console.error('Logout failed:', res);

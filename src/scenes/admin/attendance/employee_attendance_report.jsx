@@ -25,12 +25,14 @@ import {
   Avatar,
 } from "@mui/material";
 import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
+import { modulePermission } from "../../../api/controller/admin_controller/user_controller";
 import { getAttendanceReportByUser } from "../../../api/controller/admin_controller/attendance_controller";
 import { blue, green, purple } from "@mui/material/colors";
 import { base_url , image_file_url} from "../../../api/config/index";
 import dayjs from "dayjs";
 const EmployeeAttendanceReport = () => {
   const [employees, setEmployees] = useState([]);
+      const [permissions, setPermissions] = useState({});
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [attendances, setAttendances] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,6 +41,7 @@ const EmployeeAttendanceReport = () => {
 
   // Fetch the employee list when the component mounts
   useEffect(() => {
+    handleGetModulePermission();
     fetchEmployeesList();
   }, []);
 
@@ -53,7 +56,21 @@ const EmployeeAttendanceReport = () => {
       setLoading(false);
     }
   };
+  const handleGetModulePermission = async () => {
+    try {
 
+      const response = await modulePermission();
+      if (response.status === 'success') {
+        setPermissions(response.permissions); // Set the response data
+      } else {
+
+      }
+    } catch (error) {
+
+    } finally {
+
+    }
+  };
   // Fetch attendance data based on selected employee, year, and month
   const fetchAttendance = async (employeeId, year, month) => {
     setLoading(true);
@@ -194,8 +211,14 @@ const EmployeeAttendanceReport = () => {
                     <TableCell align="center"><strong>Weekday</strong></TableCell>
                     <TableCell align="center"><strong>Check-in Time</strong></TableCell>
                     <TableCell align="center"><strong>Check-out Time</strong></TableCell>
-                    <TableCell align="center"><strong>Check-in Location</strong></TableCell>
+                     {permissions.task !== false && (
+                      <>
+                       <TableCell align="center"><strong>Check-in Location</strong></TableCell>
                     <TableCell align="center"><strong>Check-out Location</strong></TableCell>
+                      </>
+
+                     )}
+                   
                     <TableCell align="center"><strong>Is Late</strong></TableCell>
                     <TableCell align="center"><strong>Is Early Leave</strong></TableCell>
                     <TableCell align="center"><strong>Work From Home</strong></TableCell>
@@ -225,8 +248,13 @@ const EmployeeAttendanceReport = () => {
                            {attendance.attendance?.check_out_time ? new Date(attendance.attendance.check_out_time).toLocaleTimeString() : "N/A"}
                           {/* {dayjs(attendance.attendance?.check_out_time).format("hh:mm A")} */}
                         </TableCell>
-                        <TableCell align="center">{attendance.attendance ? attendance.attendance.check_in_location : "N/A"}</TableCell>
+                        {permissions.task !== false && (
+                          <>
+                           <TableCell align="center">{attendance.attendance ? attendance.attendance.check_in_location : "N/A"}</TableCell>
                         <TableCell align="center">{attendance.attendance ? attendance.attendance.check_out_location : "N/A"}</TableCell>
+                          </>
+                        )}
+                       
        <TableCell align="center">
   {!attendance.attendance?.check_in_time ? (
     "N/A"

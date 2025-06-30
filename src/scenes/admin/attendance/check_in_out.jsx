@@ -25,12 +25,14 @@ import {
 } from "@mui/material";
 import { getAttendanceByDate } from "../../../api/controller/admin_controller/attendance_controller";
 import { base_url, image_file_url } from "../../../api/config/index";
+import { modulePermission } from "../../../api/controller/admin_controller/user_controller";
 import EnhancedLateReasonDialog from "./components/reason_dialog";
 import { useNavigate } from "react-router-dom";
 import { InfoOutlined, LocationOnOutlined } from "@mui/icons-material";
 
 const Attendance = () => {
   const theme = useTheme();
+    const [permissions, setPermissions] = useState({});
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [attendances, setAttendances] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,9 @@ const Attendance = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+     handleGetModulePermission();
     fetchAttendance(date);
+   
   }, [date]);
 
   const fetchAttendance = async (selectedDate) => {
@@ -79,7 +83,21 @@ const Attendance = () => {
       return "Invalid Time";
     }
   };
+  const handleGetModulePermission = async () => {
+    try {
 
+      const response = await modulePermission();
+      if (response.status === 'success') {
+        setPermissions(response.permissions); // Set the response data
+      } else {
+
+      }
+    } catch (error) {
+
+    } finally {
+
+    }
+  };
   const formatDuration = (seconds) => {
     if (!seconds) return "N/A";
     const hours = Math.floor(seconds / 3600);
@@ -139,8 +157,7 @@ const Attendance = () => {
                   "Status",
                   "Check-in",
                   "Check-out",
-                  "Check-in Location",
-                  "Check-out Location",
+                 ...(permissions.task !== false ? ["Check-in Location", "Check-out Location"] : []),
                   "Punctuality",
                   "Late Reason",
                   "WFH",
@@ -206,41 +223,43 @@ const Attendance = () => {
                   <TableCell align="center">
                     {formatTime(attendance?.check_out_time)}
                   </TableCell>
-                  <TableCell align="center">
-                    {attendance?.check_in_location ? (
-                      <Tooltip title="View on map">
-                        <span
-                          style={{ cursor: "pointer", color: "#1976d2", textDecoration: "underline" }}
-                          onClick={() =>
-                            handleNavigationMap(attendance?.check_in_lat, attendance?.check_in_lon)
-                          }
-                        >
-                          {attendance?.check_in_location}
-                        </span>
-                      </Tooltip>
-                    ) : (
-                      "N/A"
-                    )}
-                  </TableCell>
+             {permissions.task !== false && (
+  <>
+    <TableCell align="center">
+      {attendance?.check_in_location ? (
+        <Tooltip title="View on map">
+          <span
+            style={{ cursor: "pointer", color: "#1976d2", textDecoration: "underline" }}
+            onClick={() =>
+              handleNavigationMap(attendance?.check_in_lat, attendance?.check_in_lon)
+            }
+          >
+            {attendance?.check_in_location}
+          </span>
+        </Tooltip>
+      ) : (
+        "N/A"
+      )}
+    </TableCell>
 
-                  <TableCell align="center">
-                    {attendance?.check_out_location ? (
-                      <Tooltip title="View on map">
-                        <span
-                          style={{ cursor: "pointer", color: "#1976d2", textDecoration: "underline" }}
-                          onClick={() =>
-                            handleNavigationMap(
-                              attendance?.check_out_lat,
-                              attendance?.check_out_lon
-                            )}
-                        >
-                          {attendance?.check_out_location}
-                        </span>
-                      </Tooltip>
-                    ) : (
-                      "N/A"
-                    )}
-                  </TableCell>
+    <TableCell align="center">
+      {attendance?.check_out_location ? (
+        <Tooltip title="View on map">
+          <span
+            style={{ cursor: "pointer", color: "#1976d2", textDecoration: "underline" }}
+            onClick={() =>
+              handleNavigationMap(attendance?.check_out_lat, attendance?.check_out_lon)
+            }
+          >
+            {attendance?.check_out_location}
+          </span>
+        </Tooltip>
+      ) : (
+        "N/A"
+      )}
+    </TableCell>
+  </>
+)}
 
                   <TableCell align="center">
                     {!attendance?.check_in_time ? (

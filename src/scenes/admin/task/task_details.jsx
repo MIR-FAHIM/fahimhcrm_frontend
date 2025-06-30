@@ -23,6 +23,9 @@ import TaskStatusChangeComponent from "./components_task/task_status_update_deta
 import TaskTypeUpdateComponent from "./components_task/task_type_update";
 import TaskPriorityUpdateComponent from "./components_task/task_priority_update";
 import TaskTitleInfo from "./components_task/task_info_title";
+import TaskImageGallery from "./components_task/task_image";
+import TaskCompletionSlider from "./components_task/percentage_completion";
+import TaskFollowUpNotes from "./components_task/follow_up_check";
 
 // Main component for Task Details
 const TaskDetails = () => {
@@ -83,10 +86,10 @@ const TaskDetails = () => {
   const handleAddNotification = async (id) => {
 
     const data = {
-      'user_id': 3,
+      'user_id': id,
       'title': 'Task Reminder',
       'subtitle': task.task_title,
-      'type': 'general',
+      'type': 'task',
       'is_seen': 0,
       'send_push': 0,
     };
@@ -98,6 +101,11 @@ const TaskDetails = () => {
       console.error("Error handleAddNotification:", error);
     }
   };
+  const handleToggleComplete = async () => {
+
+ 
+  };
+  
 
   // Fetch task types
   const fetchTaskType = async () => {
@@ -242,80 +250,15 @@ const TaskDetails = () => {
 
               </Grid>
             </CardContent>
-            <Grid container spacing={3}>
-              {task.assigned_persons.map((employee) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={employee.id}>
-                  <Card
-                    sx={{
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      borderRadius: 3,
-                      boxShadow: 3,
-                      backgroundColor: "#fdfdfd",
-                      transition: "all 0.3s ease",
-                      "&:hover": {
-                        transform: "translateY(-6px)",
-                        boxShadow: 6,
-                      },
-                    }}
-                  >
-                    <CardContent>
-                      <Box display="flex" alignItems="center" mb={2}>
-                        <Avatar
-                          src={`${image_file_url}/${employee.assigned_person.photo}`}
-                          sx={{
-                            width: 60,
-                            height: 60,
-                            mr: 2,
-                            border: "2px solid #1976d2",
-                          }}
-                        />
-                        <Box>
-                          <Typography variant="h6" fontWeight="bold">
-                            {employee.assigned_person.name}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            {employee.assigned_person.role?.role_name || "No Role"}
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      {/* You can add more employee stats/info here if desired */}
-                      <Box mt={2}>
-                        <Typography variant="body2" color="text.secondary">
-                          Email: {employee.assigned_person.email || "N/A"}
-                        </Typography>
-                      </Box>
-                    </CardContent>
-
-                    <Box px={2} pb={2}>
-                      <Button
-                        fullWidth
-                        variant="outlined"
-                        color="primary"
-                        startIcon={<NotificationsActiveIcon />}
-                        sx={{
-                          borderRadius: "20px",
-                          textTransform: "none",
-                          fontWeight: "bold",
-                          py: 1,
-                          backgroundColor: "#fff",
-                          "&:hover": {
-                            backgroundColor: "#f0f4ff",
-                          },
-                        }}
-                        onClick={() => handleAddNotification(employee.id)}
-                      >
-                        Remind
-                      </Button>
-                    </Box>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
+          
           </Card>
+  <TaskFollowUpNotes
+        followUps={taskFollowUps}
+        taskID={id}
+        onToggleComplete={handleToggleComplete}
+        onEditFollowUp={handleToggleComplete}
+        onDeleteFollowUp={handleToggleComplete}
+      />
         </Grid>
 
         <Grid item xs={12} md={4}>
@@ -349,10 +292,10 @@ const TaskDetails = () => {
           </Card>
         </Grid>
       </Grid>
-      <EmployeeSelector handleAssignData={handleAssignUser} taskID={task.id} />
+             
       <Divider sx={{ my: 4 }} />
-
-
+<TaskImageGallery taskId={id}/>
+ <EmployeeSelector handleAssignData={handleAssignUser} taskID={task.id} assignedPersons ={task.assigned_persons} handleAddNotification={handleAddNotification}/>
       {task.project === null ? (
         <Typography variant="body2">No project added for this task</Typography>
       ) : (
@@ -372,25 +315,14 @@ const TaskDetails = () => {
       </Stack>
 
       <Divider sx={{ my: 4 }} />
-
-      <Typography variant="h6" gutterBottom>Completion Percentage</Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        <Slider
-          value={completionPercentage}
-          onChange={handleCompletionChange}
-          aria-labelledby="completion-percentage-slider"
-          valueLabelDisplay="auto"
-          min={0}
-          max={100}
-          sx={{ width: '80%', mr: 2 }}
-        />
-        <Button variant="contained" onClick={handleSaveCompletion}>Save</Button>
-      </Box>
-
-      <FormControlLabel
-        control={<Checkbox checked={showCompletionPercentage} onChange={handleShowCompletionChange} />}
-        label="Show Completion Percentage"
+<TaskCompletionSlider
+        completionPercentage={completionPercentage}
+        showCompletionPercentage={showCompletionPercentage}
+        handleCompletionChange={handleCompletionChange}
+        handleSaveCompletion={handleSaveCompletion}
+        handleShowCompletionChange={handleShowCompletionChange}
       />
+
 
       <Tabs value={tabValue} onChange={handleTabChange} sx={{ my: 4 }} variant="fullWidth">
         <Tab label="Task Follow-ups" />

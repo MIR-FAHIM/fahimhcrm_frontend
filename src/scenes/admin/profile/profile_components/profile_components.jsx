@@ -1,7 +1,7 @@
 import { Avatar, Box, Button, Grid, Input, TextField, Typography } from '@mui/material';
 import { blue } from '@mui/material/colors';
 import { useState, useEffect } from 'react';
-
+import { useProfile } from '../../../provider/profile_context';
 const ProfileComponent = ({
   imageUrl,
   handleFileChange,
@@ -14,9 +14,10 @@ const ProfileComponent = ({
   handleUpdateData
 }) => {
   const [editData, setEditData] = useState({});
+    const { userProfileData, setUserProfileData, profileLoading } = useProfile();
   const [passwordData, setPasswordData] = useState({});
   const [passwordError, setPasswordError] = useState('');
-
+const isEditable = userProfileData.role?.id === 1 || userProfileData.role?.id === 2;
   useEffect(() => {
     if (profileData) {
       setEditData({
@@ -27,6 +28,8 @@ const ProfileComponent = ({
         address: profileData.address || '',
         birthdate: profileData.birthdate || '',
         bio: profileData.bio || '',
+        start_hour: profileData.start_hour || '',
+        start_min: profileData.start_min || '',
       });
     }
 
@@ -129,6 +132,7 @@ const ProfileComponent = ({
             value={editData.email}
             onChange={handleChange}
             margin="dense"
+            disabled = {isEditable}
           />
           <TextField
             label="Phone"
@@ -166,6 +170,44 @@ const ProfileComponent = ({
             onChange={handleChange}
             margin="dense"
           />
+  <Box sx={{ mt: 2, p: 2, border: '1px solid #ccc', borderRadius: 2 }}>
+  <Typography variant="h6" gutterBottom>
+    Office Entry Time
+  </Typography>
+
+  <TextField
+    label="Entry Hour"
+    name="start_hour"
+    fullWidth
+    multiline
+    rows={3}
+    value={editData.start_hour}
+    onChange={handleChange}
+    margin="dense"
+    disabled={!isEditable}
+  />
+  <TextField
+    label="Entry Min"
+    name="start_min"
+    fullWidth
+    multiline
+    rows={3}
+    value={editData.start_min}
+    onChange={handleChange}
+    margin="dense"
+    disabled={!isEditable}
+  />
+{isEditable && (
+  <Button
+    onClick={handleSave}
+    variant="contained"
+    color="success"
+    sx={{ textTransform: 'none', minWidth: 150 }}
+  >
+    Save Changes
+  </Button>
+)}
+</Box>
         </Grid>
 
         {/* Right Side (read-only) */}
@@ -224,7 +266,16 @@ const ProfileComponent = ({
             margin="dense"
           />
         </Grid>
+            
       </Grid>
+      <Button
+      onClick={handlePasswordSave}
+      variant="contained"
+      color="secondary"
+      sx={{ textTransform: 'none', minWidth: 150 }}
+    >
+      Change Password
+    </Button>
       </Grid>
      )} 
  
@@ -257,14 +308,7 @@ const ProfileComponent = ({
       Log Out
     </Button>
 
-    <Button
-      onClick={handlePasswordSave}
-      variant="contained"
-      color="secondary"
-      sx={{ textTransform: 'none', minWidth: 150 }}
-    >
-      Change Password
-    </Button>
+
   </Box>
 )}
     </Box>

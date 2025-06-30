@@ -108,6 +108,7 @@ import WarehouseForm from "./admin/prospect/warehouse/add_warehouse";
 import UserFeaturePermission from "./admin/permission/show_user_feature_list_permisision";
 import NotificationPage from "./admin/notification/notification_list";
 import WarehouseList from "./admin/prospect/warehouse/warehouse_list";
+import AddNotice from "./admin/notices/add_notice";
 
 
 
@@ -221,5 +222,6 @@ export {
   UserFeaturePermission,
   NotificationPage,
   WarehouseList,
+  AddNotice,
   
 };

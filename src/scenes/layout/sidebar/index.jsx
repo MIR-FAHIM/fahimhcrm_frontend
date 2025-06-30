@@ -6,6 +6,7 @@ import { base_url } from "../../../api/config/index";
 import { Menu, MenuItem, Sidebar } from "react-pro-sidebar";
 import { useNavigate } from "react-router-dom";
 import { appname } from '../../../../src/api/config';
+
 import {
   BarChartOutlined,
   CalendarTodayOutlined,
@@ -46,6 +47,7 @@ import { ToggledContext } from "../../../App";
 const SideBar = () => {
   const userID = localStorage.getItem("userId");
   const [collapsed, setCollapsed] = useState(false);
+
   const [user, setUser] = useState({});
   const [expandedCategory, setExpandedCategory] = useState(null);
   const { toggled, setToggled } = useContext(ToggledContext);
@@ -53,6 +55,9 @@ const SideBar = () => {
   const navigate = useNavigate();
   const colors = tokens(theme.palette.mode);
   const [imageUrl, setImageUrl] = useState(null);
+
+  const [isAdmin, setIsAdmin] = useState(0);
+
   const iconStyle = {
     color: colors.blueAccent[500],
     transition: ".3s ease",
@@ -61,7 +66,7 @@ const SideBar = () => {
       transform: "scale(1.2)",
     },
   };
-const [permissions, setPermissions] = useState({});
+  const [permissions, setPermissions] = useState({});
   const handleGetModulePermission = async () => {
     try {
 
@@ -77,20 +82,27 @@ const [permissions, setPermissions] = useState({});
 
     }
   };
+
+
   useEffect(() => {
     handleGetModulePermission();
+
     async function fetchUserProfile() {
       try {
         const response = await getProfile(userID, navigate);
         if (response.status === "success") {
           setUser(response.data);
+          setIsAdmin(response.data.role_id);
+         console.log("value is ", isAdmin)
           setImageUrl(`${base_url}/storage/${response.data.photo}`);
+
         }
       } catch (error) {
         console.error("Error fetching user profile", error);
       }
     }
     fetchUserProfile();
+
   }, []);
 
   const toggleCategory = (category) => {
@@ -124,6 +136,7 @@ const [permissions, setPermissions] = useState({});
                 <Typography variant="h6" fontWeight="bold" textTransform="capitalize" color={colors.blueAccent[500]}>
                   {appname}
                 </Typography>
+
               </Box>
             )}
             <IconButton onClick={() => setCollapsed(!collapsed)}>
@@ -237,6 +250,46 @@ const [permissions, setPermissions] = useState({});
           </Menu>
         </Collapse>
 
+
+        {permissions.attendance && (isAdmin === 1 ||  isAdmin === 2) &&(
+          <Typography
+            variant="h6"
+            color={colors.gray[300]}
+            sx={{
+
+              m: "15px 0 5px 20px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              cursor: "pointer",
+              ":hover": {
+                color: colors.blueAccent[700],
+              },
+            }}
+            onClick={() => toggleCategory("notice")}
+          >
+            <SettingsOutlined sx={iconStyle} />
+            {!collapsed ? "Add Notices" : ""}
+          </Typography>
+        )}
+
+        <Collapse in={expandedCategory === "notice"}>
+          <Menu
+            menuItemStyles={{
+              button: {
+                ":hover": {
+                  color: "#868dfb",
+                  background: "transparent",
+                  transition: ".4s ease",
+                },
+              },
+            }}
+          >
+            <Item title="Add Notice" path="/add-notices" colors={colors} icon={<ContactsOutlined sx={iconStyle} />} />
+
+            {/* <Item title="Sale" path="/software-sale" colors={colors} icon={<ContactsOutlined sx={iconStyle} />} /> */}
+          </Menu>
+        </Collapse>
         {/* Category - Task */}
         {permissions.task && (
           <Typography
@@ -392,7 +445,7 @@ const [permissions, setPermissions] = useState({});
               },
             }}
           >
-           
+
             <Item title="Warehouses Map" path="/map-markers" colors={colors} icon={<SourceOutlined sx={iconStyle} />} />
             <Item title="Warehouses List" path="/warehouse-list" colors={colors} icon={<SourceOutlined sx={iconStyle} />} />
           </Menu>
@@ -436,13 +489,14 @@ const [permissions, setPermissions] = useState({});
           </Menu>
         </Collapse>
         {/* Sale - Product */}
- 
+
+
         {permissions.sale && (
           <Typography
             variant="h6"
             color={colors.gray[300]}
             sx={{
-              
+
               m: "15px 0 5px 20px",
               display: "flex",
               alignItems: "center",
@@ -458,7 +512,7 @@ const [permissions, setPermissions] = useState({});
             {!collapsed ? "Sale" : ""}
           </Typography>
         )}
-  
+
         <Collapse in={expandedCategory === "sale"}>
           <Menu
             menuItemStyles={{
@@ -519,8 +573,8 @@ const [permissions, setPermissions] = useState({});
             <Item title="Add Task Status" path="/task-status" colors={colors} icon={<AdminPanelSettingsOutlined sx={iconStyle} />} />
             <Item title="Add Task Type" path="/task-type" colors={colors} icon={<AdminPanelSettingsOutlined sx={iconStyle} />} />
             <Item title="Product Entry" path="/product-entry" colors={colors} icon={<AdminPanelSettingsOutlined sx={iconStyle} />} />
-       
-        
+
+
             <Item title="Feature Permission" path="/user-feature-permission" colors={colors} icon={<AdminPanelSettingsOutlined sx={iconStyle} />} />
           </Menu>
         </Collapse>

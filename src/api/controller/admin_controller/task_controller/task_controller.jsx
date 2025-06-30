@@ -92,6 +92,21 @@ export const addPhase = async (data) => {
     return [];
   }
 }
+export const addTaskImages = async (data) => {
+  try {
+    const response = await axiosInstance.post(`/api/task/images/add`, data,
+        {
+            headers: {
+              // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+              'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+            },}
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching addPhase:", error);
+    return [];
+  }
+}
 export const updateShowCompletionPercentage = async (data) => {
   try {
     const response = await axiosInstance.post(`/api/update-show-completion-percentage`, data,
@@ -149,6 +164,21 @@ export const getTaskFollowup = async (id) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching user tasks:", error);
+    return [];
+  }
+}
+export const getTaskImages = async (id) => {
+  try {
+    const response = await axiosInstance.get(`/api/task/images/${id}`,
+        {
+            headers: {
+              // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+              'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+            },}
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching getTaskImages tasks:", error);
     return [];
   }
 }
@@ -276,6 +306,21 @@ export const getPhaseTask = async (id) => {
 export const getProjectTask = async (id) => {
   try {
     const response = await axiosInstance.get(`/api/task-by-project/${id}`,
+        {
+            headers: {
+              // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+              'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+            },}
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all tasks:", error);
+    return [];
+  }
+}
+export const deleteTaskImage = async (id) => {
+  try {
+    const response = await axiosInstance.get(`/api/delete-task-image/${id}`,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header

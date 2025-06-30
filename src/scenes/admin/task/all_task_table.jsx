@@ -69,7 +69,12 @@ const AllTaskTable = () => {
         setSelectedStatus(status);
         filterTasks(status, selectedEmployee);
     };
-
+  const handleNavigation = () => navigate("/add-task", {
+      state: {
+        'project_id': 0,
+        'project_phase_id': 0,
+      },
+    });
     const handleEmployeeChange = (event) => {
         const employeeId = event.target.value;
         setSelectedEmployee(employeeId);
@@ -120,6 +125,7 @@ const AllTaskTable = () => {
                 </Box>
             ) : (
                 <>
+                 
                     {/* Status Filter */}
                     <Box sx={{ display: "flex", gap: 1, overflowX: "auto", mb: 3 }}>
                         <Chip
@@ -152,17 +158,40 @@ const AllTaskTable = () => {
                     </Box>
 
                     {/* Employee Filter */}
-                    <FormControl sx={{ minWidth: 200, mb: 3 }}>
-                        <InputLabel>Filter by Employee</InputLabel>
-                        <Select value={selectedEmployee} onChange={handleEmployeeChange}>
-                            <MenuItem value="">
-                                <em>All Employees</em>
-                            </MenuItem>
-                            {employees.map((employee) => (
-                                <MenuItem key={employee.id} value={employee.id}>{employee.name}</MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+   <Box
+  sx={{
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 2,
+    mb: 3,
+    px: 2 // Optional horizontal padding
+  }}
+>
+  <FormControl sx={{ minWidth: 200 }}>
+    <InputLabel>Filter by Employee</InputLabel>
+    <Select value={selectedEmployee} onChange={handleEmployeeChange}>
+      <MenuItem value="">
+        <em>All Employees</em>
+      </MenuItem>
+      {employees.map((employee) => (
+        <MenuItem key={employee.id} value={employee.id}>
+          {employee.name}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+
+  <Button
+    variant="contained"
+    color="secondary"
+    sx={{ borderRadius: '25px', height: 'fit-content', px: 3 }}
+    onClick={handleNavigation}
+  >
+    + Add Task
+  </Button>
+</Box>
 
                     {/* Task List */}
                     <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 2 }}>
