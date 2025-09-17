@@ -1,326 +1,417 @@
+// src/scenes/project/components/ProjectPhases.jsx
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import {
-  Box, Typography, CircularProgress, Button, Card, CardContent, TextField, Dialog, DialogTitle,
-  DialogContent, DialogActions, Grid, Tooltip, Stack, Divider, Slider, useTheme
+  Box,
+  Typography,
+  CircularProgress,
+  Button,
+  Card,
+  CardContent,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Grid,
+  Tooltip,
+  Stack,
+  Divider,
+  Slider,
+  useTheme,
+  Paper,
 } from "@mui/material";
-import { tokens } from "../../../../theme";
+import { alpha } from "@mui/material/styles";
+import PlaylistAddIcon from "@mui/icons-material/PlaylistAdd";
 import {
   getProjectsPhases,
-  addPhase
+  addPhase,
 } from "../../../../api/controller/admin_controller/task_controller/task_controller";
 import {
   getProjectDetails,
-  updateProjectPhase
-
+  updateProjectPhase,
 } from "../../../../api/controller/admin_controller/project/project_controller";
-// Icons
-import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 
+/** Small reusable circular progress ring */
+const ProgressRing = ({ size = 150, value = 0, trackColor, barColor }) => (
+  <Box sx={{ position: "relative", width: size, height: size, display: "grid", placeItems: "center" }}>
+    <CircularProgress
+      variant="determinate"
+      value={100}
+      size={size}
+      thickness={5}
+      sx={{ position: "absolute", color: trackColor }}
+    />
+    <CircularProgress
+      variant="determinate"
+      value={Math.max(0, Math.min(100, Number(value) || 0))}
+      size={size}
+      thickness={5}
+      sx={{ position: "absolute", color: barColor }}
+    />
+  </Box>
+);
 
-const ProjectPhases = ({protId}) => {
-  const navigate = useNavigate();
+const ProjectPhases = ({ protId }) => {
   const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
+  const navigate = useNavigate();
+
   const [phases, setPhases] = useState([]);
   const [projectDetails, setProjectDetails] = useState({});
-  const [taskCount, setTaskCount] = useState(0);
-  const [projectPercentage, setProjectPercentage] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  // slider modal
   const [phaseId, setPhaseId] = useState(0);
-  const [projectId, setProjectId] = useState(0);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [phaseName, setPhaseName] = useState("");
   const [openSliderModal, setOpenSliderModal] = useState(false);
-  const [sliderValue, setSliderValue] = useState(0); // initial value
-  const [phaseName, setPhaseName] = useState(''); // initial value
+  const [sliderValue, setSliderValue] = useState(0);
 
-  const handleOpenModalSlider = (id, sliderVal,phaseName) => {
-    setPhaseName(phaseName);
-    setSliderValue(sliderVal);
-    setPhaseId(id);
-    setOpenSliderModal(true);
-  };
-  const handleCloseModalSlider = () => setOpenSliderModal(false);
-  const handleUpdatePhase = async () => {
-
-    const data = {
-      phase_completion_percentage: sliderValue,
-    };
-    await updateProjectPhase(phaseId, data);
-    await fetchPhases();
-    await getProDetails();
-    handleCloseModalSlider();
-
-
-  };
+  // create phase modal
+  const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     project_id: protId,
-    phase_name: '',
-    phase_order_id: '',
-    description: '',
-    status: '0',
-    priority: '',
-    phase_completion_percentage: ''
+    phase_name: "",
+    phase_order_id: "",
+    description: "",
+    status: "0",
+    priority: "",
+    phase_completion_percentage: "",
+    start_date: "",
+    end_date: "",
   });
 
   useEffect(() => {
-    fetchPhases();
-    getProDetails();
-  }, []);
+    fetchAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [protId]);
 
-  const fetchPhases = () => {
+  const fetchAll = async () => {
     setLoading(true);
-    getProjectsPhases(protId)
-      .then((res) => {
-        setPhases(res.data || []);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching phases:", error);
-        setLoading(false);
-      });
-  };
-  const getProDetails = () => {
-    setLoading(true);
-    getProjectDetails(protId)
-      .then((res) => {
-        setProjectDetails(res.data || {});
-        setTaskCount(res.task_count || 0);
-        setProjectPercentage(res.project_percentage || 0);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching setProjectDetails:", error);
-        setLoading(false);
-      });
-  };
-  const handleAddTask = (phaseID) => {
-    setPhaseId(phaseID);
-
-    navigate("/add-task", {
-      state: {
-        'project_id': parseInt(protId),
-        'project_phase_id': phaseID,
-      },
-    });
-
-  };
-  const handleAddPhase = () => {
-
-    setModalOpen(true);
-  };
-  const handlePhaseTaskNavigate = (phaseID) => {
-    navigate(`/project-phase-task/${phaseID}`);
-
+    try {
+      const [pRes, dRes] = await Promise.all([
+        getProjectsPhases(protId),
+        getProjectDetails(protId),
+      ]);
+      setPhases(pRes?.data || []);
+      setProjectDetails(dRes?.data || {});
+    } catch (e) {
+      console.error("Fetch error:", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // modal: update phase %
+  const handleOpenModalSlider = (id, pct, name) => {
+    setPhaseId(id);
+    setSliderValue(Number(pct) || 0);
+    setPhaseName(name || "");
+    setOpenSliderModal(true);
+  };
+  const handleCloseModalSlider = () => setOpenSliderModal(false);
+
+  const handleUpdatePhase = async () => {
+    try {
+      await updateProjectPhase(phaseId, { phase_completion_percentage: sliderValue });
+      await fetchAll();
+    } catch (e) {
+      console.error("Update phase error:", e);
+    } finally {
+      handleCloseModalSlider();
+    }
+  };
+
+  // create phase
+  const handleAddPhase = () => setModalOpen(true);
   const handleCloseModal = () => {
     setModalOpen(false);
     setFormData({
-      project_id: id,
-      phase_name: '',
-      phase_order_id: '',
-      description: '',
-      status: '0',
-      priority: '',
-      phase_completion_percentage: ''
+      project_id: protId,
+      phase_name: "",
+      phase_order_id: "",
+      description: "",
+      status: "0",
+      priority: "",
+      phase_completion_percentage: "",
+      start_date: "",
+      end_date: "",
     });
   };
-
-  const handleChange = (field) => (event) => {
-    setFormData((prev) => ({ ...prev, [field]: event.target.value }));
-  };
+  const handleChange = (field) => (e) =>
+    setFormData((prev) => ({ ...prev, [field]: e.target.value }));
 
   const handleSubmit = async () => {
     const payload = new FormData();
-    for (const key in formData) {
-      payload.append(key, formData[key]);
-    }
-
+    Object.entries(formData).forEach(([k, v]) => payload.append(k, v ?? ""));
     try {
       await addPhase(payload);
       handleCloseModal();
-      fetchPhases();
-    } catch (error) {
-      console.error("Error adding phase:", error);
+      fetchAll();
+    } catch (e) {
+      console.error("Add phase error:", e);
     }
   };
+
+  // actions
+  const handleAddTask = (phaseID) =>
+    navigate("/add-task", {
+      state: { project_id: parseInt(protId, 10), project_phase_id: phaseID },
+    });
+  const handlePhaseTaskNavigate = (phaseID) => navigate(`/project-phase-task/${phaseID}`);
+
+  // theme helpers
+  const bgPaper = theme.palette.background.paper;
+  const bgDefault = theme.palette.background.default;
+  const divider = theme.palette.divider;
+  const textPri = theme.palette.text.primary;
+  const textSec = theme.palette.text.secondary;
+  const brand = theme.palette.blueAccent.main;
+  const brandHover = theme.palette.blueAccent.dark;
+  const brandTrack = alpha(brand, 0.12);
 
   return (
     <Box
       sx={{
-        display: { xs: 'block', md: 'flex' },
-        minHeight: '100vh',
-        backgroundColor: colors.bg[100],
+        display: { xs: "block", md: "flex" },
+        minHeight: "100vh",
+        backgroundColor: bgDefault,
         px: { xs: 1, sm: 2 },
       }}
     >
-     
-
-
-      {/* Right Panel */}
       <Box sx={{ flex: 1, p: { xs: 2, md: 4 } }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-          <Typography variant="h4" fontWeight={700} color="primary.main">
-            🛠️ Project Phases
-          </Typography>
+        {/* Header */}
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Box>
+            <Typography variant="h4" fontWeight={800} color={textPri} lineHeight={1.2}>
+              Project Phases
+            </Typography>
+            {projectDetails?.project_name && (
+              <Typography variant="body2" color={textSec}>
+                {projectDetails.project_name}
+              </Typography>
+            )}
+          </Box>
           <Button
             variant="contained"
-            color="primary"
             startIcon={<PlaylistAddIcon />}
             onClick={handleAddPhase}
+            sx={{
+              bgcolor: brand,
+              color: theme.palette.blueAccent.contrastText,
+              "&:hover": { bgcolor: brandHover },
+              borderRadius: 2,
+            }}
           >
             Add Phase
           </Button>
         </Box>
 
+        {/* Content */}
         {loading ? (
           <Box display="flex" justifyContent="center" mt={6}>
             <CircularProgress />
           </Box>
+        ) : phases.length === 0 ? (
+          <Paper
+            variant="outlined"
+            sx={{
+              borderRadius: 2,
+              p: 4,
+              bgcolor: bgPaper,
+              border: `1px solid ${divider}`,
+              textAlign: "center",
+            }}
+          >
+            <Typography variant="h6" color={textPri} fontWeight={700} gutterBottom>
+              No phases yet
+            </Typography>
+            <Typography variant="body2" color={textSec} gutterBottom>
+              Create your first project phase to start organizing work.
+            </Typography>
+            <Button
+              onClick={handleAddPhase}
+              variant="contained"
+              sx={{ mt: 2, bgcolor: brand, "&:hover": { bgcolor: brandHover } }}
+            >
+              Create Phase
+            </Button>
+          </Paper>
         ) : (
           <Grid container spacing={2}>
-            {phases.map((phase, index) => (
-
-              <Grid item xs={12} sm={6} md={4} lg={3} key={phase.id} >
-                <Box key={phase.id} display="flex" alignItems="center" onClick={() => handleOpenModalSlider(phase.id, phase.phase_completion_percentage, phase.phase_name)}>
-                  {/* Phase Card */}
-                  <Box
-                    sx={{
-                      border: '1px solid #ddd',
-                      borderRadius: 3,
-                      p: 3,
-                      backgroundColor: colors.bg[100],
-                      width: '100%',
-                      maxWidth: 300,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      boxShadow: 3,
-                      transition: 'transform 0.2s, box-shadow 0.2s',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: 6,
-                      },
-                    }}
-                  >
-                    {/* Circular Progress */}
-                    <Box
+            {phases.map((phase, index) => {
+              const pct = Number(phase.phase_completion_percentage) || 0;
+              return (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={phase.id}>
+                  <Box display="flex" alignItems="center" width="100%">
+                    <Paper
+                      role="button"
+                      aria-label={`Open ${phase.phase_name} phase progress`}
+                      onClick={() => handleOpenModalSlider(phase.id, pct, phase.phase_name)}
+                      elevation={0}
                       sx={{
-                        position: 'relative',
-                        width: 150,
-                        height: 150,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        border: `1px solid ${divider}`,
+                        borderRadius: 3,
+                        p: 2.5,
+                        bgcolor: bgPaper,
+                        width: "100%",
+                        maxWidth: 320,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        transition: "transform .18s ease, box-shadow .18s ease",
+                        cursor: "pointer",
+                        "&:hover": { transform: "translateY(-2px)", boxShadow: 3 },
                       }}
                     >
-                      <CircularProgress
-                        variant="determinate"
-                        value={100}
-                        size={150}
-                        thickness={5}
-                        sx={{ position: 'absolute', color: '#eee' }}
-                      />
-                      <CircularProgress
-                        variant="determinate"
-                        value={parseInt(phase.phase_completion_percentage)}
-                        size={150}
-                        thickness={5}
-                        sx={{ position: 'absolute', color: '#1976d2' }}
-                      />
+                      <Box sx={{ position: "relative", mb: 1 }}>
+                        <ProgressRing
+                          value={pct}
+                          trackColor={brandTrack}
+                          barColor={brand}
+                          size={150}
+                        />
+                        <Card
+                          elevation={1}
+                          sx={{
+                            width: 116,
+                            height: 116,
+                            borderRadius: "50%",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            textAlign: "center",
+                            bgcolor: bgPaper,
+                            position: "absolute",
+                            inset: "50% auto auto 50%",
+                            transform: "translate(-50%, -50%)",
+                            border: `1px solid ${divider}`,
+                          }}
+                        >
+                          <CardContent sx={{ p: 0 }}>
+                            <Tooltip title={phase.description || "No description"}>
+                              <Box>
+                                <Typography
+                                  variant="subtitle2"
+                                  fontWeight={800}
+                                  color={textPri}
+                                  sx={{ px: 1 }}
+                                >
+                                  {phase.phase_name}
+                                </Typography>
+                                <Typography variant="caption" color={textSec}>
+                                  {pct}% done
+                                </Typography>
+                              </Box>
+                            </Tooltip>
+                          </CardContent>
+                        </Card>
+                      </Box>
 
-                      <Card
+                      <Box sx={{ mt: 2, width: "100%" }}>
+                        <Typography variant="body2" color={textSec}>
+                          <strong>Start:</strong>{" "}
+                          {phase.start_date ? dayjs(phase.start_date).format("MMM D, YYYY") : "—"}
+                        </Typography>
+                        <Typography variant="body2" color={textSec}>
+                          <strong>End:</strong>{" "}
+                          {phase.end_date ? dayjs(phase.end_date).format("MMM D, YYYY") : "—"}
+                        </Typography>
+                        <Divider sx={{ my: 1 }} />
+                        <Typography variant="body2" color={textSec}>
+                          <strong>Total Tasks:</strong> {phase.total_task_count ?? 0}
+                        </Typography>
+                        <Typography variant="body2" color={textSec}>
+                          <strong>Completed:</strong> {phase.completed_task_count ?? 0}
+                        </Typography>
+                        <Typography variant="body2" color={textSec}>
+                          <strong>Pending:</strong>{" "}
+                          {(phase.total_task_count ?? 0) - (phase.completed_task_count ?? 0)}
+                        </Typography>
+                      </Box>
+
+                      <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        spacing={1}
+                        mt={2}
+                        width="100%"
+                      >
+                        <Button
+                          variant="outlined"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddTask(phase.id);
+                          }}
+                          size="small"
+                          sx={{
+                            borderRadius: 2,
+                            color: brand,
+                            borderColor: alpha(brand, 0.5),
+                            "&:hover": {
+                              backgroundColor: alpha(brand, 0.12),
+                              borderColor: brand,
+                            },
+                          }}
+                        >
+                          Add Task
+                        </Button>
+                        <Button
+                          variant="contained"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePhaseTaskNavigate(phase.id);
+                          }}
+                          size="small"
+                          sx={{
+                            borderRadius: 2,
+                            bgcolor: brand,
+                            color: theme.palette.blueAccent.contrastText,
+                            "&:hover": { bgcolor: brandHover },
+                          }}
+                        >
+                          View Tasks
+                        </Button>
+                      </Stack>
+                    </Paper>
+
+                    {/* connector line to the next card on larger screens */}
+                    {index < phases.length - 1 && (
+                      <Box
                         sx={{
-                          width: 115,
-                          height: 115,
-                          borderRadius: '50%',
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          textAlign: 'center',
-                          boxShadow: 3,
-                          backgroundColor: colors.bg[100],
-                          zIndex: 2,
-                          px: 1,
+                          display: { xs: "none", md: "block" },
+                          width: 48,
+                          height: 2,
+                          backgroundColor: alpha(brand, 0.5),
+                          alignSelf: "center",
+                          mx: 1,
+                          borderRadius: 1,
                         }}
-                      >
-                        <CardContent sx={{ p: 0 }}>
-                          <Tooltip title={phase.description || 'No description'}>
-                            <Box>
-                              <Typography variant="subtitle1" fontWeight={700}>
-                                {phase.phase_name}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {phase.phase_completion_percentage}% done
-                              </Typography>
-                            </Box>
-                          </Tooltip>
-                        </CardContent>
-                      </Card>
-                    </Box>
-
-                    {/* Phase Meta Details */}
-                    <Box sx={{ mt: 2, width: '100%' }}>
-                      <Typography variant="body2" gutterBottom><strong>Start:  </strong>{dayjs(phase.start_date).format("MMM D, YYYY")}</Typography>
-                      <Typography variant="body2" gutterBottom><strong>End:  </strong>{dayjs(phase.end_date).format("MMM D, YYYY")}</Typography>
-                      <Divider sx={{ my: 1 }} />
-                      <Typography variant="body2"><strong>Total Tasks:</strong> {phase.total_tasks || 0}</Typography>
-                      <Typography variant="body2"><strong>Completed:</strong> {phase.completed_tasks || 0}</Typography>
-                      <Typography variant="body2"><strong>Pending:</strong> {phase.pending_tasks || 0}</Typography>
-                    </Box>
-
-                    {/* Buttons */}
-                    <Stack direction={{ xs: 'column', sm: 'row' }}
-                      spacing={1}
-                      mt={2}
-                      width="100%">
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        size="small"
-                        onClick={() => handleAddTask(phase.id)}
-                      >
-                        Add Task
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        onClick={() => handlePhaseTaskNavigate(phase.id)}
-                      >
-                        View Task
-                      </Button>
-                    </Stack>
+                      />
+                    )}
                   </Box>
-
-                  {/* Connector Line */}
-                  {index < phases.length - 1 && (
-                    <Box
-                      sx={{
-                        width: 40,
-                        height: 2,
-                        backgroundColor: "#90caf9",
-                        alignSelf: 'center',
-                        mx: 1
-                      }}
-                    />
-                  )}
-                </Box>
-              </Grid>
-            ))}
+                </Grid>
+              );
+            })}
           </Grid>
-
-
-
         )}
 
-        {/* Modal */}
-        <Dialog open={modalOpen} onClose={handleCloseModal} fullWidth maxWidth="sm">
-          <DialogTitle>Add New Phase</DialogTitle>
+        {/* Create Phase Dialog */}
+        <Dialog
+          open={modalOpen}
+          onClose={handleCloseModal}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            sx: {
+              bgcolor: bgPaper,
+              borderRadius: 3,
+              border: `1px solid ${divider}`,
+            },
+          }}
+        >
+          <DialogTitle sx={{ fontWeight: 800, color: textPri }}>Add New Phase</DialogTitle>
           <DialogContent>
-            <Grid container spacing={2} mt={1}>
+            <Grid container spacing={2} mt={0.5}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
@@ -363,9 +454,9 @@ const ProjectPhases = ({protId}) => {
                   fullWidth
                   label="Completion (%)"
                   type="number"
+                  inputProps={{ min: 0, max: 100 }}
                   value={formData.phase_completion_percentage}
                   onChange={handleChange("phase_completion_percentage")}
-                  inputProps={{ min: 0, max: 100 }}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -374,7 +465,7 @@ const ProjectPhases = ({protId}) => {
                   label="Start Date"
                   type="date"
                   InputLabelProps={{ shrink: true }}
-                  value={formData.start_date}
+                  value={formData.start_date || ""}
                   onChange={handleChange("start_date")}
                 />
               </Grid>
@@ -384,103 +475,88 @@ const ProjectPhases = ({protId}) => {
                   label="End Date"
                   type="date"
                   InputLabelProps={{ shrink: true }}
-                  value={formData.end_date}
+                  value={formData.end_date || ""}
                   onChange={handleChange("end_date")}
                 />
               </Grid>
               <Grid item xs={6}>
                 <TextField
                   fullWidth
-                  label="Status"
+                  label="Status (0 Pending / 1 Completed)"
                   type="number"
                   value={formData.status}
                   onChange={handleChange("status")}
-                  helperText="0 = Pending, 1 = Completed"
                 />
               </Grid>
             </Grid>
           </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
+          <DialogActions sx={{ p: 2.5 }}>
             <Button onClick={handleCloseModal}>Cancel</Button>
-            <Button variant="contained" onClick={handleSubmit}>Save</Button>
+            <Button
+              variant="contained"
+              onClick={handleSubmit}
+              sx={{ bgcolor: brand, "&:hover": { bgcolor: brandHover } }}
+            >
+              Save
+            </Button>
           </DialogActions>
         </Dialog>
 
-        {/* Modal for update phase */}
-
+        {/* Update Progress Dialog */}
         <Dialog
-  open={openSliderModal}
-  onClose={handleCloseModalSlider}
-  fullWidth
-  maxWidth="sm"
-  PaperProps={{
-    sx: {
-      borderRadius: 4,
-      p: 2,
-      backgroundColor: '#fefefe',
-      boxShadow: 8,
-    },
-  }}
->
-  <DialogTitle sx={{ fontWeight: 600, fontSize: '1.5rem', pb: 1 }}>
-    Update "{phaseName}" Phase
-  </DialogTitle>
-
-  <DialogContent sx={{ mt: 1 }}>
-    <Typography variant="subtitle1" color="text.secondary" mb={3}>
-      Your Current Completion For This Phase is {sliderValue}.
-    </Typography>
-
-    <Slider
-      value={sliderValue}
-      onChange={(e, newValue) => setSliderValue(newValue)}
-      aria-labelledby="slider"
-      valueLabelDisplay="on"
-      min={0}
-      max={100}
-      sx={{
-        color: '#1976d2',
-        height: 6,
-        '& .MuiSlider-thumb': {
-          height: 24,
-          width: 24,
-          backgroundColor: '#fff',
-          border: '2px solid currentColor',
-        },
-        '& .MuiSlider-track': {
-          border: 'none',
-        },
-        '& .MuiSlider-rail': {
-          opacity: 0.5,
-          backgroundColor: '#bfbfbf',
-        },
-      }}
-    />
-  </DialogContent>
-
-  <DialogActions sx={{ px: 3, pb: 2, pt: 1 }}>
-    <Button onClick={handleCloseModalSlider} color="primary" sx={{ fontWeight: 500 }}>
-      Cancel
-    </Button>
-    <Button
-      variant="contained"
-      onClick={handleUpdatePhase}
-      sx={{ fontWeight: 600, borderRadius: 2 }}
-    >
-      Save
-    </Button>
-  </DialogActions>
-</Dialog>
-
-
-
+          open={openSliderModal}
+          onClose={handleCloseModalSlider}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              p: 1,
+              bgcolor: bgPaper,
+              border: `1px solid ${divider}`,
+            },
+          }}
+        >
+          <DialogTitle sx={{ fontWeight: 800, color: textPri }}>
+            Update “{phaseName}”
+          </DialogTitle>
+          <DialogContent sx={{ pt: 1 }}>
+            <Typography variant="body2" color={textSec} sx={{ mb: 2 }}>
+              Current completion: <strong>{sliderValue}%</strong>
+            </Typography>
+            <Slider
+              value={sliderValue}
+              onChange={(_, v) => setSliderValue(v)}
+              valueLabelDisplay="on"
+              min={0}
+              max={100}
+              sx={{
+                color: brand,
+                height: 6,
+                "& .MuiSlider-thumb": {
+                  height: 22,
+                  width: 22,
+                  bgcolor: bgPaper,
+                  border: `2px solid ${brand}`,
+                },
+                "& .MuiSlider-rail": { opacity: 0.4 },
+              }}
+            />
+          </DialogContent>
+          <DialogActions sx={{ px: 2.5, pb: 2 }}>
+            <Button onClick={handleCloseModalSlider}>Cancel</Button>
+            <Button
+              variant="contained"
+              onClick={handleUpdatePhase}
+              sx={{ bgcolor: brand, "&:hover": { bgcolor: brandHover } }}
+            >
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
-
-
-
     </Box>
-
   );
 };
 
-export default ProjectPhases
+export default ProjectPhases;

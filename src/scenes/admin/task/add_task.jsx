@@ -1,202 +1,608 @@
-import { useState, useEffect } from "react";
-import { Box, Button, TextField, Typography, CircularProgress, Autocomplete, Chip } from "@mui/material";
-import { useForm, Controller } from "react-hook-form";
-import { getStatus, getPriority, getProjects, assignUser, addTask, getTaskType } from "../../../api/controller/admin_controller/task_controller/task_controller";
-import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
-import { useLocation } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
 import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  CircularProgress,
+  Autocomplete,
+  Chip,
+  useTheme,
+  Grid,
+  Card,
+  CardContent,
+  Divider,
+  Tooltip,
+  InputAdornment,
+  IconButton,
+  Stack,
+  Badge,
+  Checkbox,
+  FormControlLabel
+} from "@mui/material";
+import {
+  FlagRounded,
+  CategoryRounded,
+  TimelineRounded,
+  WorkspacesRounded,
+  LayersRounded,
+  EventRounded,
+  PersonRounded,
+  InfoOutlined,
+  ClearRounded,
+} from "@mui/icons-material";
+import { useForm, Controller } from "react-hook-form";
+import {
+  getStatus,
+  getPriority,
+  getProjects,
+  assignUser,
+  addTask,
+  getTaskType,
   getProjectsPhases,
 } from "../../../api/controller/admin_controller/task_controller/task_controller";
+import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
+import { useLocation } from "react-router-dom";
+import { tokens } from "../../../theme";
 
-const AddTaskForm = () => {
+const fieldSx = (colors) => ({
+  "& .MuiInputBase-input": { color: colors.gray[100] },
+  "& .MuiInputLabel-root": { color: colors.gray[400] },
+  "& .MuiOutlinedInput-root": {
+    "& fieldset": { borderColor: colors.gray[700] },
+    "&:hover fieldset": { borderColor: colors.gray[400] },
+    "&.Mui-focused fieldset": { borderColor: colors.blueAccent[500] },
+  },
+});
+
+const Row = ({ icon, title, children }) => (
+  <Stack direction="row" alignItems="center" spacing={1.25}>
+    {icon}
+    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+      {title}
+    </Typography>
+    <Box sx={{ flex: 1 }} />
+    {children}
+  </Stack>
+);
+
+export default function AddTaskForm() {
   const userID = localStorage.getItem("userId");
-  const { control, handleSubmit, reset, setValue, watch } = useForm();
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
+  const { control, handleSubmit, reset, setValue, watch, formState } = useForm({
+    defaultValues: {
+      task_title: "",
+      task_details: "",
+      priority_id: null,
+      task_type_id: null,
+      status_id: null,
+      project_id: 0, // 0 = no project
+      project_phase_id: null,
+      user_id: "",
+      due_date: "",
+      is_waiting: 0,
+    },
+    mode: "onChange",
+  });
+
   const [priorities, setPriorities] = useState([]);
   const [taskTypes, setTaskTypes] = useState([]);
   const [statuses, setStatuses] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [phases, setPhases] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
   const location = useLocation();
   const passedData = location.state;
-  const [phases, setPhases] = useState([]);
 
+  // Load option lists
   useEffect(() => {
-    getPriority().then((res) => {
-      setPriorities(res.data || []);
-      if (res.data?.length) setValue("priority_id", res.data[0].id);
-    }).catch(console.error);
+    (async () => {
+      try {
+        const [prioRes, typeRes, statusRes, projRes, empRes] = await Promise.all([
+          getPriority(),
+          getTaskType(),
+          getStatus(),
+          getProjects(),
+          fetchEmployees(),
+        ]);
 
-    getTaskType().then((res) => setTaskTypes(res.data || [])).catch(console.error);
-    getStatus().then((res) => {
-      setStatuses(res.data || []);
-      if (res.data?.length) setValue("status_id", res.data[0].id);
-    }).catch(console.error);
-    getProjects().then((res) => {
-      setProjects(res.data || []);
-     
-      
-       
-        setValue("project_id", passedData.project_id ?? 0);
-       
-      
+        setPriorities(prioRes.data || []);
+        setTaskTypes(typeRes.data || []);
+        setStatuses(statusRes.data || []);
+        setProjects(projRes.data || []);
+        setEmployees(empRes.data || []);
+        if (passedData?.is_waiting != null) {
+          setValue("is_waiting", passedData.is_waiting);
+        }
+        // sensible defaults
+        if (prioRes.data?.length) setValue("priority_id", prioRes.data[0].id);
+        if (typeRes.data?.length) setValue("task_type_id", typeRes.data[0].id);
+        if (statusRes.data?.length) setValue("status_id", statusRes.data[0].id);
+
+        // preselect project & phase if passed
+        if (passedData?.project_id != null) {
+          setValue("project_id", passedData.project_id);
+          if (passedData.project_id) {
+            const phaseRes = await getProjectsPhases(passedData.project_id);
+            setPhases(phaseRes.data || []);
+            if (passedData.project_phase_id) {
+              setValue("project_phase_id", passedData.project_phase_id);
+            }
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, [setValue, passedData]);
+
+  // Watchers
+  const w = {
+    title: watch("task_title"),
+    details: watch("task_details"),
+    prio: watch("priority_id"),
+    type: watch("task_type_id"),
+    status: watch("status_id"),
+    project: watch("project_id"),
+    isWaiting: watch("is_waiting"),
+    phase: watch("project_phase_id"),
+    assignee: watch("user_id"),
+    due: watch("due_date"),
+  };
+
+  // Fetch phases on project change
+  const handleProject = async (projectId) => {
+    setValue("project_id", projectId);
+    try {
+      const res = await getProjectsPhases(projectId);
+      setPhases(res.data || []);
+      setValue("project_phase_id", null);
+    } catch (e) {
+      console.error("Error fetching phases:", e);
+      setPhases([]);
+      setValue("project_phase_id", null);
     }
-    ).catch(console.error);
-    fetchEmployees().then((res) => setEmployees(res.data || [])).catch(console.error);
+  };
 
-    getProjectsPhases(passedData.project_id ?? 0)
-    .then((res) => {
-      setPhases(res.data || []);
-      setValue("project_phase_id", passedData.project_phase_id);
-    })
-    .catch((error) => {
-      console.error("Error fetching phases:", error);
-    
-    });
-  
-  }, [setValue]);
-const handleProject = (projectId) => {
-  setValue("project_id", projectId);
-  getProjectsPhases(projectId)
-    .then((res) => {
-      setPhases(res.data || []);
-      setValue("project_phase_id", passedData.project_phase_id);
-    })
-    .catch((error) => {
-      console.error("Error fetching phases:", error);
-    
-    });
-}
   const onSubmit = async (data) => {
-    setLoading(true);
+    setSubmitting(true);
     try {
       const { user_id, ...taskData } = data;
-      if(taskData.project_id === 0){
-        delete taskData.project_id;
-      }
+
+      // Clean payload
       taskData.created_by = userID;
-      taskData.is_remind = 1;
       taskData.is_remind = 1;
       taskData.show_completion_percentage = 0;
       taskData.department_id = 1;
+
+      if (taskData.project_id === 0) {
+        delete taskData.project_id;
+        delete taskData.project_phase_id;
+      } else if (!taskData.project_phase_id) {
+        delete taskData.project_phase_id;
+      }
+
       const response = await addTask(taskData);
       if (response.status === "success") {
-        alert("Task created successfully!");
-        if (data.user_id) {
-          const res = await assignUser({ task_id: response.data.id, assigned_person: data.user_id, assigned_by: userID, is_main: 1 });
-          if (res.status === "success") alert("User assigned successfully!");
-        } else {
-          const res = await assignUser({ task_id: response.data.id, assigned_person: userID, assigned_by: userID, is_main: 1 });
-        }
+        const assignedPersonId = data.user_id || userID;
+        await assignUser({
+          task_id: response.data.id,
+          assigned_person: assignedPersonId,
+          assigned_by: userID,
+          is_main: 1,
+        });
         reset();
+        // tiny toast replacement:
+        alert("✅ Task created");
       } else {
         alert("Failed to create task: " + response.message);
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error(error);
       alert("Error creating task.");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
+  // Pretty chip renderer
+  const ChipOption = ({ selected, label, onClick }) => (
+    <Chip
+      label={label}
+      onClick={onClick}
+      clickable
+      sx={{
+        height: 32,
+        borderRadius: 2,
+        px: 1,
+        bgcolor: selected ? colors.blueAccent[500] : colors.gray[900],
+        color: selected ? colors.primary[900] : colors.gray[100],
+        border: `1px solid ${selected ? colors.blueAccent[700] : colors.gray[700]}`,
+        "&:hover": {
+          bgcolor: selected ? colors.blueAccent[700] : colors.primary[400],
+        },
+      }}
+    />
+  );
+
+  const titleCount = useMemo(() => (w.title ? w.title.length : 0), [w.title]);
+  const detailsCount = useMemo(() => (w.details ? w.details.length : 0), [w.details]);
+
   return (
-    <Box
+    <Grid
+      container
+      spacing={3}
       component="form"
       onSubmit={handleSubmit(onSubmit)}
-      sx={{ display: "flex", flexDirection: "column", gap: 2, maxWidth: 500, margin: "auto", backgroundColor: "#fff", padding: 3, borderRadius: "8px", boxShadow: 3 }}
+      sx={{ maxWidth: 1200, mx: "auto", p: { xs: 2, md: 3 } }}
     >
-      <Typography variant="h5" fontWeight="bold">Add New Task</Typography>
+      {/* LEFT: Form */}
+      <Grid item xs={12} md={7} lg={8}>
+        <Card sx={{ bgcolor: theme.palette.background.paper, borderRadius: 3, boxShadow: 3 }}>
+          <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+            <Stack direction="row" alignItems="center" spacing={1} mb={1}>
+              <Typography variant="h5" fontWeight={800} sx={{ color: colors.gray[100] }}>
+                Create Task
+              </Typography>
+              <Tooltip title="A concise title & clear details get tasks done faster.">
+                <InfoOutlined fontSize="small" sx={{ color: colors.gray[400] }} />
+              </Tooltip>
+            </Stack>
 
-      <Controller name="task_title" control={control} defaultValue="" render={({ field }) => <TextField {...field} label="Task Title" fullWidth required />} />
-      <Controller name="task_details" control={control} defaultValue="" render={({ field }) => <TextField {...field} label="Task Details" fullWidth required multiline />} />
+            {/* Title */}
+            <Controller
+              name="task_title"
+              rules={{ required: "Title is required", maxLength: { value: 120, message: "Max 120 chars" } }}
+              control={control}
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label="Task Title"
+                  placeholder="e.g., Finalize onboarding checklist"
+                  fullWidth
+                  required
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message || `${titleCount}/120`}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <FlagRounded sx={{ color: colors.blueAccent[500] }} />
+                      </InputAdornment>
+                    ),
+                    endAdornment: field.value ? (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => field.onChange("")}
+                          sx={{ color: colors.gray[400] }}
+                        >
+                          <ClearRounded fontSize="small" />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null,
+                  }}
+                  sx={fieldSx(colors)}
+                />
+              )}
+            />
 
-      {/* Priority Chip Selection */}
-      <Typography variant="subtitle1">Priority</Typography>
-      <Box display="flex" gap={1} flexWrap="wrap">
-        {priorities.map((priority) => (
-          <Chip
-            key={priority.id}
-            label={priority.priority_name}
-            color={watch("priority_id") === priority.id ? "primary" : "default"}
-            onClick={() => setValue("priority_id", priority.id)}
-          />
-        ))}
-      </Box>
+            {/* Details */}
+            <Box mt={2}>
+              <Controller
+                name="task_details"
+                rules={{ required: "Details are required", maxLength: { value: 2000, message: "Max 2000 chars" } }}
+                control={control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    {...field}
+                    label="Task Details"
+                    placeholder="Describe the outcome, acceptance criteria, links, etc."
+                    fullWidth
+                    required
+                    multiline
+                    minRows={4}
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message || `${detailsCount}/2000`}
+                    sx={fieldSx(colors)}
+                  />
+                )}
+              />
+            </Box>
 
-      {/* Task Type Chip Selection */}
-      <Typography variant="subtitle1">Task Type</Typography>
-      <Box display="flex" gap={1} flexWrap="wrap">
-        {taskTypes.map((type) => (
-          <Chip
-            key={type.id}
-            label={type.type_name}
-            color={watch("task_type_id") === type.id ? "primary" : "default"}
-            onClick={() => setValue("task_type_id", type.id)}
-          />
-        ))}
-      </Box>
+            <Divider sx={{ my: 3, borderColor: colors.gray[800] }} />
 
-      {/* Status Chip Selection */}
-      <Typography variant="subtitle1">Status</Typography>
-      <Box display="flex" gap={1} flexWrap="wrap">
-        {statuses.map((status) => (
-          <Chip
-            key={status.id}
-            label={status.status_name}
-            color={watch("status_id") === status.id ? "primary" : "default"}
-            onClick={() => setValue("status_id", status.id)}
-          />
-        ))}
-      </Box>
+            {/* Priority / Type / Status */}
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={4}>
+                <Row icon={<FlagRounded sx={{ color: colors.orangeAccent[500] }} />} title="Priority" />
+                <Stack direction="row" spacing={1} flexWrap="wrap" mt={1}>
+                  {priorities.map((p) => (
+                    <ChipOption
+                      key={p.id}
+                      label={p.priority_name}
+                      selected={w.prio === p.id}
+                      onClick={() => setValue("priority_id", p.id)}
+                    />
+                  ))}
+                </Stack>
+              </Grid>
 
-      {/* Project Chip Selection */}
-      <Typography variant="subtitle1">Project</Typography>
-      <Box display="flex" gap={1} flexWrap="wrap">
-        {projects.map((project) => (
-          <Chip
-            key={project.id}
-            label={project.project_name}
-            color={watch("project_id") === project.id ? "primary" : "default"}
-            onClick={() => handleProject(project.id)}
-          />
-        ))}
-      </Box>
-      <Typography variant="subtitle1">Project Phase</Typography>
+              <Grid item xs={12} md={4}>
+                <Row icon={<CategoryRounded sx={{ color: colors.purpleAccent[500] }} />} title="Type" />
+                <Stack direction="row" spacing={1} flexWrap="wrap" mt={1}>
+                  {taskTypes.map((t) => (
+                    <ChipOption
+                      key={t.id}
 
-      <Box display="flex" gap={1} flexWrap="wrap">
-        {phases.map((phase) => (
-          <Chip
-            key={phase.id}
-            label={phase.phase_name}
-            color={watch("project_phase_id") === phase.id ? "primary" : "default"}
-            onClick={() => setValue("project_phase_id", phase.id)}
-          />
-        ))}
-      </Box>
+                      label={t.type_name}
+                      selected={w.type === t.id}
+                      onClick={() => setValue("task_type_id", t.id)}
+                    />
+                  ))}
+                </Stack>
+              </Grid>
 
-      {/* Employee Search Dropdown (Optional) */}
-      <Controller
-        name="user_id"
-        control={control}
-        defaultValue=""
-        render={({ field }) => (
-          <Autocomplete
-            options={employees}
-            getOptionLabel={(option) => option.name}
-            renderInput={(params) => <TextField {...params} label="Assign To (Optional)" fullWidth />}
-            onChange={(event, newValue) => field.onChange(newValue ? newValue.id : "")} // Ensure it's optional
-          />
-        )}
-      />
+              <Grid item xs={12} md={4}>
+                <Row icon={<TimelineRounded sx={{ color: colors.blueAccent[500] }} />} title="Status" />
+                <Stack direction="row" spacing={1} flexWrap="wrap" mt={1}>
+                  {statuses.map((s) => (
+                    <ChipOption
+                      key={s.id}
+                      label={s.status_name}
+                      selected={w.status === s.id}
+                      onClick={() => setValue("status_id", s.id)}
+                    />
+                  ))}
+                </Stack>
+              </Grid>
+            </Grid>
 
-      <Controller name="due_date" control={control} defaultValue="" render={({ field }) => <TextField {...field} label="Due Date" type="date" fullWidth />} />
+            <Divider sx={{ my: 3, borderColor: colors.gray[800] }} />
 
-      <Button type="submit" variant="contained" color="primary" disabled={loading}>
-        {loading ? <CircularProgress size={24} /> : "Create Task"}
-      </Button>
-    </Box>
+            {/* Project & Phase */}
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Row icon={<WorkspacesRounded sx={{ color: colors.blueAccent[500] }} />} title="Project" />
+                <Stack direction="row" spacing={1} flexWrap="wrap" mt={1}>
+                  <ChipOption
+                    label="No Project"
+                    selected={w.project === 0}
+                    onClick={() => handleProject(0)}
+                  />
+                  {projects.map((project) => (
+                    <ChipOption
+                      key={project.id}
+                      label={project.project_name}
+                      selected={w.project === project.id}
+                      onClick={() => handleProject(project.id)}
+                    />
+                  ))}
+                </Stack>
+              </Grid>
+
+              <Grid item xs={12} sx={{ opacity: w.project && w.project !== 0 ? 1 : 0.5 }}>
+                <Row icon={<LayersRounded sx={{ color: colors.purpleAccent[500] }} />} title="Phase" />
+                <Stack direction="row" spacing={1} flexWrap="wrap" mt={1}>
+                  {(w.project && w.project !== 0 ? phases : []).map((phase) => (
+                    <ChipOption
+                      key={phase.id}
+                      label={phase.phase_name}
+                      selected={w.phase === phase.id}
+                      onClick={() => setValue("project_phase_id", phase.id)}
+                    />
+                  ))}
+                  {w.project && w.project !== 0 && phases.length === 0 && (
+                    <Typography variant="body2" sx={{ color: colors.gray[400] }}>
+                      No phases available for this project
+                    </Typography>
+                  )}
+                </Stack>
+              </Grid>
+            </Grid>
+
+            <Divider sx={{ my: 3, borderColor: colors.gray[800] }} />
+
+            {/* Assignee + Due Date */}
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={7}>
+                <Controller
+                  name="user_id"
+                  control={control}
+                  render={({ field }) => (
+                    <Autocomplete
+                      options={employees}
+                      getOptionLabel={(o) => o?.name || ""}
+                      isOptionEqualToValue={(o, v) => o?.id === v?.id}
+                      onChange={(_, v) => field.onChange(v ? v.id : "")}
+                      value={employees.find((e) => e.id === field.value) || null}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Assign To (Optional)"
+                          placeholder="Search teammate…"
+                          InputProps={{
+                            ...params.InputProps,
+                            startAdornment: (
+                              <>
+                                <InputAdornment position="start">
+                                  <PersonRounded sx={{ color: colors.blueAccent[500] }} />
+                                </InputAdornment>
+                                {params.InputProps.startAdornment}
+                              </>
+                            ),
+                          }}
+                          sx={fieldSx(colors)}
+                        />
+                      )}
+                    />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={5}>
+                <Controller
+                  name="due_date"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      type="date"
+                      label="Due Date"
+                      InputLabelProps={{ shrink: true }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <EventRounded sx={{ color: colors.orangeAccent[500] }} />
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={fieldSx(colors)}
+                    />
+                  )}
+                />
+              </Grid>
+            </Grid>
+
+            {/* Submit */}
+            <Box mt={3} display="flex" gap={1}>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={submitting || !formState.isValid}
+                sx={{
+                  px: 3,
+                  bgcolor: colors.blueAccent[500],
+                  color: colors.primary[900],
+                  "&:hover": { bgcolor: colors.blueAccent[700] },
+                  "&:disabled": {
+                    bgcolor: colors.gray[700],
+                    color: colors.gray[400],
+                  },
+                }}
+              >
+                {submitting ? <CircularProgress size={22} sx={{ color: "inherit" }} /> : "Create Task"}
+              </Button>
+              <Button
+                type="button"
+                onClick={() => reset()}
+                variant="outlined"
+                sx={{
+                  borderColor: colors.gray[600],
+                  color: colors.gray[200],
+                  "&:hover": { borderColor: colors.gray[400], bgcolor: colors.primary[400] },
+                }}
+              >
+                Reset
+              </Button>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={watch("is_waiting") || false}  // using react-hook-form watch
+                    onChange={(e) => setValue("is_waiting", e.target.checked ? 1 : 0)}
+                    color="primary"
+                  />
+                }
+                label="Mark as Waiting Task"
+              />
+            </Box>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      {/* RIGHT: Live Summary */}
+      <Grid item xs={12} md={5} lg={4}>
+        <Card
+          sx={{
+            bgcolor: colors.primary[900],
+            border: `1px solid ${colors.gray[800]}`,
+            borderRadius: 3,
+            position: "sticky",
+            top: 16,
+          }}
+        >
+          <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+            <Typography variant="subtitle2" sx={{ color: colors.gray[400], mb: 1 }}>
+              Preview
+            </Typography>
+
+            <Typography variant="h6" fontWeight={800} sx={{ color: colors.gray[100] }}>
+              {w.title || "Untitled task"}
+            </Typography>
+
+            <Typography
+              variant="body2"
+              sx={{
+                mt: 1,
+                color: colors.gray[300],
+                display: "-webkit-box",
+                WebkitLineClamp: 4,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {w.details || "Add details to make this actionable."}
+            </Typography>
+
+            <Divider sx={{ my: 2, borderColor: colors.gray[800] }} />
+
+            <Stack spacing={1.25}>
+              <Row icon={<FlagRounded sx={{ color: colors.orangeAccent[500] }} />} title="Priority">
+                <Badge
+                  color="primary"
+                  variant="dot"
+                  invisible={!w.prio}
+                  anchorOrigin={{ vertical: "top", horizontal: "left" }}
+                >
+                  <Typography variant="body2" sx={{ color: colors.gray[200] }}>
+                    {priorities.find((p) => p.id === w.prio)?.priority_name || "—"}
+                  </Typography>
+                </Badge>
+              </Row>
+
+              <Row icon={<CategoryRounded sx={{ color: colors.purpleAccent[500] }} />} title="Type">
+                <Typography variant="body2" sx={{ color: colors.gray[200] }}>
+                  {taskTypes.find((t) => t.id === w.type)?.type_name || "—"}
+                </Typography>
+              </Row>
+
+              <Row icon={<TimelineRounded sx={{ color: colors.blueAccent[500] }} />} title="Status">
+                <Typography variant="body2" sx={{ color: colors.gray[200] }}>
+                  {statuses.find((s) => s.id === w.status)?.status_name || "—"}
+                </Typography>
+              </Row>
+
+              <Row icon={<WorkspacesRounded sx={{ color: colors.blueAccent[500] }} />} title="Project">
+                <Typography variant="body2" sx={{ color: colors.gray[200] }}>
+                  {w.project === 0
+                    ? "No project"
+                    : projects.find((p) => p.id === w.project)?.project_name || "—"}
+                </Typography>
+              </Row>
+
+              <Row icon={<LayersRounded sx={{ color: colors.purpleAccent[500] }} />} title="Phase">
+                <Typography variant="body2" sx={{ color: colors.gray[200] }}>
+                  {phases.find((ph) => ph.id === w.phase)?.phase_name || "—"}
+                </Typography>
+              </Row>
+
+              <Row icon={<PersonRounded sx={{ color: colors.blueAccent[500] }} />} title="Assignee">
+                <Typography variant="body2" sx={{ color: colors.gray[200] }}>
+                  {employees.find((e) => e.id === w.assignee)?.name || "You"}
+                </Typography>
+              </Row>
+
+              <Row icon={<EventRounded sx={{ color: colors.orangeAccent[500] }} />} title="Due date">
+                <Typography variant="body2" sx={{ color: colors.gray[200] }}>
+                  {w.due || "—"}
+                </Typography>
+              </Row>
+            </Stack>
+          </CardContent>
+        </Card>
+      </Grid>
+    </Grid>
   );
-};
-
-export default AddTaskForm;
+}

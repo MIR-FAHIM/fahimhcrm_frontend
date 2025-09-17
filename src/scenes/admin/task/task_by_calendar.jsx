@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { getAssignedTaskByUsers } from "../../../api/controller/admin_controller/task_controller/task_controller";
 import { useNavigate } from "react-router-dom";
+import { tokens } from "../../../theme";
 
 const localizer = momentLocalizer(moment);
 
@@ -24,6 +25,7 @@ const TaskCalendar = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const userID = localStorage.getItem("userId");
   const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,7 +37,7 @@ const TaskCalendar = () => {
             id: task.task.id,
             title: task.task.task_title,
             description: task.task.task_details,
-            priority: task.task.priority, // Include priority
+            priority: task.task.priority,
             start: new Date(task.task.due_date),
             end: new Date(task.task.due_date),
           }));
@@ -62,26 +64,50 @@ const TaskCalendar = () => {
   const eventStyleGetter = () => {
     return {
       style: {
-        backgroundColor: theme.palette.primary.main,
-        color: "#fff",
+        backgroundColor: colors.blueAccent[500],
+        color: colors.primary[900],
         borderRadius: "5px",
         padding: "4px",
-        border: `1px solid ${theme.palette.primary.dark}`,
+        border: `1px solid ${colors.blueAccent[700]}`,
+        fontWeight: 'bold'
       },
     };
   };
 
-  const getPriorityColor = (priorityName) => {
-    switch ((priorityName || "").toLowerCase()) {
+  const getPriorityChip = (priorityName) => {
+    const priority = (priorityName || "").toLowerCase();
+    let chipColor;
+    let textColor;
+
+    switch (priority) {
       case "high":
-        return "error";
+        chipColor = colors.redAccent[500];
+        textColor = colors.primary[900];
+        break;
       case "medium":
-        return "warning";
+        chipColor = colors.blueAccent[500];
+        textColor = colors.primary[900];
+        break;
       case "low":
-        return "success";
+        chipColor = colors.greenAccent[500];
+        textColor = colors.primary[900];
+        break;
       default:
-        return "default";
+        chipColor = colors.gray[700];
+        textColor = colors.gray[100];
+        break;
     }
+    return (
+      <Chip
+        label={priorityName || "No Data"}
+        size="small"
+        sx={{
+          backgroundColor: chipColor,
+          color: textColor,
+          fontWeight: "bold",
+        }}
+      />
+    );
   };
 
   if (loading) {
@@ -93,8 +119,8 @@ const TaskCalendar = () => {
   }
 
   return (
-    <Box sx={{ height: "90vh", p: 4 }}>
-      <Typography variant="h4" fontWeight="bold" mb={3}>
+    <Box sx={{ height: "90vh", p: 4, backgroundColor: theme.palette.background.default }}>
+      <Typography variant="h4" fontWeight="bold" mb={3} sx={{ color: colors.gray[100] }}>
         📅 My Task Calendar
       </Typography>
 
@@ -103,7 +129,7 @@ const TaskCalendar = () => {
         events={tasks}
         startAccessor="start"
         endAccessor="end"
-        style={{ height: "75vh", borderRadius: 8, boxShadow: theme.shadows[2] }}
+        style={{ height: "75vh", borderRadius: 8, boxShadow: theme.shadows[2], backgroundColor: theme.palette.background.paper }}
         views={["month", "week"]}
         defaultView="month"
         eventPropGetter={eventStyleGetter}
@@ -111,31 +137,27 @@ const TaskCalendar = () => {
         tooltipAccessor={(event) => event.description || "No description"}
       />
 
-      {/* Task Details Dialog */}
       {selectedTask && (
         <Dialog open={true} onClose={handleClose} maxWidth="sm" fullWidth>
-          <DialogTitle>📝 Task Details</DialogTitle>
-          <DialogContent>
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
+          <DialogTitle sx={{ backgroundColor: theme.palette.background.paper, color: colors.gray[100] }}>
+            📝 Task Details
+          </DialogTitle>
+          <DialogContent sx={{ backgroundColor: theme.palette.background.paper }}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ color: colors.gray[100] }}>
               {selectedTask.title}
             </Typography>
 
-            <Typography variant="body1" gutterBottom>
+            <Typography variant="body1" gutterBottom sx={{ color: colors.gray[200] }}>
               <strong>Description:</strong>{" "}
               {selectedTask.description || "No description provided."}
             </Typography>
 
-            <Typography variant="body1" gutterBottom>
+            <Typography variant="body1" gutterBottom sx={{ color: colors.gray[200] }}>
               <strong>Priority:</strong>{" "}
-              <Chip
-                label={selectedTask.priority?.priority_name || "No Data"}
-                color={getPriorityColor(selectedTask.priority?.priority_name)}
-                variant="outlined"
-                size="small"
-              />
+              {getPriorityChip(selectedTask.priority?.priority_name)}
             </Typography>
 
-            <Typography variant="body2" color="text.secondary" mt={2}>
+            <Typography variant="body2" mt={2} sx={{ color: colors.gray[400] }}>
               <strong>Created:</strong>{" "}
               {moment(selectedTask.start).format("MMMM D, YYYY")}
             </Typography>
@@ -143,7 +165,17 @@ const TaskCalendar = () => {
             <Box mt={3} display="flex" justifyContent="flex-end">
               <Button
                 variant="contained"
-                onClick={() => navigate(`/task-details/${selectedTask.id}`)}
+                onClick={() => {
+                  navigate(`/task-details/${selectedTask.id}`);
+                  handleClose();
+                }}
+                sx={{
+                  backgroundColor: colors.greenAccent[500],
+                  color: colors.primary[900],
+                  "&:hover": {
+                    backgroundColor: colors.greenAccent[700],
+                  },
+                }}
               >
                 View Details
               </Button>

@@ -43,9 +43,10 @@ const ProductList = () => {
     { field: "id", headerName: "ID", flex: 0.5, headerAlign: "center", align: "center" },
     { field: "product_name", headerName: "Name", flex: 2 , },
     { field: "description", headerName: "Details", flex: 2 ,},
-    { field: "total_stock_quantity", headerName: "Stock", flex: 1 ,},
-    { field: "category_id", headerName: "Category", flex: 2 , },
+    { field: "total_stock_quantity", headerName: "Quantity", flex: 1 ,},
+    { field: "category", headerName: "Category", flex: 2 ,  valueGetter:(params)=>params.row.category?.category_name},
    
+    { field: "variants_count", headerName: "Total Varients", flex: 2,  headerAlign: "center", align: "center" },
     { field: "is_active", headerName: "Active", flex: 1, type: "boolean", headerAlign: "center", align: "center" },
     {
       field: "view_details",

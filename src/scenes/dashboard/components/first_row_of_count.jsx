@@ -1,199 +1,248 @@
-
-import { Link, useNavigate } from "react-router-dom";
-
-
+// src/scenes/dashboard/components/first_row_of_count.jsx
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
-  Button,
-  IconButton,
   Typography,
-  useMediaQuery,
-  Stack,
-  Snackbar,
   useTheme,
+  Card,
+  CardContent,
+  Stack,
+  IconButton,
+  Tooltip,
+  Skeleton,
 } from "@mui/material";
-
 import {
-  LocationOnOutlined, LogoutOutlined,
-  AccessTimeOutlined,
-  DownloadOutlined,
-  Email,
-  PersonAdd,
-  PointOfSale,
-  Traffic,
-  Warning,
-  BusinessCenter, // New icon for Prospects
-  People, // New icon for Clients
-  Work, // New icon for Projects
-  Construction, // New icon for Project Phase
-  Task, // New icon for Tasks
-  Badge // New icon for Employee
+  BusinessCenter,
+  People,
+  Work,
+  Construction,
+  Task,
+  Badge,
+  ArrowForwardIosRounded,
 } from "@mui/icons-material";
 import { tokens } from "../../../theme";
+import { modulePermission } from "../../../api/controller/admin_controller/user_controller";
 
-
-// Replace with your API key
-
-function DashboardFirstRow({dashboardReport}) {
-  
+const KPICard = ({ icon, label, value, onClick, color }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  
+  return (
+    <Card
+      onClick={onClick}
+      sx={{
+        cursor: "pointer",
+        minWidth: 200,
+        flex: "1 1 200px",
+        bgcolor: theme.palette.background.paper,
+        border: `1px solid ${colors.gray[800]}`,
+        borderRadius: 3,
+        boxShadow: 2,
+        transition: "transform .15s ease, box-shadow .15s ease",
+        "&:hover": { transform: "translateY(-3px)", boxShadow: 6 },
+      }}
+    >
+      <CardContent sx={{ p: 2.25 }}>
+        <Stack direction="row" alignItems="center" spacing={1.25} mb={1.25}>
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: 2,
+              bgcolor: color.bg,
+              color: color.fg,
+              display: "grid",
+              placeItems: "center",
+            }}
+          >
+            {icon}
+          </Box>
+          <Typography variant="body2" sx={{ color: colors.gray[400], fontWeight: 600 }}>
+            {label}
+          </Typography>
+          <Box sx={{ flex: 1 }} />
+          <Tooltip title="Open">
+            <IconButton size="small" sx={{ color: colors.gray[500] }}>
+              <ArrowForwardIosRounded fontSize="inherit" />
+            </IconButton>
+          </Tooltip>
+        </Stack>
+        <Typography variant="h5" sx={{ fontWeight: 800 }}>
+          {value ?? 0}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
+};
+
+function DashboardFirstRow({ dashboardReport }) {
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
   const navigate = useNavigate();
 
-  const activityColors = {
-    general: "#fef3c7",   // light yellow
-    task: "#e0f2fe",      // light blue
-    call: "#fee2e2",      // light red
-    email: "#ede9fe",     // light purple
-    whatsapp: "#dcfce7",  // light green
-    visit: "#fce7f3",     // light pink
-    message: "#e2e8f0",   // default gray
-    meeting: "#fff7ed",   // light orange
-  };
+  const [perms, setPerms] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch permissions once
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await modulePermission();
+        if (res?.status === "success") setPerms(res.permissions || {});
+      } catch (e) {
+        console.error("Failed to load permissions", e);
+        setPerms({});
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  // Define all possible cards
+  const allCards = useMemo(
+    () => [
+      {
+        key: "prospect",
+        label: "Prospects",
+        value: dashboardReport?.prospects,
+        icon: <BusinessCenter fontSize="small" />,
+        color: { bg: colors.blueAccent[700], fg: colors.primary[900] },
+        onClick: () => navigate("/prospect-list"),
+      },
+      {
+        key: "client",
+        label: "Clients",
+        value: dashboardReport?.clients ?? 0,
+        icon: <People fontSize="small" />,
+        color: { bg: colors.purpleAccent[700], fg: colors.primary[900] },
+        onClick: () => navigate("/client-list"),
+      },
+      {
+        key: "project",
+        label: "Projects",
+        value: dashboardReport?.projects,
+        icon: <Work fontSize="small" />,
+        color: { bg: colors.orangeAccent[700], fg: colors.primary[900] },
+        onClick: () => navigate("/project-list"),
+      },
+      {
+        key: "projectPhase",
+        // gated by "project" permission as part of project module
+        label: "Project Phases",
+        value: dashboardReport?.projectPhase,
+        icon: <Construction fontSize="small" />,
+        color: { bg: colors.blueAccent[600], fg: colors.primary[900] },
+        onClick: () => {}, // add route if/when needed
+        requireKey: "project",
+      },
+      {
+        key: "task",
+        label: "Tasks",
+        value: dashboardReport?.tasks,
+        icon: <Task fontSize="small" />,
+        color: { bg: colors.redAccent[600], fg: colors.primary[900] },
+        onClick: () => navigate("/my-task-tab"),
+      },
+      {
+        key: "hrms",
+        // show Employees under HRMS permission
+        label: "Employees",
+        value: dashboardReport?.employee,
+        icon: <Badge fontSize="small" />,
+        color: { bg: colors.purpleAccent[600], fg: colors.primary[900] },
+        onClick: () => navigate("/employee-list-view"),
+      },
+    ],
+    [
+      dashboardReport?.prospects,
+      dashboardReport?.clients,
+      dashboardReport?.projects,
+      dashboardReport?.projectPhase,
+      dashboardReport?.tasks,
+      dashboardReport?.employee,
+      colors,
+      navigate,
+    ]
+  );
+
+  // Filter by permission flags
+  const visibleCards = useMemo(() => {
+    if (!perms) return [];
+    // map card.key -> permission key in your response
+    const keyToPerm = {
+      prospect: "prospect",
+      client: "client",
+      project: "project",
+      projectPhase: "project", // depends on project permission
+      task: "task",
+      hrms: "hrms",
+    };
+
+    return allCards.filter((c) => {
+      const permKey = c.requireKey || c.key;
+      const mapped = keyToPerm[permKey];
+      if (!mapped) return true; // if not mapped, show by default
+      return Boolean(perms[mapped]);
+    });
+  }, [allCards, perms]);
 
   return (
-    <Box m="20px">
-    
-
-
-
-
-
-    <Box
-  gridColumn="span 12"
-  display="flex"
-  flexDirection="row"
-  justifyContent="space-around"
-  alignItems="center"
-  p={2}
-  borderRadius="8px"
-  boxShadow={1}
-  sx={{
-    backgroundColor: colors.primary[400],
-    flexWrap: 'wrap', // Allow wrapping for smaller screens
-  }}
->
-  <Box
-  onClick={() => navigate('/prospect-list')}
-    sx={{
-      backgroundColor: activityColors.general,
-      p: 2,
-      borderRadius: '8px',
-      textAlign: 'center',
-      width: '150px', // Fixed width for consistency
-      height: '120px', // Fixed height for consistency
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}
-  >
-    <BusinessCenter sx={{ fontSize: 40, }} />
-    <Typography fontWeight="bold" >Prospects: {dashboardReport.prospects}</Typography>
-  </Box>
-
-  <Box
-  onClick={() => navigate('/client-list')}
-    sx={{
-      backgroundColor: activityColors.task,
-      p: 2,
-      borderRadius: '8px',
-      textAlign: 'center',
-      width: '150px',
-      height: '120px',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}
-  >
-    <People sx={{ fontSize: 40,  }} />
-    <Typography fontWeight="bold" >Clients: 0</Typography>
-  </Box>
-
-  <Box
-   onClick={() => navigate('/project-list')}
-    sx={{
-      backgroundColor: activityColors.call,
-      p: 2,
-      borderRadius: '8px',
-      textAlign: 'center',
-      width: '150px',
-      height: '120px',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}
-  >
-    <Work sx={{ fontSize: 40,  }} />
-    <Typography fontWeight="bold" >Projects: {dashboardReport.projects}</Typography>
-  </Box>
-
-  <Box
-    
-    sx={{
-      backgroundColor: activityColors.email,
-      p: 2,
-      borderRadius: '8px',
-      textAlign: 'center',
-      width: '150px',
-      height: '120px',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}
-  >
-    <Construction sx={{ fontSize: 40,  }} />
-    <Typography fontWeight="bold" >Project Phase: {dashboardReport.projectPhase}</Typography>
-  </Box>
-
-  <Box
-  onClick={() => navigate('/my-task-tab')}
-    sx={{
-      backgroundColor: activityColors.whatsapp,
-      p: 2,
-      borderRadius: '8px',
-      textAlign: 'center',
-      width: '150px',
-      height: '120px',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}
-  >
-    <Task sx={{ fontSize: 40,  }} />
-    <Typography fontWeight="bold" >Tasks: {dashboardReport.tasks}</Typography>
-  </Box>
-
-  <Box
-   onClick={() => navigate('/employee-list-view')}
-    sx={{
-      backgroundColor: activityColors.visit,
-      p: 2,
-      borderRadius: '8px',
-      textAlign: 'center',
-      width: '150px',
-      height: '120px',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }}
-  >
-    <Badge sx={{ fontSize: 40, }} />
-    <Typography fontWeight="bold" >Employee: {dashboardReport.employee}</Typography>
-  </Box>
-</Box>
-
-
-
+    <Box sx={{ mt: 2 }}>
+      {loading ? (
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: 2,
+          }}
+        >
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} variant="rounded" height={112} sx={{ borderRadius: 3 }} />
+          ))}
+        </Box>
+      ) : visibleCards.length === 0 ? (
+        <Card
+          sx={{
+            borderRadius: 3,
+            border: `1px dashed ${colors.gray[700]}`,
+            bgcolor: theme.palette.background.paper,
+          }}
+        >
+          <CardContent>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+              No modules available
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              You don’t have access to any dashboard modules. Contact an administrator if this seems wrong.
+            </Typography>
+          </CardContent>
+        </Card>
+      ) : (
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(6, 1fr)", // fixed 6 columns (adjust if you prefer auto-fit)
+            gap: 2,
+            "@media (max-width: 1600px)": {
+              gridTemplateColumns: "repeat(4, 1fr)",
+            },
+            "@media (max-width: 1200px)": {
+              gridTemplateColumns: "repeat(3, 1fr)",
+            },
+            "@media (max-width: 900px)": {
+              gridTemplateColumns: "repeat(2, 1fr)",
+            },
+            "@media (max-width: 600px)": {
+              gridTemplateColumns: "repeat(1, 1fr)",
+            },
+          }}
+        >
+          {visibleCards.map((c) => (
+            <KPICard key={c.label} {...c} />
+          ))}
+        </Box>
+      )}
     </Box>
-    
   );
 }
 

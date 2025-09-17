@@ -1,316 +1,534 @@
-import { Avatar, Box, Button, Grid, Input, TextField, Typography } from '@mui/material';
-import { blue } from '@mui/material/colors';
-import { useState, useEffect } from 'react';
-import { useProfile } from '../../../provider/profile_context';
+import { useState, useEffect, useMemo, useRef } from "react";
+import {
+  Avatar,
+  Box,
+  Button,
+  Grid,
+  TextField,
+  Typography,
+  IconButton,
+  Paper,
+  Stack,
+  Chip,
+  Divider,
+  useTheme,
+} from "@mui/material";
+import {
+  Edit as EditIcon,
+  Save as SaveIcon,
+  Logout as LogoutIcon,
+  Upload as UploadIcon,
+  AccessTime as AccessTimeIcon,
+} from "@mui/icons-material";
+import { alpha } from "@mui/material/styles";
+import { image_file_url } from "../../../../api/config";
+
+const SectionCard = ({ title, action, children, sx }) => {
+  const theme = useTheme();
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        p: 2.5,
+        borderRadius: 2,
+        bgcolor: theme.palette.background.paper,
+        border: `1px solid ${theme.palette.divider}`,
+        ...sx,
+      }}
+    >
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={1.5}>
+        <Typography variant="subtitle1" fontWeight={700} color={theme.palette.text.primary}>
+          {title}
+        </Typography>
+        {action}
+      </Box>
+      <Divider sx={{ mb: 2 }} />
+      {children}
+    </Paper>
+  );
+};
+
+const ReadRow = ({ label, value }) => {
+  const theme = useTheme();
+  return (
+    <Stack direction="row" spacing={1.5} alignItems="center" mb={1.25}>
+      <Typography sx={{ color: theme.palette.text.secondary, minWidth: 120 }}>
+        {label}
+      </Typography>
+      <Typography sx={{ color: theme.palette.text.primary, fontWeight: 600 }}>
+        {value || "-"}
+      </Typography>
+    </Stack>
+  );
+};
+
 const ProfileComponent = ({
-  imageUrl,
   handleFileChange,
   handleUpload,
   changePass,
-  profileData,
+  profileData = {},
   userID,
-  id,
   handleLogout,
-  handleUpdateData
+  handleUpdateData,
 }) => {
+  const theme = useTheme();
+
   const [editData, setEditData] = useState({});
-    const { userProfileData, setUserProfileData, profileLoading } = useProfile();
   const [passwordData, setPasswordData] = useState({});
-  const [passwordError, setPasswordError] = useState('');
-const isEditable = userProfileData.role?.id === 1 || userProfileData.role?.id === 2;
+  const [avatarError, setAvatarError] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [isEditable, setIsEditable] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const fileRef = useRef(null);
+  const isMyProfile = parseInt(userID, 10) === profileData?.id;
+
   useEffect(() => {
-    if (profileData) {
-      setEditData({
-        user_id: profileData.id || '',
-        name: profileData.name || '',
-        email: profileData.email || '',
-        phone: profileData.phone || '',
-        address: profileData.address || '',
-        birthdate: profileData.birthdate || '',
-        bio: profileData.bio || '',
-        start_hour: profileData.start_hour || '',
-        start_min: profileData.start_min || '',
-      });
-    }
+    if (!profileData) return;
+    const roleId = profileData?.role?.id;
+    setIsEditable(roleId === 1 || roleId === 2);
+
+    setEditData({
+      user_id: profileData.id || "",
+      name: profileData.name || "",
+      email: profileData.email || "",
+      phone: profileData.phone || "",
+      address: profileData.address || "",
+      birthdate: profileData.birthdate || "",
+      bio: profileData.bio || "",
+      start_hour: profileData.start_hour ?? "",
+      start_min: profileData.start_min ?? "",
+    });
 
     setPasswordData({
-    user_id: profileData.id || '',
-    current_password: '',
-    new_password: '',
-    confirm_new_password: ''
-  })
+      user_id: profileData.id || "",
+      current_password: "",
+      new_password: "",
+      confirm_new_password: "",
+    });
   }, [profileData]);
 
-  const handleChange = (e) => {
+  const onEditField = (e) => {
     const { name, value } = e.target;
-    setEditData((prev) => ({ ...prev, [name]: value }));
+    setEditData((p) => ({ ...p, [name]: value }));
   };
 
-  const handlePasswordChange = (e) => {
+  const onPasswordField = (e) => {
     const { name, value } = e.target;
-    setPasswordData((prev) => ({ ...prev, [name]: value }));
+    setPasswordData((p) => ({ ...p, [name]: value }));
   };
 
   const handleSave = () => {
     handleUpdateData(editData);
+    setIsEditing(false);
   };
 
   const handlePasswordSave = () => {
-    // Simple validation
-    if (!passwordData.current_password || !passwordData.new_password || !passwordData.confirm_new_password) {
-      setPasswordError('All password fields are required');
+    setPasswordError("");
+    if (
+      !passwordData.current_password ||
+      !passwordData.new_password ||
+      !passwordData.confirm_new_password
+    ) {
+      setPasswordError("All password fields are required.");
       return;
     }
     if (passwordData.new_password !== passwordData.confirm_new_password) {
-      setPasswordError('New passwords do not match');
+      setPasswordError("New passwords do not match.");
       return;
     }
     if (passwordData.new_password.length < 6) {
-      setPasswordError('New password must be at least 6 characters');
+      setPasswordError("New password must be at least 6 characters.");
       return;
     }
-    // Trigger the password change function
     changePass(passwordData);
   };
 
+  const photoSrc = avatarError
+    ? "https://picsum.photos/200/300"
+    : `${image_file_url}/${profileData?.photo}`;
+
+  const canUpload = isMyProfile;
+
+  const officeTimeLabel = useMemo(() => {
+    const hh = editData.start_hour?.toString().padStart(2, "0");
+    const mm = editData.start_min?.toString().padStart(2, "0");
+    if (!hh && !mm) return "Not set";
+    return `${hh ?? "00"}:${mm ?? "00"}`;
+  }, [editData.start_hour, editData.start_min]);
+
   return (
-    <Box sx={{ maxWidth: 800, margin: '0 auto', padding: 3 }}>
-      {/* Avatar & Upload */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 3 }}>
-        <Avatar
-          alt="avatar"
-          src={imageUrl}
-          sx={{
-            width: 100,
-            height: 100,
-            marginBottom: 2,
-            border: '2px solid',
-            borderColor: blue[500],
-          }}
-        />
+    <Box
+      sx={{
+        maxWidth: 980,
+        mx: "auto",
+        p: { xs: 2, md: 3 },
+        bgcolor: theme.palette.background.default,
+      }}
+    >
+      {/* Header Card */}
+      <SectionCard
+        title="Profile"
+        action={
+          isMyProfile && (
+            <Stack direction="row" spacing={1}>
+              <Button
+                variant="outlined"
+                color="warning"
+                onClick={handleLogout}
+                startIcon={<LogoutIcon />}
+                sx={{ textTransform: "none" }}
+              >
+                Log out
+              </Button>
+            </Stack>
+          )
+        }
+        sx={{ mb: 2 }}
+      >
+        <Grid container spacing={3} alignItems="center">
+          <Grid item xs={12} md="auto">
+            <Box position="relative" width={112} height={112}>
+              <Avatar
+                src={photoSrc}
+                alt={profileData?.name || "Profile"}
+                onError={() => setAvatarError(true)}
+                sx={{
+                  width: 112,
+                  height: 112,
+                  border: `2px solid ${theme.palette.divider}`,
+                  bgcolor: theme.palette.blueAccent.dark,
+                  color: theme.palette.blueAccent.contrastText,
+                }}
+              />
+              {canUpload && (
+                <IconButton
+                  size="small"
+                  onClick={() => fileRef.current?.click()}
+                  sx={{
+                    position: "absolute",
+                    right: -10,
+                    bottom: -10,
+                    bgcolor: theme.palette.background.paper,
+                    color: theme.palette.text.primary,
+                    border: `1px solid ${theme.palette.divider}`,
+                    "&:hover": { bgcolor: alpha(theme.palette.blueAccent.main, 0.12) },
+                  }}
+                >
+                  <UploadIcon fontSize="small" />
+                </IconButton>
+              )}
+              <input
+                hidden
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </Box>
+          </Grid>
 
-        {userID === id && (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              sx={{ marginBottom: 2 }}
-            />
-            <Button
-              onClick={handleUpload}
-              variant="contained"
-              color="primary"
-              sx={{ textTransform: 'none' }}
-            >
-              Upload Profile Image
-            </Button>
-          </Box>
-        )}
-      </Box>
+          <Grid item xs={12} md>
+            <Typography variant="h5" fontWeight={800} color={theme.palette.text.primary} mb={0.5}>
+              {profileData?.name || "-"}
+            </Typography>
+            <Stack direction="row" spacing={1} flexWrap="wrap">
+              <Chip
+                size="small"
+                label={profileData?.role?.role_name || "Role -"}
+                sx={{
+                  bgcolor: alpha(theme.palette.text.primary, 0.06),
+                  color: theme.palette.text.primary,
+                  border: `1px solid ${theme.palette.divider}`,
+                }}
+              />
+              <Chip
+                size="small"
+                label={profileData?.department?.department_name || "Department -"}
+                sx={{
+                  bgcolor: alpha(theme.palette.text.primary, 0.06),
+                  color: theme.palette.text.primary,
+                  border: `1px solid ${theme.palette.divider}`,
+                }}
+              />
+              <Chip
+                size="small"
+                label={profileData?.designation?.designation_name || "Designation -"}
+                sx={{
+                  bgcolor: alpha(theme.palette.text.primary, 0.06),
+                  color: theme.palette.text.primary,
+                  border: `1px solid ${theme.palette.divider}`,
+                }}
+              />
+            </Stack>
 
-      {/* Editable General Info */}
-      <Typography variant="h5" fontWeight="bold" mb={2}>
-        General Information
-      </Typography>
+            {canUpload && (
+              <Box mt={1.5}>
+                <Button
+                  onClick={handleUpload}
+                  variant="contained"
+                  startIcon={<UploadIcon />}
+                  sx={{
+                    textTransform: "none",
+                    bgcolor: theme.palette.blueAccent.main,
+                    color: theme.palette.blueAccent.contrastText,
+                    "&:hover": { bgcolor: theme.palette.blueAccent.dark },
+                  }}
+                >
+                  Upload New Photo
+                </Button>
+              </Box>
+            )}
+          </Grid>
+        </Grid>
+      </SectionCard>
 
-      <Grid container spacing={3}>
-        {/* Left Side */}
-        <Grid item xs={12} md={6}>
-          <TextField
-            label="Name"
-            name="name"
-            fullWidth
-            value={editData.name}
-            onChange={handleChange}
-            margin="dense"
-          />
-          <TextField
-            label="Email"
-            name="email"
-            fullWidth
-            value={editData.email}
-            onChange={handleChange}
-            margin="dense"
-            disabled = {isEditable}
-          />
-          <TextField
-            label="Phone"
-            name="phone"
-            fullWidth
-            value={editData.phone}
-            onChange={handleChange}
-            margin="dense"
-          />
-          <TextField
-            label="Address"
-            name="address"
-            fullWidth
-            value={editData.address}
-            onChange={handleChange}
-            margin="dense"
-          />
-          <TextField
-            label="Birthdate"
-            name="birthdate"
-            type="date"
-            fullWidth
-            InputLabelProps={{ shrink: true }}
-            value={editData.birthdate?.split("T")[0] || ''}
-            onChange={handleChange}
-            margin="dense"
-          />
-          <TextField
-            label="Bio"
-            name="bio"
-            fullWidth
-            multiline
-            rows={3}
-            value={editData.bio}
-            onChange={handleChange}
-            margin="dense"
-          />
-  <Box sx={{ mt: 2, p: 2, border: '1px solid #ccc', borderRadius: 2 }}>
-  <Typography variant="h6" gutterBottom>
-    Office Entry Time
-  </Typography>
+      {/* General Info + Office Time */}
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={7}>
+          <SectionCard
+            title="General Information"
+            action={
+              isMyProfile && (
+                <Button
+                  variant={isEditing ? "contained" : "outlined"}
+                  onClick={() => setIsEditing((v) => !v)}
+                  startIcon={isEditing ? <SaveIcon /> : <EditIcon />}
+                  sx={{
+                    textTransform: "none",
+                    ...(isEditing
+                      ? {
+                          bgcolor: theme.palette.blueAccent.main,
+                          color: theme.palette.blueAccent.contrastText,
+                          "&:hover": { bgcolor: theme.palette.blueAccent.dark },
+                        }
+                      : {}),
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  {isEditing ? "Save" : "Edit"}
+                </Button>
+              )
+            }
+          >
+            <Grid container spacing={2}>
+              {[
+                { name: "name", label: "Name" },
+                { name: "email", label: "Email", disabled: !isEditable },
+                { name: "phone", label: "Phone" },
+                { name: "address", label: "Address" },
+              ].map((f) => (
+                <Grid key={f.name} item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label={f.label}
+                    name={f.name}
+                    value={editData[f.name] ?? ""}
+                    onChange={onEditField}
+                    size="small"
+                    disabled={!isEditing || f.disabled}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        bgcolor: theme.palette.background.default,
+                      },
+                    }}
+                  />
+                </Grid>
+              ))}
 
-  <TextField
-    label="Entry Hour"
-    name="start_hour"
-    fullWidth
-    multiline
-    rows={3}
-    value={editData.start_hour}
-    onChange={handleChange}
-    margin="dense"
-    disabled={!isEditable}
-  />
-  <TextField
-    label="Entry Min"
-    name="start_min"
-    fullWidth
-    multiline
-    rows={3}
-    value={editData.start_min}
-    onChange={handleChange}
-    margin="dense"
-    disabled={!isEditable}
-  />
-{isEditable && (
-  <Button
-    onClick={handleSave}
-    variant="contained"
-    color="success"
-    sx={{ textTransform: 'none', minWidth: 150 }}
-  >
-    Save Changes
-  </Button>
-)}
-</Box>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Birthdate"
+                  name="birthdate"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  value={editData.birthdate ? editData.birthdate.split("T")[0] : ""}
+                  onChange={onEditField}
+                  size="small"
+                  disabled={!isEditing}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      bgcolor: theme.palette.background.default,
+                    },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Bio"
+                  name="bio"
+                  multiline
+                  minRows={3}
+                  value={editData.bio ?? ""}
+                  onChange={onEditField}
+                  size="small"
+                  disabled={!isEditing}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      bgcolor: theme.palette.background.default,
+                    },
+                  }}
+                />
+              </Grid>
+
+              {isMyProfile && isEditing && (
+                <Grid item xs={12}>
+                  <Button
+                    onClick={handleSave}
+                    variant="contained"
+                    startIcon={<SaveIcon />}
+                    sx={{
+                      textTransform: "none",
+                      bgcolor: theme.palette.blueAccent.main,
+                      color: theme.palette.blueAccent.contrastText,
+                      "&:hover": { bgcolor: theme.palette.blueAccent.dark },
+                    }}
+                  >
+                    Save Changes
+                  </Button>
+                </Grid>
+              )}
+            </Grid>
+          </SectionCard>
         </Grid>
 
-        {/* Right Side (read-only) */}
-        <Grid item xs={12} md={6}>
-          <Typography variant="body1" sx={{ mb: 1 }}>
-            <strong>Role:</strong> {profileData.role?.role_name}
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 1 }}>
-            <strong>Department:</strong> {profileData.department?.department_name}
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 1 }}>
-            <strong>Designation:</strong> {profileData.designation?.designation_name}
-          </Typography>
+        <Grid item xs={12} md={5}>
+          <SectionCard title="Office Entry Time">
+            <Stack direction="row" spacing={1.5} alignItems="center" mb={1.5}>
+              <AccessTimeIcon fontSize="small" sx={{ color: theme.palette.text.secondary }} />
+              <Typography sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
+                Current: {officeTimeLabel}
+              </Typography>
+            </Stack>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Hour (0–23)"
+                  name="start_hour"
+                  size="small"
+                  value={editData.start_hour ?? ""}
+                  onChange={onEditField}
+                  disabled={!isEditable}
+                  inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+                  sx={{ "& .MuiOutlinedInput-root": { bgcolor: theme.palette.background.default } }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Minute (0–59)"
+                  name="start_min"
+                  size="small"
+                  value={editData.start_min ?? ""}
+                  onChange={onEditField}
+                  disabled={!isEditable}
+                  inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+                  sx={{ "& .MuiOutlinedInput-root": { bgcolor: theme.palette.background.default } }}
+                />
+              </Grid>
+              {isEditable && (
+                <Grid item xs={12}>
+                  <Button
+                    onClick={handleSave}
+                    variant="contained"
+                    startIcon={<SaveIcon />}
+                    sx={{
+                      textTransform: "none",
+                      bgcolor: theme.palette.blueAccent.main,
+                      color: theme.palette.blueAccent.contrastText,
+                      "&:hover": { bgcolor: theme.palette.blueAccent.dark },
+                    }}
+                  >
+                    Save Entry Time
+                  </Button>
+                </Grid>
+              )}
+            </Grid>
+          </SectionCard>
         </Grid>
       </Grid>
 
-      {/* Password Change Section */}
+      {/* Password */}
+      {isMyProfile && (
+        <SectionCard title="Change Password" sx={{ mt: 2 }}>
+          {passwordError && (
+            <Typography color="error" variant="body2" sx={{ mb: 1.5 }}>
+              {passwordError}
+            </Typography>
+          )}
+          <Grid container spacing={2}>
+            {[
+              { name: "current_password", label: "Current Password" },
+              { name: "new_password", label: "New Password" },
+              { name: "confirm_new_password", label: "Confirm New Password" },
+            ].map((f) => (
+              <Grid key={f.name} item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  type="password"
+                  label={f.label}
+                  name={f.name}
+                  value={passwordData[f.name] ?? ""}
+                  onChange={onPasswordField}
+                  size="small"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      bgcolor: theme.palette.background.default,
+                    },
+                  }}
+                />
+              </Grid>
+            ))}
 
-     {userID === id && (
-<Grid>
-     <Typography variant="h6" fontWeight="bold" mt={4} mb={2}>
-        Change Password
-      </Typography>
-      {passwordError && (
-        <Typography color="error" variant="body2" mb={2}>
-          {passwordError}
-        </Typography>
+            <Grid item xs={12}>
+              <Button
+                onClick={handlePasswordSave}
+                variant="contained"
+                sx={{
+                  textTransform: "none",
+                  bgcolor: theme.palette.primary.light,
+                  color: theme.palette.getContrastText(theme.palette.primary.light),
+                  "&:hover": { bgcolor: theme.palette.primary.main },
+                }}
+              >
+                Update Password
+              </Button>
+            </Grid>
+          </Grid>
+        </SectionCard>
       )}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <TextField
-            label="Current Password"
-            name="current_password"
-            type="password"
-            fullWidth
-            value={passwordData.current_password}
-            onChange={handlePasswordChange}
-            margin="dense"
-          />
-          <TextField
-            label="New Password"
-            name="new_password"
-            type="password"
-            fullWidth
-            value={passwordData.new_password}
-            onChange={handlePasswordChange}
-            margin="dense"
-          />
-          <TextField
-            label="Confirm New Password"
-            name="confirm_new_password"
-            type="password"
-            fullWidth
-            value={passwordData.confirm_new_password}
-            onChange={handlePasswordChange}
-            margin="dense"
-          />
-        </Grid>
-            
-      </Grid>
-      <Button
-      onClick={handlePasswordSave}
-      variant="contained"
-      color="secondary"
-      sx={{ textTransform: 'none', minWidth: 150 }}
-    >
-      Change Password
-    </Button>
-      </Grid>
-     )} 
- 
 
-{userID === id && (
-  <Box
-    sx={{
-      display: 'flex',
-      flexWrap: 'wrap',
-      gap: 2,
-      mt: 4,
-      justifyContent: 'flex-start', // or 'center' or 'space-between' as needed
-    }}
-  >
-    <Button
-      onClick={handleSave}
-      variant="contained"
-      color="success"
-      sx={{ textTransform: 'none', minWidth: 150 }}
-    >
-      Save Changes
-    </Button>
-
-    <Button
-      onClick={handleLogout}
-      variant="outlined"
-      color="warning"
-      sx={{ textTransform: 'none', minWidth: 150 }}
-    >
-      Log Out
-    </Button>
-
-
-  </Box>
-)}
+      {/* Bottom Actions */}
+      {isMyProfile && (
+        <Box display="flex" gap={1.5} flexWrap="wrap" mt={2}>
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            startIcon={<SaveIcon />}
+            sx={{
+              textTransform: "none",
+              bgcolor: theme.palette.blueAccent.main,
+              color: theme.palette.blueAccent.contrastText,
+              "&:hover": { bgcolor: theme.palette.blueAccent.dark },
+            }}
+          >
+            Save Changes
+          </Button>
+          <Button
+            onClick={handleLogout}
+            variant="outlined"
+            color="warning"
+            startIcon={<LogoutIcon />}
+            sx={{ textTransform: "none" }}
+          >
+            Log Out
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 };

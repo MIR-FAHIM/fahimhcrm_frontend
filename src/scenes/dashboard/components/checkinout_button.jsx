@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button } from "@mui/material";
+import { Button, CircularProgress, Box } from "@mui/material";
 import { AccessTimeOutlined } from "@mui/icons-material";
 
 export default function AnimatedButton({ isCheckIn, finalFunction }) {
@@ -9,59 +9,72 @@ export default function AnimatedButton({ isCheckIn, finalFunction }) {
     if (!animating) {
       setAnimating(true);
       setTimeout(() => {
-        finalFunction(); // Call your final function after animation
+        finalFunction();
         setAnimating(false);
-      }, 2000); // Duration must match CSS animation
+      }, 2000);
     }
   };
 
   const handlePressEnd = () => {
     if (animating) {
-      setAnimating(false); // Optional: cancel logic if mouse leaves
+      setAnimating(false);
     }
   };
+
+  const buttonColor = isCheckIn ? "#e53935" : "#43a047"; // red for out, green for in
+  const hoverColor = isCheckIn ? "#c62828" : "#2e7d32";
 
   return (
     <Button
       variant="contained"
-      className={animating ? "border-animate" : ""}
+      startIcon={!animating && <AccessTimeOutlined />}
+      disabled={animating}
+      className={animating ? "pulse-animate" : ""}
       sx={{
         position: "relative",
-        bgcolor: "#1976d2",
+        bgcolor: buttonColor,
         color: "#fff",
-        fontWeight: 600,
-        px: 3,
-        py: 1.5,
-        borderRadius: "10px",
-        boxShadow: "0 4px 12px rgba(25, 118, 210, 0.3)",
+        fontWeight: 700,
+        px: 3.5,
+        py: 1.6,
+        borderRadius: "12px",
+        boxShadow: `0 6px 16px ${buttonColor}66`,
         overflow: "hidden",
         transition: "all 0.3s ease",
+        textTransform: "none",
         "&:hover": {
-          bgcolor: "#1565c0",
-          transform: "scale(1.03)",
+          bgcolor: hoverColor,
+          transform: "translateY(-2px) scale(1.05)",
+          boxShadow: `0 8px 20px ${buttonColor}88`,
         },
-        "&.border-animate::after": {
+        "&.pulse-animate::after": {
           content: '""',
           position: "absolute",
-          top: 0,
-          left: 0,
+          top: "50%",
+          left: "50%",
           width: "100%",
           height: "100%",
-          borderRadius: "10px",
-          border: "2px solid red",
-          boxSizing: "border-box",
-          animation: "drawBorder 2s linear forwards",
+          borderRadius: "12px",
+          border: `2px solid ${buttonColor}`,
+          transform: "translate(-50%, -50%) scale(1)",
+          animation: "pulseBorder 1.2s infinite ease-out",
           pointerEvents: "none",
         },
       }}
-      startIcon={<AccessTimeOutlined />}
       onMouseDown={handlePressStart}
       onMouseUp={handlePressEnd}
       onMouseLeave={handlePressEnd}
       onTouchStart={handlePressStart}
       onTouchEnd={handlePressEnd}
     >
-      {isCheckIn ? "Check Out" : "Check In"}
+      {animating ? (
+        <Box display="flex" alignItems="center" gap={1}>
+          <CircularProgress size={20} sx={{ color: "#fff" }} />
+          <span>Processing...</span>
+        </Box>
+      ) : (
+        isCheckIn ? "Check Out" : "Check In"
+      )}
     </Button>
   );
 }

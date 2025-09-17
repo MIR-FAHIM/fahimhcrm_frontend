@@ -9,6 +9,8 @@ import {
   DialogContent,
   DialogTitle,
   Button,
+  useTheme, // Import the useTheme hook
+  TextField // Import TextField for the DatePicker
 } from "@mui/material";
 import {
   updateTask
@@ -26,6 +28,7 @@ dayjs.extend(relativeTime);
 dayjs.extend(duration);
 
 const TaskDueDate = ({ task, onEditDueDate }) => {
+  const theme = useTheme(); // Get the current theme object
   const [open, setOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(dayjs(task.due_date));
 
@@ -68,7 +71,8 @@ const TaskDueDate = ({ task, onEditDueDate }) => {
       <Box
         sx={{
           p: 2,
-          backgroundColor: "#f0f4f8",
+          // Use theme's background paper color, which adapts to dark mode
+          backgroundColor: theme.palette.background.paper,
           borderRadius: 2,
           display: "flex",
           justifyContent: "space-between",
@@ -76,8 +80,10 @@ const TaskDueDate = ({ task, onEditDueDate }) => {
         }}
       >
         <Box>
-          <Typography variant="subtitle2">Due Date</Typography>
-          <Typography>
+          <Typography variant="subtitle2" color="text.primary">
+            Due Date
+          </Typography>
+          <Typography color="text.primary">
             {task.due_date ? dayjs(task.due_date).format("MMM D, YYYY") : "Not Set"}
           </Typography>
           <Typography variant="caption" color="text.secondary">
@@ -89,7 +95,16 @@ const TaskDueDate = ({ task, onEditDueDate }) => {
         </IconButton>
       </Box>
 
-      <Dialog open={open} onClose={handleCloseDialog}>
+      <Dialog
+        open={open}
+        onClose={handleCloseDialog}
+        PaperProps={{
+          sx: {
+            backgroundColor: theme.palette.background.paper,
+            color: theme.palette.text.primary,
+          },
+        }}
+      >
         <DialogTitle>Edit Due Date</DialogTitle>
         <DialogContent>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -98,6 +113,7 @@ const TaskDueDate = ({ task, onEditDueDate }) => {
               value={selectedDate}
               onChange={(newValue) => setSelectedDate(newValue)}
               renderInput={(params) => <TextField {...params} />}
+              sx={{mt:2}}
             />
           </LocalizationProvider>
         </DialogContent>

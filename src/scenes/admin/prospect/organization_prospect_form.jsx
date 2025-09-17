@@ -1,3 +1,4 @@
+// src/scenes/prospect/OrganizationForm.jsx
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -16,11 +17,20 @@ import {
   Checkbox,
   FormControlLabel,
   IconButton,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Link,
+  useTheme,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import AddIcon from "@mui/icons-material/Add";
-import MapComponentSetLocation from "./form/google_map_set_location";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import MapComponentSetLocation from "./form/google_map_set_location";
 
 import {
   addProspect,
@@ -30,23 +40,60 @@ import {
   checkProspectAvaiblity,
   addConcernPersonsMultiple,
 } from "../../../api/controller/admin_controller/prospect_controller";
-import {
-  getProduct,
-
-} from "../../../api/controller/admin_controller/product_controller";
-
+import { getProduct } from "../../../api/controller/admin_controller/product_controller";
 import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
-import { fetchDesignation, fetchInfluenceRoles } from "../../../api/controller/admin_controller/department_controller";
-import { fetchZone } from "../../../api/controller/admin_controller/department_controller";
+import { fetchDesignation, fetchInfluenceRoles, fetchZone } from "../../../api/controller/admin_controller/department_controller";
+
+const Section = ({ title, subtitle, children, mt = 3 }) => {
+  const theme = useTheme();
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        mt,
+        p: 2.5,
+        borderRadius: 2,
+        bgcolor: theme.palette.background.paper,
+        border: `1px solid ${theme.palette.divider}`,
+      }}
+    >
+      {(title || subtitle) && (
+        <Box mb={2}>
+          {title && (
+            <Typography variant="subtitle1" fontWeight={800} color="text.primary">
+              {title}
+            </Typography>
+          )}
+          {subtitle && (
+            <Typography variant="body2" color="text.secondary">
+              {subtitle}
+            </Typography>
+          )}
+        </Box>
+      )}
+      {children}
+    </Paper>
+  );
+};
 
 const OrganizationForm = () => {
+  const theme = useTheme();
+
+  // Brand tokens
+  const brand = theme.palette.blueAccent?.main ?? theme.palette.info.main;
+  const brandDark = theme.palette.blueAccent?.dark ?? brand;
+  const brandContrast =
+    theme.palette.blueAccent?.contrastText ??
+    theme.palette.getContrastText(brand);
+
   const [concernPersons, setConcernPersons] = useState({
     prospect_id: 1,
-    assign_to_ids: [], // for employee_id array
+    assign_to_ids: [],
   });
   const [openModal, setOpenModal] = useState(false);
   const [matchedProspects, setMatchedProspects] = useState([]);
   const [modalMessage, setModalMessage] = useState("");
+
   const [form, setForm] = useState({
     prospect_name: "",
     industry_type_id: "",
@@ -77,6 +124,7 @@ const OrganizationForm = () => {
   const [productList, setProductList] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [isClient, setIsClient] = useState(false);
+
   const [contactPersons, setContactPersons] = useState([
     {
       name: "",
@@ -92,15 +140,23 @@ const OrganizationForm = () => {
       influencing_role_id: null,
       anniversary: null,
       birth_date: null,
-      showMore: false, // optional for UI toggle
+      showMore: false,
     },
   ]);
 
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+  const handleSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
 
   const handleCheckProspectAvailability = async () => {
     try {
-      const res = await checkProspectAvaiblity({ 'prospect_name': form.prospect_name });
-
+      const res = await checkProspectAvaiblity({ prospect_name: form.prospect_name });
       if (res.status === "success" && res.data && res.data.length > 0) {
         setMatchedProspects(res.data);
         setModalMessage("");
@@ -108,49 +164,29 @@ const OrganizationForm = () => {
         setMatchedProspects([]);
         setModalMessage("No matched prospects found.");
       }
-
       setOpenModal(true);
     } catch (error) {
       console.error("Check Prospect Availability Error:", error);
       setModalMessage("Error checking prospect availability.");
+      setMatchedProspects([]);
       setOpenModal(true);
     }
   };
 
-
-
   useEffect(() => {
-    getProspectIndustryType()
-      .then((res) => setIndustry(res.data || []))
-      .catch((err) => console.error("Industry Error:", err));
-    fetchZone()
-      .then((res) => setZone(res.data || []))
-      .catch((err) => console.error("Zone Error:", err));
-    fetchDesignation()
-      .then((res) => setDesignation(res.data || []))
-      .catch((err) => console.error("Designation Error:", err));
-    fetchInfluenceRoles()
-      .then((res) => setInfluenceList(res.data || []))
-      .catch((err) => console.error("setInfluenceList Error:", err));
-
-    getProspectSource()
-      .then((res) => setSource(res.data || []))
-      .catch((err) => console.error("Source Error:", err));
-
-    getProduct()
-      .then((res) => setProductList(res.data || []))
-      .catch((err) => console.error("Source Error:", err));
-
-    fetchEmployees()
-      .then((res) => setEmployees(res.data || []))
-      .catch(console.error);
+    getProspectIndustryType().then((res) => setIndustry(res.data || [])).catch((err) => console.error("Industry Error:", err));
+    fetchZone().then((res) => setZone(res.data || [])).catch((err) => console.error("Zone Error:", err));
+    fetchDesignation().then((res) => setDesignation(res.data || [])).catch((err) => console.error("Designation Error:", err));
+    fetchInfluenceRoles().then((res) => setInfluenceList(res.data || [])).catch((err) => console.error("Influence Error:", err));
+    getProspectSource().then((res) => setSource(res.data || [])).catch((err) => console.error("Source Error:", err));
+    getProduct().then((res) => setProductList(res.data || [])).catch((err) => console.error("Product Error:", err));
+    fetchEmployees().then((res) => setEmployees(res.data || [])).catch(console.error);
   }, []);
-const setLatLon = (name, value) => {
-  setForm({ ...form, [name]: value });
-};
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+
+  const setLatLon = (name, value) => setForm({ ...form, [name]: value });
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
   const addMultipleConernPersons = (prosID) => {
     const payload = {
       prospect_id: prosID,
@@ -162,23 +198,15 @@ const setLatLon = (name, value) => {
     };
     addConcernPersonsMultiple(payload);
   };
-//   23.8103; // Default to Dhaka, BD
-//  90.4125;
-// In your page component where handleMapClick is defined
+
   const handleSetLatLon = (event) => {
-     console.log("Map click triggered");
     const newLat = event.latLng.lat();
     const newLng = event.latLng.lng();
-    console.log("from map Position :", { lat: newLat, lng: newLng });
     setForm((prev) => ({
       ...prev,
       latitude: newLat.toString(),
       longitude: newLng.toString(),
     }));
-    // setLatLon('latitude', event.lat.toString());
-    // setLatLon('longitude', event.lng.toString());
-
-
   };
 
   const handleContactChange = (index, field, value) => {
@@ -194,8 +222,8 @@ const setLatLon = (name, value) => {
   };
 
   const addContactPersonField = () => {
-    setContactPersons([
-      ...contactPersons,
+    setContactPersons((prev) => [
+      ...prev,
       {
         name: "",
         designation: "",
@@ -214,49 +242,37 @@ const setLatLon = (name, value) => {
       },
     ]);
   };
+
   const handleConcernsChange = (event) => {
     const { name, value } = event.target;
-    setConcernPersons((prevForm) => ({
-      ...prevForm,
-      [name]: value,
-    }));
+    setConcernPersons((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleSubmit = async () => {
     const formData = new FormData();
-    for (const key in form) {
-      formData.append(key, form[key]);
-    }
+    Object.keys(form).forEach((k) => formData.append(k, form[k]));
 
     try {
-      await addProspect(formData).then((e) => {
-
-
-        if (e.status === 'success') {
-          const prospectId = e.data.id;
-          alert(e.message);
-
-          handleSubmitContact(prospectId);
-          addMultipleConernPersons(prospectId);
-        }
-
-
-      });
-
-
-      // Now add contact persons
-
+      const response = await addProspect(formData);
+      if (response.status === "success") {
+        const prospectId = response.data.id;
+        handleSnackbar(response.message || "Prospect created.", "success");
+        handleSubmitContact(prospectId);
+        addMultipleConernPersons(prospectId);
+      } else {
+        handleSnackbar(response.message || "Failed to create prospect.", "error");
+      }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to create organization or contact persons.");
+      handleSnackbar("Failed to create organization.", "error");
     }
   };
-
 
   const handleSubmitContact = async (prosID) => {
     try {
       const formattedContacts = contactPersons.map((person) => ({
         person_name: person.name?.trim(),
-        designation_id: person.designation || "1", // consider validating this
+        designation_id: person.designation || "1",
         mobile: person.mobile?.trim(),
         email: person.email?.trim(),
         note: person.note?.trim(),
@@ -269,513 +285,583 @@ const setLatLon = (name, value) => {
         anniversary: person.anniversary || "",
         birth_date: person.birth_date || "",
       }));
-
-      const responseContact = await addContactPerson({
-        prospect_id: prosID,
-        contacts: formattedContacts,
-      });
-
-      console.log("Prospect and contacts created:", responseContact);
-      alert("Organization and contact persons added successfully!");
+      await addContactPerson({ prospect_id: prosID, contacts: formattedContacts });
+      handleSnackbar("Organization and contact persons added successfully!", "success");
     } catch (error) {
       console.error("Error submitting contacts:", error);
-      alert("Failed to create organization or contact persons.");
+      handleSnackbar("Failed to create organization or contact persons.", "error");
     }
   };
 
+  // Helpers for form controls (consistent theme styling)
+  const inputSx = {
+    "& .MuiOutlinedInput-root": {
+      bgcolor: theme.palette.background.paper,
+    },
+  };
+  const selectSx = {
+    "& fieldset": { borderColor: theme.palette.divider },
+  };
+  const checkboxSx = {
+    color: `${theme.palette.success.main} !important`,
+  };
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, maxWidth: 1200, mx: "auto" }}>
-      <Typography variant="h5" gutterBottom>
-        Create Organization Prospect
-      </Typography>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, maxWidth: 1200, mx: "auto", bgcolor: theme.palette.background.default }}>
+      {/* Title */}
+      <Box display="flex" alignItems="center" gap={1} mb={1}>
+        <Typography variant="h5" fontWeight={800} color="text.primary">
+          Create Organization Lead
+        </Typography>
+        <Chip
+          size="small"
+          label="New"
+          sx={{
+            bgcolor: alpha(brand, 0.16),
+            color: brand,
+            fontWeight: 700,
+          }}
+        />
+      </Box>
+      <Divider sx={{ mb: 2, borderColor: theme.palette.divider }} />
 
-      <Divider sx={{ mb: 3 }} />
-
-      <Grid container spacing={2}>
-        {/* Basic Fields */}
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            required
-            name="prospect_name"
-            label="Organization Name"
-            value={form.prospect_name}
-            onChange={handleChange}
-          />
-
-          <Button
-            variant="outlined"
-            onClick={handleCheckProspectAvailability}
-            sx={{ mt: 1 }}
-          >
-            Check Prospect Availability
-          </Button>
-        </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <TextField
-            select
-            fullWidth
-            name="industry_type_id"
-            label="Industry Type"
-            value={form.industry_type_id}
-            onChange={handleChange}
-          >
-            {industryList.map((option) => (
-              <MenuItem key={option.id} value={option.id}>
-                {option.industry_type_name}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-
-
-        <Grid item xs={12} sm={6}>
-          <TextField
-            select
-            fullWidth
-            name="zone_id"
-            label="Zone"
-            value={form.zone_id}
-            onChange={handleChange}
-          >
-            {zoneList.map((option) => (
-              <MenuItem key={option.id} value={option.id}>
-                {option.zone_name}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            select
-            fullWidth
-            name="information_source_id"
-            label="Information Source"
-            value={form.information_source_id}
-            onChange={handleChange}
-          >
-            {sourceList.map((option) => (
-              <MenuItem key={option.id} value={option.id}>
-                {option.information_source_name}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            select
-            fullWidth
-            name="interested_for_id"
-            label="Prospect For (Service / Item)"
-            value={form.interested_for_id}
-            onChange={handleChange}
-          >
-            {productList.map((option) => (
-              <MenuItem key={option.id} value={option.id}>
-                {option.product_name}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Grid>
-        
-        <Grid item xs={12} sm={6}>
-  <FormControl fullWidth>
-    <InputLabel id="assign-to-label">Assign To</InputLabel>
-    <Select
-      labelId="assign-to-label"
-      multiple
-      name="assign_to_ids"
-      value={concernPersons.assign_to_ids}
-      onChange={handleConcernsChange}
-      renderValue={(selected) =>
-        employees
-          .filter((e) => selected.includes(e.id))
-          .map((e) => e.name)
-          .join(', ')
-      }
-    >
-      {employees.map((option) => (
-        <MenuItem key={option.id} value={option.id}>
-          <Checkbox checked={concernPersons.assign_to_ids.includes(option.id)} />
-          <ListItemText primary={option.name} />
-        </MenuItem>
-      ))}
-    </Select>
-  </FormControl>
-</Grid>
-
-        {/* Additional Links */}
-        {["website_link", "facebook_page", "linkedin", "address"].map((field, idx) => (
-          <Grid item xs={12} sm={6} key={idx}>
+      {/* Organization Details */}
+      <Section title="Organization Details" subtitle="Core information about the organization.">
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={7}>
             <TextField
               fullWidth
-              name={field}
-              label={field.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-              value={form[field]}
+              required
+              name="prospect_name"
+              label="Organization Name"
+              value={form.prospect_name}
               onChange={handleChange}
+              sx={inputSx}
             />
-          </Grid>
-        ))}
-
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            multiline
-            minRows={3}
-            name="note"
-            label="Important Note"
-            value={form.note}
-            onChange={handleChange}
-          />
-        </Grid>
- <Grid item xs={12}>
-        <Typography variant="h6" gutterBottom>
-          Select Location
-        </Typography>
-     
-        <MapComponentSetLocation
-     
-          latitude={form.latitude}
-          longitude={form.longitude}
-          onMapClick={handleSetLatLon}
-        />
-      </Grid>
-        {/* Contact Persons */}
-        <Grid item xs={12}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6">Contact Persons</Typography>
-            <IconButton onClick={addContactPersonField} color="primary">
-              <AddIcon />
-            </IconButton>
-          </Box>
-
-          {contactPersons.map((person, index) => (
-            <Box
-              key={index}
+            <Button
+              variant="outlined"
+              onClick={handleCheckProspectAvailability}
               sx={{
-                border: "1px solid #ddd",
-                borderRadius: 2,
-                p: 3,
-                mb: 3,
-                backgroundColor: "#fafafa",
+                mt: 1.25,
+                borderColor: brand,
+                color: brand,
+                "&:hover": { bgcolor: alpha(brand, 0.1), borderColor: brand },
               }}
             >
-              <Grid container spacing={2}>
-                {/* Basic Info */}
-                {["name", "email", "mobile"].map((field, i) => (
-                  <Grid item xs={12} sm={3} key={i}>
-                    <TextField
-                      fullWidth
-                      label={field.charAt(0).toUpperCase() + field.slice(1)}
-                      value={person[field]}
-                      onChange={(e) => handleContactChange(index, field, e.target.value)}
-                    />
-                  </Grid>
+              Check Prospect Availability
+            </Button>
+          </Grid>
+
+          <Grid item xs={12} md={5}>
+            <FormControl fullWidth>
+              <InputLabel>Industry Type</InputLabel>
+              <Select
+                name="industry_type_id"
+                value={form.industry_type_id}
+                label="Industry Type"
+                onChange={handleChange}
+                sx={selectSx}
+              >
+                {industryList.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.industry_type_name}
+                  </MenuItem>
                 ))}
-                <Grid item xs={12} sm={3}>
-                  <FormControl fullWidth>
-                    <InputLabel id={`designation-label-${index}`}>Designation</InputLabel>
-                    <Select
-                      labelId={`designation-label-${index}`}
-                      value={person.designation || ""}
-                      label="Designation"
-                      onChange={(e) => handleContactChange(index, "designation", e.target.value)}
-                    >
-                      {designationList.map((designation) => (
-                        <MenuItem key={designation.id} value={designation.id}>
-                          {designation.designation_name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                {/* Remove Button */}
-                <Grid item xs={12} sm={1}>
-                  {index > 0 && (
-                    <IconButton
-                      color="error"
-                      onClick={() => handleRemoveContact(index)}
-                      sx={{ mt: 1 }}
-                    >
-                      <RemoveCircleOutlineIcon />
-                    </IconButton>
-                  )}
-                </Grid>
+              </Select>
+            </FormControl>
+          </Grid>
 
-                {/* Toggle Optional Fields */}
-                <Grid item xs={12}>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => {
-                      const updated = [...contactPersons];
-                      updated[index].showMore = !updated[index].showMore;
-                      setContactPersons(updated);
-                    }}
-                  >
-                    {person.showMore ? "Hide Additional Info" : "Add More Info"}
-                  </Button>
-                </Grid>
-     
-                {/* Extended Info */}
-                {person.showMore && (
-  <Grid item xs={12}>
-    <Paper elevation={3} sx={{ p: 3, backgroundColor: "#f9f9f9", borderRadius: 2 }}>
-      <Grid container spacing={3}>
+          <Grid item xs={12} md={4}>
+            <FormControl fullWidth>
+              <InputLabel>Zone</InputLabel>
+              <Select
+                name="zone_id"
+                value={form.zone_id}
+                label="Zone"
+                onChange={handleChange}
+                sx={selectSx}
+              >
+                {zoneList.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.zone_name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
 
-        {/* Note */}
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            multiline
-            rows={3}
-            label="Note"
-            variant="outlined"
-            value={person.note}
-            onChange={(e) => handleContactChange(index, "note", e.target.value)}
-          />
-        </Grid>
+          <Grid item xs={12} md={4}>
+            <FormControl fullWidth>
+              <InputLabel>Information Source</InputLabel>
+              <Select
+                name="information_source_id"
+                value={form.information_source_id}
+                label="Information Source"
+                onChange={handleChange}
+                sx={selectSx}
+              >
+                {sourceList.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.information_source_name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
 
-        {/* Checkboxes */}
-        <Grid item xs={12}>
-          <Box
-            display="flex"
-            flexWrap="wrap"
-            gap={3}
-            sx={{ border: '1px solid #e0e0e0', borderRadius: 2, p: 2 }}
-          >
-            {[
-              { label: "Is Primary", key: "is_primary" },
-              { label: "Is Responsive", key: "is_responsive" },
-              { label: "Is Key Contact", key: "is_key_contact" },
-              { label: "Switched Job", key: "is_switched_job" },
-            ].map((item) => (
-              <FormControlLabel
-                key={item.key}
-                control={
-                  <Checkbox
-                    checked={person[item.key]}
-                    onChange={(e) =>
-                      handleContactChange(index, item.key, e.target.checked)
-                    }
-                    color="primary"
-                  />
+          <Grid item xs={12} md={4}>
+            <FormControl fullWidth>
+              <InputLabel>Prospect For (Service / Item)</InputLabel>
+              <Select
+                name="interested_for_id"
+                value={form.interested_for_id}
+                label="Prospect For (Service / Item)"
+                onChange={handleChange}
+                sx={selectSx}
+              >
+                {productList.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.product_name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Assign to (multiple) */}
+          <Grid item xs={12}>
+            <FormControl fullWidth>
+              <InputLabel>Assign To</InputLabel>
+              <Select
+                label="Assign To"
+                multiple
+                name="assign_to_ids"
+                value={concernPersons.assign_to_ids}
+                onChange={handleConcernsChange}
+                renderValue={(selected) =>
+                  (employees || [])
+                    .filter((e) => selected.includes(e.id))
+                    .map((e) => e.name)
+                    .join(", ")
                 }
-                label={item.label}
+                sx={selectSx}
+              >
+                {employees.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    <Checkbox checked={concernPersons.assign_to_ids.includes(option.id)} sx={checkboxSx} />
+                    <ListItemText primary={option.name} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Links + Address */}
+          {["website_link", "facebook_page", "linkedin", "address"].map((field) => (
+            <Grid item xs={12} md={6} key={field}>
+              <TextField
+                fullWidth
+                name={field}
+                label={field.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                value={form[field]}
+                onChange={handleChange}
+                sx={inputSx}
               />
-            ))}
-          </Box>
-        </Grid>
-
-        {/* Dates */}
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            type="date"
-            label="Birth Date"
-            InputLabelProps={{ shrink: true }}
-            value={person.birth_date}
-            onChange={(e) =>
-              handleContactChange(index, "birth_date", e.target.value)
-            }
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            type="date"
-            label="Anniversary"
-            InputLabelProps={{ shrink: true }}
-            value={person.anniversary}
-            onChange={(e) =>
-              handleContactChange(index, "anniversary", e.target.value)
-            }
-          />
-        </Grid>
-
-        {/* ID fields */}
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Attitude ID"
-            value={person.attitude_id}
-            onChange={(e) =>
-              handleContactChange(index, "attitude_id", e.target.value)
-            }
-          />
-        </Grid>
-
-        {/* Influencing Role */}
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel id={`designation-label-${index}`}>Influencing Role</InputLabel>
-            <Select
-              labelId={`designation-label-${index}`}
-              value={person.influencing_role_id || ""}
-              label="Influencing Role"
-              onChange={(e) => handleContactChange(index, "influencing_role_id", e.target.value)}
-            >
-              {influenceList.map((data) => (
-                <MenuItem key={data.id} value={data.id}>
-                  {data.role_name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-
-      </Grid>
-    </Paper>
-  </Grid>
-)}
-              </Grid>
-            </Box>
+            </Grid>
           ))}
-        </Grid>
 
-
-        {/* File Upload */}
-        <Grid item xs={12}>
-          <Typography variant="body2" gutterBottom>
-            Attachments (Doc/Media)
-          </Typography>
-          <Button variant="outlined" component="label" startIcon={<UploadFileIcon />}>
-            Upload
-            <input type="file" hidden />
-          </Button>
-        </Grid>
-
-        {/* Checkbox */}
-        <Grid item xs={12}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isClient}
-                onChange={(e) => setIsClient(e.target.checked)}
-              />
-            }
-            label="Already a Client"
-          />
-        </Grid>
-
-        {/* Buttons */}
-        <Grid item xs={12}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-              <Button fullWidth variant="outlined">
-                Get Template
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Button fullWidth variant="contained" color="info">
-                Bulk Upload
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Button fullWidth variant="contained" color="success" onClick={handleSubmit}>
-                Save
-              </Button>
-            </Grid>
+          {/* Note */}
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              multiline
+              minRows={3}
+              name="note"
+              label="Important Note"
+              value={form.note}
+              onChange={handleChange}
+              sx={inputSx}
+            />
           </Grid>
         </Grid>
-      </Grid>
+      </Section>
 
-      {openModal && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 2000,
-          }}
-          onClick={() => setOpenModal(false)}
-        >
-          <Box
+      {/* Location */}
+      <Section title="Select Location" subtitle="Pin the organization’s location on the map.">
+        <MapComponentSetLocation latitude={form.latitude} longitude={form.longitude} onMapClick={handleSetLatLon} />
+        <Box mt={1} display="flex" gap={1} flexWrap="wrap">
+          <Chip size="small" label={`Lat: ${form.latitude}`} />
+          <Chip size="small" label={`Lng: ${form.longitude}`} />
+        </Box>
+      </Section>
+
+      {/* Contact Persons */}
+      <Section
+        title="Contact Persons"
+        subtitle="Add one or more contacts. Toggle extra details when needed."
+      >
+        <Box display="flex" justifyContent="flex-end" mb={1}>
+          <Button
+            startIcon={<AddIcon />}
+            onClick={addContactPersonField}
             sx={{
-              backgroundColor: "#fff",
+              borderColor: brand,
+              color: brand,
+              borderWidth: 1.5,
+              borderStyle: "solid",
               borderRadius: 2,
-              p: 3,
-              minWidth: { xs: "90%", sm: 400 },
-              maxHeight: "80vh",
-              overflowY: "auto",
+              "&:hover": { bgcolor: alpha(brand, 0.08), borderColor: brand },
             }}
-            onClick={(e) => e.stopPropagation()} // prevent click from closing when clicking inside
+            variant="outlined"
           >
-            <Typography variant="h6" gutterBottom>
-              Matched Prospects
-            </Typography>
+            Add Contact
+          </Button>
+        </Box>
 
-            {matchedProspects.length > 0 ? (
-              matchedProspects.map((prospect) => (
-                <Box
+        {contactPersons.map((person, index) => (
+          <Paper
+            key={index}
+            elevation={0}
+            sx={{
+              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: 2,
+              p: 2,
+              mb: 2,
+              bgcolor: theme.palette.background.paper,
+            }}
+          >
+            <Grid container spacing={2} alignItems="flex-start">
+              {["name", "email", "mobile"].map((field) => (
+                <Grid item xs={12} sm={3} key={field}>
+                  <TextField
+                    fullWidth
+                    label={field.charAt(0).toUpperCase() + field.slice(1)}
+                    value={person[field]}
+                    onChange={(e) => handleContactChange(index, field, e.target.value)}
+                    sx={inputSx}
+                  />
+                </Grid>
+              ))}
+
+              <Grid item xs={12} sm={3}>
+                <FormControl fullWidth>
+                  <InputLabel>{`Designation`}</InputLabel>
+                  <Select
+                    value={person.designation || ""}
+                    label="Designation"
+                    onChange={(e) => handleContactChange(index, "designation", e.target.value)}
+                    sx={selectSx}
+                  >
+                    {designationList.map((designation) => (
+                      <MenuItem key={designation.id} value={designation.id}>
+                        {designation.designation_name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} sm="auto">
+                {index > 0 && (
+                  <IconButton
+                    onClick={() => handleRemoveContact(index)}
+                    sx={{ mt: 0.5, color: theme.palette.error.main }}
+                  >
+                    <RemoveCircleOutlineIcon />
+                  </IconButton>
+                )}
+              </Grid>
+
+              <Grid item xs={12}>
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={() => {
+                    const updated = [...contactPersons];
+                    updated[index].showMore = !updated[index].showMore;
+                    setContactPersons(updated);
+                  }}
+                  sx={{ color: brand, fontWeight: 700 }}
+                >
+                  {person.showMore ? "Hide Additional Info" : "Add More Info"}
+                </Button>
+              </Grid>
+
+              {person.showMore && (
+                <Grid item xs={12}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      bgcolor: theme.palette.background.paper,
+                      border: `1px dashed ${theme.palette.divider}`,
+                    }}
+                  >
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <TextField
+                          fullWidth
+                          multiline
+                          rows={3}
+                          label="Note"
+                          value={person.note}
+                          onChange={(e) => handleContactChange(index, "note", e.target.value)}
+                          sx={inputSx}
+                        />
+                      </Grid>
+
+                      <Grid item xs={12}>
+                        <Box
+                          display="flex"
+                          flexWrap="wrap"
+                          gap={2}
+                          sx={{
+                            p: 1.5,
+                            borderRadius: 2,
+                            border: `1px solid ${theme.palette.divider}`,
+                          }}
+                        >
+                          {[
+                            { label: "Is Primary", key: "is_primary" },
+                            { label: "Is Responsive", key: "is_responsive" },
+                            { label: "Is Key Contact", key: "is_key_contact" },
+                            { label: "Switched Job", key: "is_switched_job" },
+                          ].map((item) => (
+                            <FormControlLabel
+                              key={item.key}
+                              control={
+                                <Checkbox
+                                  checked={person[item.key]}
+                                  onChange={(e) => handleContactChange(index, item.key, e.target.checked)}
+                                  sx={checkboxSx}
+                                />
+                              }
+                              label={<Typography color="text.primary">{item.label}</Typography>}
+                            />
+                          ))}
+                        </Box>
+                      </Grid>
+
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          type="date"
+                          label="Birth Date"
+                          InputLabelProps={{ shrink: true }}
+                          value={person.birth_date || ""}
+                          onChange={(e) => handleContactChange(index, "birth_date", e.target.value)}
+                          sx={inputSx}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          type="date"
+                          label="Anniversary"
+                          InputLabelProps={{ shrink: true }}
+                          value={person.anniversary || ""}
+                          onChange={(e) => handleContactChange(index, "anniversary", e.target.value)}
+                          sx={inputSx}
+                        />
+                      </Grid>
+
+                      <Grid item xs={12} sm={6}>
+                        <TextField
+                          fullWidth
+                          label="Attitude ID"
+                          value={person.attitude_id || ""}
+                          onChange={(e) => handleContactChange(index, "attitude_id", e.target.value)}
+                          sx={inputSx}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <FormControl fullWidth>
+                          <InputLabel>Influencing Role</InputLabel>
+                          <Select
+                            value={person.influencing_role_id || ""}
+                            label="Influencing Role"
+                            onChange={(e) => handleContactChange(index, "influencing_role_id", e.target.value)}
+                            sx={selectSx}
+                          >
+                            {influenceList.map((data) => (
+                              <MenuItem key={data.id} value={data.id}>
+                                {data.role_name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Grid>
+                    </Grid>
+                  </Paper>
+                </Grid>
+              )}
+            </Grid>
+          </Paper>
+        ))}
+      </Section>
+
+      {/* Attachments + Flags */}
+      <Section>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item>
+            <Typography variant="body2" color="text.secondary">
+              Attachments (Doc/Media)
+            </Typography>
+          </Grid>
+          <Grid item>
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={<UploadFileIcon />}
+              sx={{
+                borderColor: theme.palette.divider,
+                color: theme.palette.text.primary,
+                "&:hover": { bgcolor: theme.palette.action.hover, borderColor: brand },
+              }}
+            >
+              Upload
+              <input type="file" hidden />
+            </Button>
+          </Grid>
+          <Grid item xs />
+          <Grid item>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isClient}
+                  onChange={(e) => setIsClient(e.target.checked)}
+                  sx={checkboxSx}
+                />
+              }
+              label={<Typography color="text.primary">Already a Client</Typography>}
+            />
+          </Grid>
+        </Grid>
+      </Section>
+
+      {/* Actions */}
+      <Box mt={3}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={4}>
+            <Button
+              fullWidth
+              variant="outlined"
+              sx={{
+                borderColor: brand,
+                color: brand,
+                "&:hover": { bgcolor: alpha(brand, 0.08), borderColor: brand },
+              }}
+            >
+              Get Template
+            </Button>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Button
+              fullWidth
+              variant="contained"
+              sx={{
+                bgcolor: theme.palette.info.main,
+                color: theme.palette.getContrastText(theme.palette.info.main),
+                "&:hover": { bgcolor: theme.palette.info.dark || theme.palette.info.main },
+              }}
+            >
+              Bulk Upload
+            </Button>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={handleSubmit}
+              sx={{
+                bgcolor: theme.palette.success.main,
+                color: theme.palette.getContrastText(theme.palette.success.main),
+                "&:hover": { bgcolor: theme.palette.success.dark || theme.palette.success.main },
+              }}
+            >
+              Save
+            </Button>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Matched Prospects Dialog */}
+      <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="sm">
+        <DialogTitle>
+          <Typography variant="h6" fontWeight={800}>Matched Prospects</Typography>
+        </DialogTitle>
+        <DialogContent dividers>
+          {matchedProspects.length > 0 ? (
+            matchedProspects.map((prospect) => {
+              const chipBg = prospect.stage?.color_code || alpha(brand, 0.14);
+              const chipFg = theme.palette.getContrastText(chipBg);
+              const url = prospect.website_link;
+              const safe = url && (url.startsWith("http") ? url : `https://${url}`);
+              return (
+                <Paper
                   key={prospect.id}
+                  elevation={0}
                   sx={{
                     mb: 2,
                     p: 2,
-                    border: "1px solid #e0e0e0",
+                    border: `1px solid ${theme.palette.divider}`,
                     borderRadius: 2,
-                    backgroundColor: "#ffffff",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.05)", // soft shadow
+                    bgcolor: theme.palette.background.paper,
                   }}
                 >
-                  <Typography variant="subtitle1" fontWeight={600}>
+                  <Typography variant="subtitle1" fontWeight={800} color="text.primary">
                     {prospect.prospect_name}
                   </Typography>
+                  {prospect.address && (
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                      {prospect.address}
+                    </Typography>
+                  )}
+                  {safe && (
+                    <Typography variant="body2" sx={{ mt: 0.5 }}>
+                      <Link href={safe} target="_blank" rel="noopener noreferrer" underline="hover" sx={{ color: brand }}>
+                        {url}
+                      </Link>
+                    </Typography>
+                  )}
+                  <Box mt={1}>
+                    <Chip
+                      size="small"
+                      label={`Stage: ${prospect.stage?.stage_name || "N/A"}`}
+                      sx={{ bgcolor: chipBg, color: chipFg, fontWeight: 700 }}
+                    />
+                  </Box>
+                </Paper>
+              );
+            })
+          ) : (
+            <Typography color="text.secondary">{modalMessage}</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            onClick={() => setOpenModal(false)}
+            sx={{ bgcolor: brand, color: brandContrast, "&:hover": { bgcolor: brandDark } }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-                  <Typography variant="body2" color="text.secondary" mt={0.5}>
-                    {prospect.address}
-                  </Typography>
-
-                  <Typography variant="body2" color="primary.main" mt={0.5}>
-                    Website: {prospect.website_link}
-                  </Typography>
-
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      display: "inline-block",
-                      backgroundColor: "#e8f5e9", // light green background
-                      color: "#2e7d32",            // darker green text
-                      px: 1.5,
-                      py: 0.5,
-                      borderRadius: "16px",
-                      fontWeight: 500,
-                      fontSize: "13px",
-                      mt: 1,
-                    }}
-                  >
-                    Stage: {prospect.stage?.stage_name}
-                  </Typography>
-                </Box>
-
-              ))
-            ) : (
-              <Typography>{modalMessage}</Typography>
-            )}
-
-            <Button
-              variant="contained"
-              fullWidth
-              sx={{ mt: 2 }}
-              onClick={() => setOpenModal(false)}
-            >
-              Close
-            </Button>
-          </Box>
-        </Box>
-      )}
-
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert onClose={() => setSnackbarOpen(false)} severity={snackbarSeverity} sx={{ width: "100%" }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
-
-
   );
 };
 

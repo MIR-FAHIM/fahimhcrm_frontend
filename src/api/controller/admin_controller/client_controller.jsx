@@ -65,3 +65,34 @@ export const getClientDetails = async (id) => {
     return [];
   }
 }
+export const getTicketByClient = async (id) => {
+  try {
+    const response = await axiosInstance.get(`/api/tickets/get-ticket-client/${id}`,
+      {
+        headers: {
+          'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching get-all-prospect:", error);
+    return [];
+  }
+}
+export const addTicket = async (data) => {
+  try {
+    const response = await axiosInstance.post(`/api/tickets/add-ticket`, data,
+      {
+        headers: {
+          'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+        },
+      }
+    );
+    return response.data; // Return the response from the API
+  } catch (error) {
+    console.error("Error add checkProspectAvaiblity data:", error);
+    throw error; // Rethrow the error for further handling in your component
+  }
+
+}

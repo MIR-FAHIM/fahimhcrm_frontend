@@ -33,6 +33,21 @@ export const getProjectTeam = async (id) => {
     return [];
   }
 }
+export const getProjectTeamTaskCount = async (id) => {
+  try {
+    const response = await axiosInstance.get(`/api/project-members-task-count/${id}`,
+        {
+            headers: {
+              // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+              'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+            },}
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching getProjectDetails:", error);
+    return [];
+  }
+}
 export const addProjectMembers = async (data) => {
   try {
     const response = await axiosInstance.post(`/api/project-members/add-multiple`, data,

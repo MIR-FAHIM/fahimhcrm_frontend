@@ -3,7 +3,6 @@ import { useForm, Controller } from "react-hook-form";
 import dayjs from "dayjs";
 import { useParams } from "react-router-dom";
 import LogActivityList from "./prospect_log_activity/fetch_prospect_log_activity";
-import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
 import { useNavigate } from "react-router-dom";
@@ -11,11 +10,7 @@ import {
   getAllLogActivityOfProspect,
   addConcernPersonsMultiple,
 } from "../../../api/controller/admin_controller/prospect_controller";
-import {
-  addOpportunity,
-
-} from "../../../api/controller/admin_controller/opportunity_controller";
-
+import { addOpportunity } from "../../../api/controller/admin_controller/opportunity_controller";
 import OpportunityComponent from "./components/opportunity_components";
 import {
   Box,
@@ -38,11 +33,11 @@ import {
   Button,
   Tabs,
   ListItemText,
-
   MenuItem,
   Tab,
   Snackbar,
   Alert,
+  useTheme,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
@@ -64,10 +59,14 @@ import MeetingForm from "./form/meeting_form";
 import AddTaskFormProspect from "./form/task_prospect";
 import ContactPersonsProspect from "./components/contact_person_of_prospect";
 import DetailsProspectInfo from "./components/details_info_component";
+import { tokens } from "../../../theme";
 
 export default function ProspectDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
+
   const [logActivityList, setLogActivityList] = useState([]);
   const { control, handleSubmit, setValue, watch } = useForm();
   const [tabValue, setTabValue] = useState(0);
@@ -81,24 +80,20 @@ export default function ProspectDetailsPage() {
   const [form, setForm] = useState({ prospect_id: "", stage_id: "" });
   const [concernPersons, setConcernPersons] = useState({
     prospect_id: 1,
-    assign_to_ids: [], // for employee_id array
+    assign_to_ids: [],
   });
-  // for update info
   const [isEditing, setIsEditing] = useState(false);
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
   const handleSave = () => {
     setIsEditing(false);
     onSave(text);
   };
-
-  // for update info end 
-
-
   const [logNote, setLogNote] = useState("");
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState("success");
   const userID = localStorage.getItem("userId");
+
   const handleAlert = (message, type = "success") => {
     setAlertMessage(message);
     setAlertType(type);
@@ -112,18 +107,19 @@ export default function ProspectDetailsPage() {
       [name]: value,
     }));
   };
+
   const removeAssignedPerson = async (empId) => {
     await removeAssignPerson({
-      'prospect_id': id,
-      'employee_id': empId,
+      prospect_id: id,
+      employee_id: empId,
     });
     const assignedPersonsRes = await getAssignedPersonsProspect(id);
     if (assignedPersonsRes.status === "success") {
       setAssignedPersons(assignedPersonsRes.data);
     }
   };
-  const updateProspectInfo = async (data) => {
 
+  const updateProspectInfo = async (data) => {
     const updateRes = await updateProspect(data);
     if (updateRes.status === "success") {
       const detailsRes = await getProspectDetails(id);
@@ -132,9 +128,9 @@ export default function ProspectDetailsPage() {
         setProspectStage(detailsRes.data.stage_id);
       }
       setIsEditing(false);
-
     }
   };
+
   const addMultipleConernPersons = async () => {
     const payload = {
       prospect_id: id,
@@ -150,25 +146,33 @@ export default function ProspectDetailsPage() {
       setAssignedPersons(assignedPersonsRes.data);
     }
   };
+
   const activityColors = {
-    general: "#fef3c7",   // light yellow
-    task: "#e0f2fe",      // light blue
-    call: "#fee2e2",      // light red
-    email: "#ede9fe",     // light purple
-    whatsapp: "#dcfce7",  // light green
-    visit: "#fce7f3",     // light pink
-    message: "#e2e8f0",   // default gray
-    meeting: "#fff7ed",   // light orange
+    general: colors.orangeAccent[900],
+    task: colors.blueAccent[500],
+    call: colors.redAccent[900],
+    email: colors.purpleAccent[900],
+    whatsapp: colors.greenAccent[900],
+    visit: colors.redAccent[900],
+    message: colors.gray[900],
+    meeting: colors.orangeAccent[900],
   };
+
   const handleChange = async (stageID) => {
     setForm((prev) => ({ ...prev, stage_id: stageID }));
     try {
-      await changeProspectStatus({ prospect_id: id, stage_id: stageID, user_id: userID });
+      await changeProspectStatus({
+        prospect_id: id,
+        stage_id: stageID,
+        user_id: userID,
+      });
       const response = await getProspectDetails(id);
       if (response.status === "success") {
         setProspectDetail(response.data);
         setProspectStage(response.data.stage_id);
-        const stagesResByLog = await getProspectStagesByLog({ prospect_id: id });
+        const stagesResByLog = await getProspectStagesByLog({
+          prospect_id: id,
+        });
         if (stagesResByLog.status === "success") {
           setStagesByLog(stagesResByLog.data);
         }
@@ -188,7 +192,7 @@ export default function ProspectDetailsPage() {
         notes: logNote,
         activity_time: "",
         related_id: "",
-        created_by: 1, // update this dynamically if needed
+        created_by: 1,
       });
       if (response.status === true) {
         const logActivityRes = await getAllLogActivityOfProspect(id);
@@ -196,7 +200,7 @@ export default function ProspectDetailsPage() {
           setLogActivityList(logActivityRes.data);
         }
         handleAlert(`${activity_type} logged successfully`);
-        setLogNote(""); // clear field
+        setLogNote("");
       } else {
         handleAlert("Failed to log activity", "error");
       }
@@ -206,11 +210,7 @@ export default function ProspectDetailsPage() {
     }
   };
 
-
-
   const onToggleOpportunityController = async (data) => {
-
-
     const updateRes = await updateProspect(data);
     if (updateRes.status === "success") {
       const detailsRes = await getProspectDetails(id);
@@ -218,22 +218,16 @@ export default function ProspectDetailsPage() {
         setProspectDetail(detailsRes.data);
         setProspectStage(detailsRes.data.stage_id);
       }
-
     }
-  }
+  };
+
   const goToMap = async () => {
-
-
     navigate(`/googlemap-set/${id}/${details.latitude}/${details.longitude}`);
-  }
+  };
+
   const onSubmitOpportunity = async (data) => {
-
-
     const addRes = await addOpportunity(data);
-
-  }
-
-
+  };
 
   useEffect(() => {
     (async () => {
@@ -247,7 +241,9 @@ export default function ProspectDetailsPage() {
         if (stagesRes.status === "success") {
           setStages(stagesRes.data);
         }
-        const stagesResByLog = await getProspectStagesByLog({ prospect_id: id });
+        const stagesResByLog = await getProspectStagesByLog({
+          prospect_id: id,
+        });
         if (stagesResByLog.status === "success") {
           setStagesByLog(stagesResByLog.data);
         }
@@ -275,8 +271,8 @@ export default function ProspectDetailsPage() {
   const handleTabChange = (event, newValue) => setTabValue(newValue);
 
   return (
-    <Box sx={{ p: 3, backgroundColor: "#eef2f7", minHeight: "100vh" }}>
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold", color: "#1e293b" }}>
+    <Box sx={{ p: 3, backgroundColor: theme.palette.background.default, minHeight: "100vh" }}>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold", color: colors.gray[100] }}>
         Lead
       </Typography>
 
@@ -289,7 +285,7 @@ export default function ProspectDetailsPage() {
       >
         {/* Left Section */}
         <Box sx={{ width: { xs: "100%", md: "25%" } }}>
-          <Paper sx={{ p: 3, backgroundColor: "#ffffff", borderRadius: 3, boxShadow: 3 }}>
+          <Paper sx={{ p: 3, backgroundColor: theme.palette.background.paper, borderRadius: 3, boxShadow: 3 }}>
             <Box
               sx={{
                 display: "flex",
@@ -309,7 +305,7 @@ export default function ProspectDetailsPage() {
                       minWidth: 200,
                       "& input": {
                         fontSize: "1rem",
-                        color: "#1e40af",
+                        color: colors.blueAccent[500],
                       },
                     }}
                   />
@@ -319,7 +315,7 @@ export default function ProspectDetailsPage() {
                     }
                     size="small"
                     color="primary"
-                    sx={{ ml: 0.5 }}
+                    sx={{ ml: 0.5, color: colors.blueAccent[500] }}
                   >
                     <SaveIcon fontSize="small" />
                   </IconButton>
@@ -329,7 +325,7 @@ export default function ProspectDetailsPage() {
                   <Typography
                     variant="h6"
                     sx={{
-                      color: "#1e40af",
+                      color: colors.blueAccent[500],
                       fontWeight: 500,
                     }}
                   >
@@ -344,10 +340,10 @@ export default function ProspectDetailsPage() {
                     sx={{
                       ml: 0.5,
                       p: 0.5,
-                      color: "grey.500",
+                      color: colors.gray[400],
                       "&:hover": {
                         backgroundColor: "transparent",
-                        color: "grey.700",
+                        color: colors.gray[100],
                       },
                     }}
                   >
@@ -357,59 +353,45 @@ export default function ProspectDetailsPage() {
               )}
             </Box>
             <OpportunityComponent details={details} onToggleOpportunity={onToggleOpportunityController} onSubmitOpportunity={onSubmitOpportunity} />
-
-            <Typography variant="caption" display="block" gutterBottom>
+            <Typography variant="caption" display="block" gutterBottom sx={{ color: colors.gray[400] }}>
               Created: Mehrun Nesa on {dayjs(details.created_at).format("MMMM D, YYYY")}
             </Typography>
 
             <AdressProspect details={details} onAddressUpdate={updateProspectInfo} />
             <Button
-              variant="outlined" // Use "outlined" variant to easily apply border styles
-              color="primary"
+              variant="outlined"
+              onClick={goToMap}
               sx={{
-                backgroundColor: "white", // Set background color to white
-                borderColor: "primary.main", // Set border color to the primary color
-                borderWidth: 2, // Set border width
-                borderRadius: 1, // Optional: adjust border radius if needed
+                backgroundColor: theme.palette.background.paper,
+                borderColor: colors.blueAccent[500],
+                borderWidth: 2,
+                borderRadius: 1,
                 whiteSpace: "nowrap",
+                color: colors.blueAccent[500],
                 '&:hover': {
-                  backgroundColor: "white", // Keep background white on hover
-                  borderColor: "primary.dark", // Darken border color on hover
+                  backgroundColor: colors.blueAccent[900],
+                  borderColor: colors.blueAccent[700],
+                  color: colors.blueAccent[100],
                 }
               }}
-              onClick={goToMap}
             >
               View Map
             </Button>
-
-            <Divider sx={{ my: 2 }} />
-
+            <Divider sx={{ my: 2, backgroundColor: colors.gray[700] }} />
             <ContactPersonsProspect contactPersonList={contactPersonList} />
-
-            {(details.is_opportunity === 0 ? ["Assigned To", "Details", "Attached Files"]
-              : ["Assigned To", "Details", "Attached Files", "Leads", "Quotations", "Orders"])
+            {(details.is_opportunity === 0 ? ["Assigned To", "Details", "Attached Files"] : ["Assigned To", "Details", "Attached Files", "Leads", "Quotations", "Orders"])
               .map((label, i) => (
-                <Accordion key={i} sx={{ mt: 2 }}>
-
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Accordion key={i} sx={{ mt: 2, backgroundColor: theme.palette.background.paper, color: colors.gray[100] }}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: colors.gray[100] }} />}>
                     {label}
                   </AccordionSummary>
-
-
-
                   <AccordionDetails>
-
                     {label === 'Details' ?
                       <DetailsProspectInfo details={details} onAddressUpdate={removeAssignedPerson} />
-
-
                       :
-
-                      label == "Assigned To" ?
-
+                      label === "Assigned To" ?
                         <Box>
                           <Box sx={{ mb: 2 }}>
-                            {/* Dropdown and Add Button Row */}
                             <Box
                               sx={{
                                 display: "flex",
@@ -420,7 +402,7 @@ export default function ProspectDetailsPage() {
                               }}
                             >
                               <FormControl fullWidth sx={{ flex: 1, minWidth: 250 }}>
-                                <InputLabel id="assign-to-label">Assign To</InputLabel>
+                                <InputLabel id="assign-to-label" sx={{ color: colors.gray[400] }}>Assign To</InputLabel>
                                 <Select
                                   labelId="assign-to-label"
                                   multiple
@@ -433,28 +415,30 @@ export default function ProspectDetailsPage() {
                                       .map((e) => e.name)
                                       .join(", ")
                                   }
+                                  sx={{ color: colors.gray[100] }}
                                 >
                                   {employees.map((option) => (
                                     <MenuItem key={option.id} value={option.id}>
-                                      <Checkbox checked={concernPersons.assign_to_ids.includes(option.id)} />
+                                      <Checkbox checked={concernPersons.assign_to_ids.includes(option.id)} sx={{ color: colors.greenAccent[500] }} />
                                       <ListItemText primary={option.name} />
                                     </MenuItem>
                                   ))}
                                 </Select>
                               </FormControl>
-
                               <Button
                                 variant="contained"
-                                color="primary"
-                                sx={{ whiteSpace: "nowrap" }}
                                 onClick={addMultipleConernPersons}
+                                sx={{
+                                  whiteSpace: "nowrap",
+                                  backgroundColor: colors.greenAccent[500],
+                                  color: colors.gray[500],
+                                  "&:hover": { backgroundColor: colors.greenAccent[700] },
+                                }}
                               >
                                 Add
                               </Button>
                             </Box>
                           </Box>
-
-
                           <Box
                             sx={{
                               maxHeight: 250,
@@ -470,7 +454,7 @@ export default function ProspectDetailsPage() {
                                   sx={{
                                     mb: 1.5,
                                     p: 1.5,
-                                    backgroundColor: "#f9f9f9",
+                                    backgroundColor: colors.primary[700],
                                     borderRadius: 2,
                                     display: "flex",
                                     justifyContent: "space-between",
@@ -478,40 +462,34 @@ export default function ProspectDetailsPage() {
                                   }}
                                 >
                                   <Box>
-                                    <Typography variant="body1" fontWeight="bold">
+                                    <Typography variant="body1" fontWeight="bold" sx={{ color: colors.gray[100] }}>
                                       {person.employee.name}
                                     </Typography>
-                                    <Typography variant="body2" color="text.secondary">
+                                    <Typography variant="body2" sx={{ color: colors.gray[400] }}>
                                       📱 {person.employee.phone}
                                     </Typography>
-                                    <Typography variant="body2" color="primary">
+                                    <Typography variant="body2" sx={{ color: colors.blueAccent[300] }}>
                                       ✉️ {person.employee.email}
                                     </Typography>
                                   </Box>
                                   <IconButton
-                                    color="error"
                                     onClick={() => removeAssignedPerson(person.employee.id)}
+                                    sx={{ color: colors.redAccent[500] }}
                                   >
                                     <DeleteIcon />
                                   </IconButton>
                                 </Box>
                               ))
                             ) : (
-                              <Typography variant="body2" color="text.secondary" mt={1}>
+                              <Typography variant="body2" sx={{ color: colors.gray[400] }} mt={1}>
                                 No concerned persons assigned.
                               </Typography>
                             )}
                           </Box>
                         </Box>
                         : <Box></Box>
-
                     }
-
-
-
-
                   </AccordionDetails>
-
                 </Accordion>
               ))}
           </Paper>
@@ -519,7 +497,7 @@ export default function ProspectDetailsPage() {
 
         {/* Right Section */}
         <Box sx={{ width: { xs: "100%", md: "75%" } }}>
-          <Paper sx={{ p: 3, mb: 3, backgroundColor: "#ffffff", borderRadius: 3, boxShadow: 3 }}>
+          <Paper sx={{ p: 3, mb: 3, backgroundColor: theme.palette.background.paper, borderRadius: 3, boxShadow: 3 }}>
             <Box
               sx={{
                 display: "flex",
@@ -531,11 +509,10 @@ export default function ProspectDetailsPage() {
               }}
             >
               {details.created_at && (
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" sx={{ color: colors.gray[400] }}>
                   {`Since ${Math.floor((new Date() - new Date(details.created_at)) / (1000 * 60 * 60 * 24))} days`}
                 </Typography>
               )}
-
               <Box sx={{ minWidth: 250 }}>
                 <TextField
                   select
@@ -544,6 +521,7 @@ export default function ProspectDetailsPage() {
                   label="Change Stage"
                   value={form.stage_id}
                   onChange={(e) => handleChange(e.target.value)}
+                  sx={{ color: colors.gray[100] }}
                 >
                   {stages.map((option) => (
                     <MenuItem key={option.id} value={option.id}>
@@ -552,15 +530,13 @@ export default function ProspectDetailsPage() {
                   ))}
                 </TextField>
               </Box>
-
-              {/* Activity Summary */}
               <Box
                 sx={{
                   display: "flex",
                   flexWrap: "wrap",
                   gap: 1.5,
                   p: 1,
-                  backgroundColor: "#f9fafb",
+                  backgroundColor: colors.gray[900],
                   borderRadius: 2,
                   boxShadow: 1,
                 }}
@@ -575,21 +551,18 @@ export default function ProspectDetailsPage() {
                         gap: 1,
                         px: 1.5,
                         py: 0.5,
-                        backgroundColor: activityColors[type] || "#f1f5f9",
+                        backgroundColor: activityColors[type] || colors.primary[800],
                         borderRadius: 1,
                       }}
                     >
-                      <Typography variant="caption" sx={{ fontWeight: "bold", textTransform: "capitalize" }}>
+                      <Typography variant="caption" sx={{ fontWeight: "bold", textTransform: "capitalize", color: colors.gray[100] }}>
                         {type}
                       </Typography>
-                      <Typography variant="caption">{count}</Typography>
+                      <Typography variant="caption" sx={{ color: colors.gray[100] }}>{count}</Typography>
                     </Box>
                   ))}
               </Box>
             </Box>
-
-
-            {/* Stage timeline */}
             <Box sx={{ overflowX: "auto", py: 2 }}>
               <Box
                 sx={{
@@ -602,11 +575,9 @@ export default function ProspectDetailsPage() {
                 {stagesByLog.map((stage, index) => {
                   const isCompleted = stage.id < prospectStageId;
                   const isCurrent = stage.id === prospectStageId;
-
                   const tooltipTitle = stage.last_updated_at
                     ? `Last Updated: ${stage.last_updated_at}\nBy ${stage.changed_by_name}`
                     : "Not yet visited";
-
                   return (
                     <Box key={stage.id} sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
                       <Tooltip title={<Typography sx={{ whiteSpace: 'pre-line' }}>{tooltipTitle}</Typography>} arrow>
@@ -617,31 +588,24 @@ export default function ProspectDetailsPage() {
                           sx={{ cursor: "pointer" }}
                         />
                       </Tooltip>
-
-                      {/* Optional: show date below chip instead of tooltip */}
                       {stage.last_updated_at && (
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
+                        <Typography variant="caption" sx={{ color: colors.gray[400], mt: 0.5 }}>
                           {new Date(stage.last_updated_at).toLocaleDateString()}
                         </Typography>
                       )}
-
                       {index !== stagesByLog.length - 1 && (
-                        <Box sx={{ width: 20, height: 2, backgroundColor: "#cbd5e1", mx: 1 }} />
+                        <Box sx={{ width: 20, height: 2, backgroundColor: colors.gray[600], mx: 1 }} />
                       )}
                     </Box>
                   );
                 })}
               </Box>
             </Box>
-
-            {/* Tab Bar */}
-            <Tabs value={tabValue} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
+            <Tabs value={tabValue} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: colors.gray[700], mb: 2 }}>
               {["Log Activity", "Email", "Meeting", "Task"].map((label, index) => (
-                <Tab key={index} label={label} />
+                <Tab key={index} label={label} sx={{ color: colors.gray[100] }} />
               ))}
             </Tabs>
-
-            {/* Conditional Content */}
             {tabValue === 0 ? (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <TextField
@@ -652,79 +616,69 @@ export default function ProspectDetailsPage() {
                   fullWidth
                   value={logNote}
                   onChange={(e) => setLogNote(e.target.value)}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      color: colors.gray[100],
+                      "& fieldset": { borderColor: colors.gray[700] },
+                      "&:hover fieldset": { borderColor: colors.gray[500] },
+                      "&.Mui-focused fieldset": { borderColor: colors.blueAccent[500] },
+                    },
+                    "& .MuiInputLabel-root": { color: colors.gray[400] },
+                  }}
                 />
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={2} flexWrap="wrap">
-                  <Button variant="outlined" onClick={() => addLogActivity("call")}>Log a Call</Button>
-                  <Button variant="outlined" onClick={() => addLogActivity("email")}>Log an E-mail</Button>
-                  <Button variant="outlined" onClick={() => addLogActivity("meeting")}>Log a Meeting</Button>
-                  <Button variant="outlined" onClick={() => addLogActivity("visit")}>Visit Log</Button>
-                  <Button variant="outlined" onClick={() => addLogActivity("whatsapp")}>Whatsapp</Button>
+                  <Button variant="outlined" onClick={() => addLogActivity("call")} sx={{ color: colors.greenAccent[500], borderColor: colors.greenAccent[500] }}>Log a Call</Button>
+                  <Button variant="outlined" onClick={() => addLogActivity("email")} sx={{ color: colors.greenAccent[500], borderColor: colors.greenAccent[500] }}>Log an E-mail</Button>
+                  <Button variant="outlined" onClick={() => addLogActivity("meeting")} sx={{ color: colors.greenAccent[500], borderColor: colors.greenAccent[500] }}>Log a Meeting</Button>
+                  <Button variant="outlined" onClick={() => addLogActivity("visit")} sx={{ color: colors.greenAccent[500], borderColor: colors.greenAccent[500] }}>Visit Log</Button>
+                  <Button variant="outlined" onClick={() => addLogActivity("whatsapp")} sx={{ color: colors.greenAccent[500], borderColor: colors.greenAccent[500] }}>Whatsapp</Button>
                 </Stack>
-
                 <Box sx={{ mt: 3 }}>
-                  <Typography variant="subtitle1" sx={{ color: "#1e293b", mb: 2 }}>
+                  <Typography variant="subtitle1" sx={{ color: colors.gray[100], mb: 2 }}>
                     Templates
                   </Typography>
-
                   <Grid container spacing={2}>
-                    {/* Favorite Templates */}
                     <Grid item xs={12} md={6}>
-                      <Typography variant="subtitle2" sx={{ color: "#1e293b", mb: 1 }}>
+                      <Typography variant="subtitle2" sx={{ color: colors.gray[100], mb: 1 }}>
                         Favorite Templates
                       </Typography>
                       <Box sx={{ height: 175, overflow: 'auto', pr: 1 }}>
                         {[
-                          "Called the client – no answer",
-                          "Spoke over WhatsApp – client asked for brochure",
-                          "Sent follow-up email regarding product demo",
-                          "Visited office – client was not available",
-                          "Client requested a call back via WhatsApp",
-                          "Had a brief call – client asked for pricing details",
-                          "Emailed updated proposal",
-                          "Visited client – gave live demo",
-                          "Shared product catalog on WhatsApp",
-                          "Follow-up call made – spoke with assistant",
-                          "Client responded on email, requested more info",
-                          "Left voicemail – awaiting response",
-                          "Client said they will confirm demo date via WhatsApp",
-                          "Sent reminder email for scheduled meeting",
+                          "Called the client – no answer", "Spoke over WhatsApp – client asked for brochure",
+                          "Sent follow-up email regarding product demo", "Visited office – client was not available",
+                          "Client requested a call back via WhatsApp", "Had a brief call – client asked for pricing details",
+                          "Emailed updated proposal", "Visited client – gave live demo",
+                          "Shared product catalog on WhatsApp", "Follow-up call made – spoke with assistant",
+                          "Client responded on email, requested more info", "Left voicemail – awaiting response",
+                          "Client said they will confirm demo date via WhatsApp", "Sent reminder email for scheduled meeting",
                           "Dropped by client’s office – they were in a meeting"
                         ].map((text, i) => (
                           <Paper key={i}
                             onClick={() => setLogNote(text)}
-                            sx={{ p: 2, mt: 1, backgroundColor: "#f1f5f9" }}>
+                            sx={{ p: 2, mt: 1, backgroundColor: colors.primary[700], color: colors.gray[100], cursor: 'pointer' }}>
                             {text}
                           </Paper>
                         ))}
                       </Box>
                     </Grid>
-
-                    {/* All Templates */}
                     <Grid item xs={12} md={6}>
-                      <Typography variant="subtitle2" sx={{ color: "#1e293b", mb: 1 }}>
+                      <Typography variant="subtitle2" sx={{ color: colors.gray[100], mb: 1 }}>
                         All Templates
                       </Typography>
                       <Box sx={{ height: 175, overflow: 'auto', pr: 1 }}>
                         {[
-                          "Called the client – no answer",
-                          "Spoke over WhatsApp – client asked for brochure",
-                          "Sent follow-up email regarding product demo",
-                          "Visited office – client was not available",
-                          "Client requested a call back via WhatsApp",
-                          "Had a brief call – client asked for pricing details",
-                          "Emailed updated proposal",
-                          "Visited client – gave live demo",
-                          "Shared product catalog on WhatsApp",
-                          "Follow-up call made – spoke with assistant",
-                          "Client responded on email, requested more info",
-                          "Left voicemail – awaiting response",
-                          "Client said they will confirm demo date via WhatsApp",
-                          "Sent reminder email for scheduled meeting",
+                          "Called the client – no answer", "Spoke over WhatsApp – client asked for brochure",
+                          "Sent follow-up email regarding product demo", "Visited office – client was not available",
+                          "Client requested a call back via WhatsApp", "Had a brief call – client asked for pricing details",
+                          "Emailed updated proposal", "Visited client – gave live demo",
+                          "Shared product catalog on WhatsApp", "Follow-up call made – spoke with assistant",
+                          "Client responded on email, requested more info", "Left voicemail – awaiting response",
+                          "Client said they will confirm demo date via WhatsApp", "Sent reminder email for scheduled meeting",
                           "Dropped by client’s office – they were in a meeting"
                         ].map((text, i) => (
                           <Paper key={i}
                             onClick={() => setLogNote(text)}
-                            sx={{ p: 2, mt: 1, backgroundColor: "#f1f5f9" }}>
+                            sx={{ p: 2, mt: 1, backgroundColor: colors.primary[700], color: colors.gray[100], cursor: 'pointer' }}>
                             {text}
                           </Paper>
                         ))}
@@ -732,51 +686,30 @@ export default function ProspectDetailsPage() {
                     </Grid>
                   </Grid>
                 </Box>
-
-
               </Box>
-
-            ) :
-              tabValue === 1 ? (
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <EmailForm emailList={contactPersonList} />
-
-
-
-
-
-
-                </Box>
-              ) : tabValue === 2 ? (
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <MeetingForm meetingTitlee={`We have a meeting with ${details?.prospect_name}`} prospectId={details?.id} />
-
-
-
-                </Box>
-              ) :
-                tabValue === 3 ? (
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                    <AddTaskFormProspect prospect_id={details?.id} />
-
-
-
-                  </Box>
-                ) :
-                  (
-                    <Box sx={{ p: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        This is a simple component for the "{["Log Activity", "Email", "Call", "Meeting", "Other"][tabValue]}" tab.
-                      </Typography>
-                    </Box>
-                  )}
+            ) : tabValue === 1 ? (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <EmailForm emailList={contactPersonList} />
+              </Box>
+            ) : tabValue === 2 ? (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <MeetingForm meetingTitlee={`We have a meeting with ${details?.prospect_name}`} prospectId={details?.id} />
+              </Box>
+            ) : tabValue === 3 ? (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <AddTaskFormProspect prospect_id={details?.id} />
+              </Box>
+            ) : (
+              <Box sx={{ p: 2 }}>
+                <Typography variant="body2" sx={{ color: colors.gray[400] }}>
+                  This is a simple component for the "{["Log Activity", "Email", "Call", "Meeting", "Other"][tabValue]}" tab.
+                </Typography>
+              </Box>
+            )}
           </Paper>
         </Box>
-
-
       </Box>
       <LogActivityList id={id} logActivityListData={logActivityList} />
-      {/* Snackbar for feedback */}
       <Snackbar open={alertOpen} autoHideDuration={3000} onClose={() => setAlertOpen(false)}>
         <Alert onClose={() => setAlertOpen(false)} severity={alertType} sx={{ width: "100%" }}>
           {alertMessage}

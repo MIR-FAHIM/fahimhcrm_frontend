@@ -39,7 +39,7 @@ const AddProspectTabs = () => {
     <Paper elevation={3} sx={{ width: "100%", maxWidth: 800, mx: "auto", mt: 4 }}>
       <Box sx={{ borderBottom: 1, borderColor: "divider", px: 2, pt: 2 }}>
         <Typography variant="h6" gutterBottom>
-          Add New Prospect
+          Add New Lead
         </Typography>
         <Tabs value={tabValue} onChange={handleChange}>
           <Tab label="Individual" />

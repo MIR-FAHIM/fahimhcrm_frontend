@@ -615,7 +615,7 @@ export const mockLineData = [
   },
   {
     id: "france",
-    color: tokens("dark").blueAccent[300],
+    color: tokens("dark").purpleAccent[300],
     data: [
       {
         x: "plane",

@@ -39,7 +39,7 @@ const ProjectTask = ({ projectID }) => {
   useEffect(() => {
     fetchTasks();
     fetchStatuses();
-  }, []);
+  }, [projectID]); // Added projectID as a dependency
 
   const onAddTask = (statusID) => {
     setStatusID(statusID);
@@ -50,8 +50,6 @@ const ProjectTask = ({ projectID }) => {
     try {
       const response = await getProjectTask(projectID);
       const grouped = response.data;
-
-      // Transform the tasks to include necessary properties
       const transformedTasks = {};
       for (const statusName in grouped) {
         if (Array.isArray(grouped[statusName])) {
@@ -62,8 +60,6 @@ const ProjectTask = ({ projectID }) => {
           }));
         }
       }
-
-      // Calculate total task count
       const totalTasks = Object.values(transformedTasks).reduce(
         (sum, tasks) => sum + tasks.length, 0
       );
@@ -97,7 +93,6 @@ const ProjectTask = ({ projectID }) => {
     try {
       await updateTaskStatus({ task_id: taskId, status_id: newStatusId, user_id: userID });
 
-      // Update local task list
       setTasks(prev => {
         const newTasks = { ...prev };
         const taskToMove = newTasks[source.droppableId].find(task => task.task_id === taskId);
@@ -113,7 +108,7 @@ const ProjectTask = ({ projectID }) => {
   };
 
   return (
-    <Box sx={{ padding: 2 }}>
+    <Box sx={{ padding: 2, backgroundColor: theme.palette.background.default }}>
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
           <CircularProgress />
@@ -127,15 +122,15 @@ const ProjectTask = ({ projectID }) => {
                 p: 3,
                 textAlign: 'center',
                 borderRadius: 2,
-                backgroundColor: 'background.paper',
-                border: '1px dashed #ccc'
+                backgroundColor: theme.palette.background.paper,
+                border: `1px dashed ${theme.palette.divider}`
               }}
             >
               <Box display="flex" flexDirection="column" alignItems="center" gap={2}>
-                <Typography variant="h6" color="text.secondary">
+                <Typography variant="h6" sx={{ color: theme.palette.text.secondary }}>
                   No tasks added yet for this project
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
                   Get started by adding your first task
                 </Typography>
                 <Button
@@ -146,7 +141,12 @@ const ProjectTask = ({ projectID }) => {
                     mt: 1,
                     borderRadius: 2,
                     padding: '8px 24px',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    backgroundColor: theme.palette.success.main,
+                    color: theme.palette.success.contrastText,
+                    boxShadow: theme.shadows[1],
+                    "&:hover": {
+                      backgroundColor: theme.palette.success.dark,
+                    }
                   }}
                 >
                   Add Task
@@ -163,157 +163,179 @@ const ProjectTask = ({ projectID }) => {
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                         sx={{
-                          backgroundColor: colors.bg[100],
+                          backgroundColor: theme.palette.background.paper,
                           borderRadius: 2,
                           padding: 2,
                           minWidth: 250,
                           flexShrink: 0
                         }}
                       >
-                     <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-        <Typography variant="h6">
-          {status.status_name}
-        </Typography>
-        <Button
-          variant="outlined"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={() => onAddTask(status.id)}
-          sx={{
-            borderRadius: 2,
-            textTransform: 'none',
-            fontSize: '0.8rem',
-            padding: '4px 8px'
-          }}
-        >
-          Add Task
-        </Button>
-      </Box>
-                        {tasks[status.status_name]?.map((task, index) => (
-                          <Draggable key={task.task_id.toString()} draggableId={task.task_id.toString()} index={index}>
-                            {(provided) => (
-                            <Card
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
+                        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                          <Typography variant="h6" sx={{ color: theme.palette.text.secondary }}>
+                            {status.status_name}
+                          </Typography>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            startIcon={<AddIcon />}
+                            onClick={() => onAddTask(status.id)}
                             sx={{
-                              width: 280,  // Fixed width
-                              height: 230, // Fixed height
-                              mb: 2,
-                              padding: 0,
                               borderRadius: 2,
-                              boxShadow: 1,
-                              transition: "transform 0.2s",
+                              textTransform: 'none',
+                              fontSize: '0.8rem',
+                              padding: '4px 8px',
+                              color: theme.palette.primary.main,
+                              borderColor: theme.palette.primary.main,
                               "&:hover": {
-                                boxShadow: 3,
-                                transform: "scale(1.02)"
-                              },
-                              display: "flex",
-                              flexDirection: "column",
-                              overflow: "hidden" // Prevent content overflow
+                                backgroundColor: theme.palette.primary.dark,
+                                color: theme.palette.primary.contrastText,
+                              }
                             }}
                           >
-                            <CardContent sx={{
-                              flexGrow: 1, // Allow content to grow and fill space
-                              overflow: "hidden" // Prevent content overflow
-                            }}>
-                              {/* Task Title with Drag Handle */}
-                              <Box sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                mb: 1
-                              }}>
-                                <Typography
-                                  fontWeight="bold"
-                                  sx={{
-                                    fontSize: "0.9rem",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    display: "-webkit-box",
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: "vertical"
-                                  }}
-                                >
-                                  {task.task_title}
-                                </Typography>
-                                <Box
-                                  {...provided.dragHandleProps}
-                                  sx={{
-                                    cursor: "grab",
-                                    ml: 1,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    p: 0.5
-                                  }}
-                                >
-                                  <DragIndicatorIcon fontSize="small" />
-                                </Box>
-                              </Box>
-                          
-                              {/* Task Details with overflow handling */}
-                              <Typography
-                                variant="body2"
+                            Add Task
+                          </Button>
+                        </Box>
+                        {tasks[status.status_name]?.map((task, index) => (
+                          <Draggable key={task.task_id.toString()} draggableId={task.task_id.toString()} index={index}>
+                            {(provided, snapshot) => (
+                              <Card
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
                                 sx={{
-                                  mt: 1,
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                  display: "-webkit-box",
-                                  WebkitLineClamp: 3,
-                                  WebkitBoxOrient: "vertical",
-                                  flexGrow: 1 // Allow details to take remaining space
+                                  width: 280,
+                                  mb: 2,
+                                  padding: 0,
+                                  borderRadius: 2,
+                                  boxShadow: snapshot.isDragging ? theme.shadows[6] : theme.shadows[1],
+                                  transition: "transform 0.2s",
+                                  backgroundColor: theme.palette.background.paper, // Use theme color
+                                  "&:hover": {
+                                    boxShadow: theme.shadows[3],
+                                    transform: "scale(1.02)"
+                                  },
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  overflow: "hidden"
                                 }}
                               >
-                                {task.task_details}
-                              </Typography>
-                          
-                              {/* Assigned Person */}
-                              <Box sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                mt: 1,
-                                minHeight: 32 // Fixed height for this section
-                              }}>
-                                <Avatar
-                                  src={`${base_url}/storage/${task.assigned_person.photo}`}
+                                {/* PRIORITY COLOR BAR */}
+                                <Box
                                   sx={{
-                                    width: 24,
-                                    height: 24,
-                                    mr: 1
+                                    height: '5px',
+                                    backgroundColor: task.priority.color_code,
+                                    borderRadius: '8px 8px 0 0',
                                   }}
                                 />
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap"
-                                  }}
-                                >
-                                  {task.assigned_person.name}
-                                </Typography>
-                              </Box>
-                            </CardContent>
-                          
-                            {/* View Details Button with fixed height */}
-                            <Box sx={{ p: 1, mt: 'auto' }}> {/* mt: 'auto' pushes button to bottom */}
-                              <Button
-                                variant="outlined"
-                                size="small"
 
-                                fullWidth
-                                onClick={() => navigate(`/task-details/${task.task_id}`)}
-                                sx={{
-                                  height: 20, // Fixed height
-                                  fontSize: "0.75rem",
-                                  padding: "4px 8px"
-                                }}
-                              >
-                                View Details
-                              </Button>
-                            </Box>
-                          </Card>
-                          
+                                <CardContent sx={{
+                                  flexGrow: 1,
+                                  overflow: "hidden"
+                                }}>
+                                  <Box sx={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    mb: 1
+                                  }}>
+                                    <Typography
+                                      fontWeight="bold"
+                                      sx={{
+                                        fontSize: "0.9rem",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        display: "-webkit-box",
+                                        WebkitLineClamp: 2,
+                                        WebkitBoxOrient: "vertical",
+                                        color: theme.palette.text.primary
+                                      }}
+                                    >
+                                      {task.task_title}
+                                    </Typography>
+                                    <Box
+                                      {...provided.dragHandleProps}
+                                      sx={{
+                                        cursor: "grab",
+                                        ml: 1,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        p: 0.5,
+                                        color: theme.palette.text.disabled
+                                      }}
+                                    >
+                                      <DragIndicatorIcon fontSize="small" />
+                                    </Box>
+                                  </Box>
+                                  <Typography
+                                    variant="body2"
+                                    sx={{
+                                      mt: 1,
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                      display: "-webkit-box",
+                                      WebkitLineClamp: 3,
+                                      WebkitBoxOrient: "vertical",
+                                      flexGrow: 1,
+                                      color: theme.palette.text.secondary
+                                    }}
+                                  >
+                                    {task.task_details}
+                                  </Typography>
+                                  <Box sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    mt: 1,
+                                    minHeight: 32,
+                                    flexWrap: "wrap",
+                                    gap: 1
+                                  }}>
+                                    {Array.isArray(task.assigned_persons) && task.assigned_persons.map((ap) => (
+                                      <Box key={ap.assigned_person.id} sx={{ display: "flex", alignItems: "center", mr: 2 }}>
+                                        <Avatar
+                                          src={`${base_url}/storage/${ap.assigned_person.photo}`}
+                                          sx={{
+                                            width: 24,
+                                            height: 24,
+                                            mr: 0.5
+                                          }}
+                                        />
+                                        <Typography
+                                          variant="caption"
+                                          sx={{
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                            color: theme.palette.text.primary
+                                          }}
+                                        >
+                                          {ap.assigned_person.name}
+                                        </Typography>
+                                      </Box>
+                                    ))}
+                                  </Box>
+                                </CardContent>
+                                <Box sx={{ p: 1, mt: 'auto' }}>
+                                  <Button
+                                    variant="outlined"
+                                    size="small"
+                                    fullWidth
+                                    onClick={() => navigate(`/task-details/${task.task_id}`)}
+                                    sx={{
+                                      height: 20,
+                                      fontSize: "0.75rem",
+                                      padding: "4px 8px",
+                                      color: theme.palette.info.main,
+                                      borderColor: theme.palette.info.main,
+                                      "&:hover": {
+                                        backgroundColor: theme.palette.info.dark,
+                                        color: theme.palette.info.contrastText,
+                                      }
+                                    }}
+                                  >
+                                    View Details
+                                  </Button>
+                                </Box>
+                              </Card>
                             )}
                           </Draggable>
                         ))}
@@ -331,9 +353,17 @@ const ProjectTask = ({ projectID }) => {
             onClose={() => setIsTaskDialogOpen(false)}
             maxWidth="sm"
             fullWidth
+            PaperProps={{
+              sx: {
+                backgroundColor: theme.palette.background.paper,
+                color: theme.palette.text.primary
+              }
+            }}
           >
             <AddTaskFormProject
-             projectId ={parseInt(projectID)} statusID={statusID}
+              projectId={parseInt(projectID)}
+              statusID={statusID}
+              onClose={() => setIsTaskDialogOpen(false)}
             />
           </Dialog>
         </>

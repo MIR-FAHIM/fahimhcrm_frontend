@@ -1,11 +1,92 @@
-import { Box, Button, Typography, useTheme } from "@mui/material";
-import { Header } from "../../../components";
+import React, { useEffect, useMemo, useState } from "react";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import {
+  Box,
+  Button,
+  Typography,
+  useTheme,
+  TextField,
+  IconButton,
+  Tooltip,
+  Chip,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  CircularProgress,
+} from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import DoneAllIcon from "@mui/icons-material/DoneAll";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import SearchIcon from "@mui/icons-material/Search";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { useEffect, useState } from "react";
 import { tokens } from "../../../theme";
 import { useNavigate } from "react-router-dom";
 import { getFacebookLeads } from "../../../api/controller/admin_controller/user_controller";
 import { convertToPrsspect, convertContactRowStatusMultipleForFacebook } from "../../../api/controller/admin_controller/prospect_controller";
+
+dayjs.extend(relativeTime);
+
+const StatusChip = ({ status, colors }) => {
+  const isConverted = String(status) === "1";
+  const label = isConverted ? "Converted" : "New";
+  const bg = isConverted ? colors.greenAccent[700] : colors.blueAccent[700];
+  const fg = isConverted ? colors.greenAccent[200] : colors.blueAccent[200];
+  return <Chip size="small" label={label} sx={{ bgcolor: bg, color: fg }} />;
+};
+
+const Toolbar = ({ query, setQuery, onRefresh, colors, selectionCount, filter, setFilter }) => (
+  <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap", p: 1, borderBottom: `1px solid ${colors.gray[700]}` }}>
+    <Typography variant="h6" sx={{ fontWeight: 800, color: colors.gray[100] }}>Facebook Leads</Typography>
+
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: { xs: 0, md: 2 } }}>
+      <TextField
+        size="small"
+        placeholder="Search name, email, mobile"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        InputProps={{ startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: colors.gray[400] }} /> }}
+        sx={{
+          minWidth: 260,
+          "& .MuiOutlinedInput-root": { bgcolor: "background.default", color: colors.gray[100] },
+          "& fieldset": { borderColor: colors.gray[700] },
+        }}
+      />
+
+      <TextField
+        size="small"
+        select
+        label="Filter"
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+        SelectProps={{ native: true }}
+        sx={{
+          minWidth: 140,
+          "& .MuiOutlinedInput-root": { bgcolor: "background.default", color: colors.gray[100] },
+          "& fieldset": { borderColor: colors.gray[700] },
+        }}
+      >
+        <option value="all">All</option>
+        <option value="new">New</option>
+        <option value="converted">Converted</option>
+      </TextField>
+    </Box>
+
+    <Box sx={{ ml: "auto", display: "flex", gap: 1 }}>
+      <Tooltip title="Refresh">
+        <IconButton onClick={onRefresh} sx={{ color: colors.blueAccent[300] }}>
+          <RefreshIcon />
+        </IconButton>
+      </Tooltip>
+      <Chip size="small" label={`${selectionCount} selected`} variant="outlined" sx={{ color: colors.gray[300], borderColor: colors.gray[700] }} />
+    </Box>
+  </Box>
+);
 
 const FacebookLeadsTable = () => {
   const theme = useTheme();
@@ -16,35 +97,50 @@ const FacebookLeadsTable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("all");
 
-  useEffect(() => {
-   getContactList();
-  }, []);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [snack, setSnack] = useState({ open: false, message: "", severity: "success" });
 
+  useEffect(() => { getContactList(); }, []);
 
-const getContactList = async () => {
-await getFacebookLeads()
-      .then((response) => {
-        if (response.status === "success") {
-          setLeads(response.data);
-        } else {
-          setError("Failed to fetch contact us leads");
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setError("Error fetching data");
-        setLoading(false);
-      });
-}
+  const getContactList = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await getFacebookLeads();
+      if (response.status === "success") {
+        setLeads(response.data || []);
+      } else {
+        setError("Failed to fetch Facebook leads");
+      }
+    } catch (e) {
+      setError("Error fetching data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSelectionModelChange = (newSelectionModel) => {
     setSelectedRows(newSelectionModel);
   };
 
-  const handleConvertToProspect = () => {
-    const selectedLeads = leads.filter((lead) => selectedRows.includes(lead.id));
+  const filteredRows = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let list = leads;
+    if (filter !== "all") {
+      list = list.filter((l) => (filter === "converted" ? String(l.status) === "1" : String(l.status) !== "1"));
+    }
+    if (!q) return list;
+    return list.filter((l) => [l.name, l.email, l.mobile, l.note].filter(Boolean).some((v) => String(v).toLowerCase().includes(q)));
+  }, [leads, query, filter]);
 
-    const data =  selectedLeads.map((lead) => ({
+  const handleConvertToProspect = async () => {
+    if (selectedRows.length === 0) return;
+    try {
+      const selectedLeads = leads.filter((lead) => selectedRows.includes(lead.id));
+      const payload = selectedLeads.map((lead) => ({
         prospect_name: lead.name,
         is_individual: true,
         industry_type_id: 2,
@@ -64,76 +160,138 @@ await getFacebookLeads()
         note: "Prospect Added from Facebook lead form",
       }));
 
-    const idList = {
-      ids: selectedRows,
-    };
+      const idList = { ids: selectedRows };
 
-    convertToPrsspect(data)
-      .then((response) => {
-        convertContactRowStatusMultipleForFacebook(idList);
-        getContactList();
-        console.log("Conversion successful", response);
-      })
-      .catch((error) => {
-        console.error("Conversion failed", error);
-      });
+      await convertToPrsspect(payload);
+      await convertContactRowStatusMultipleForFacebook(idList);
+      await getContactList();
+
+      setSnack({ open: true, message: `Converted ${selectedRows.length} lead(s)`, severity: "success" });
+      setSelectedRows([]);
+    } catch (err) {
+      setSnack({ open: true, message: "Conversion failed", severity: "error" });
+    } finally {
+      setConfirmOpen(false);
+    }
   };
 
   const columns = [
-    { field: "id", headerName: "ID", flex: 0.5, headerAlign: "center", align: "center" },
-    { field: "name", headerName: "Name", flex: 1 },
-    { field: "email", headerName: "Email", flex: 1 },
-    { field: "mobile", headerName: "Mobile", flex: 1 },
+    { field: "id", headerName: "ID", width: 90, headerAlign: "center", align: "center" },
+    { field: "name", headerName: "Name", flex: 1, minWidth: 160 },
+    { field: "email", headerName: "Email", flex: 1, minWidth: 200 },
+    { field: "mobile", headerName: "Mobile", flex: 1, minWidth: 160 },
+    { field: "ad_name", headerName: "Ad Name", flex: 1, minWidth: 140 },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 140,
+      renderCell: (params) => <StatusChip status={params.value} colors={colors} />,
+      sortable: false,
+      filterable: false,
+    },
+    {
+      field: "updated_at",
+      headerName: "Updated",
+      width: 160,
+      valueGetter: (p) => (p.value ? dayjs(p.value).fromNow() : "—"),
+      sortComparator: (v1, v2, p1, p2) => dayjs(p1.row.updated_at).valueOf() - dayjs(p2.row.updated_at).valueOf(),
+    },
   ];
 
-  if (loading) return <Typography variant="h6" color="primary">Loading...</Typography>;
-  if (error) return <Typography variant="h6" color="error">{error}</Typography>;
+  if (loading) {
+    return (
+      <Box sx={{ p: 4, display: "flex", gap: 2, alignItems: "center", color: colors.gray[100] }}>
+        <CircularProgress size={24} />
+        <Typography>Loading…</Typography>
+      </Box>
+    );
+  }
+  if (error) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
 
   return (
-    <Box m={4}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Header title="FACEBOOK LEADS" subtitle="Manage and view Facebook marketing leads" />
+    <Box m={4} sx={{ bgcolor: theme.palette.background.default, borderRadius: 2, boxShadow: 1 }}>
+      <Toolbar
+        query={query}
+        setQuery={setQuery}
+        onRefresh={getContactList}
+        colors={colors}
+        selectionCount={selectedRows.length}
+        filter={filter}
+        setFilter={setFilter}
+      />
+
+      <Box mt={0} height="72vh" sx={{
+        borderRadius: 2,
+        overflow: "hidden",
+        boxShadow: 2,
+        border: `1px solid ${colors.gray[700]}`,
+        "& .MuiDataGrid-root": { border: "none" },
+        "& .MuiDataGrid-columnHeaders": { bgcolor: colors.gray[900], color: colors.gray[100], fontWeight: 700, borderBottom: `1px solid ${colors.gray[700]}` },
+        "& .MuiDataGrid-cell": { borderBottom: `1px solid ${colors.gray[800]}`, color: colors.gray[100] },
+        "& .MuiDataGrid-virtualScroller": { bgcolor: theme.palette.background.paper },
+        "& .MuiDataGrid-footerContainer": { bgcolor: colors.gray[900], borderTop: `1px solid ${colors.gray[700]}`, color: colors.gray[100] },
+        "& .MuiCheckbox-root": { color: `${colors.greenAccent[400]} !important` },
+        "& .MuiDataGrid-toolbarContainer .MuiButton-text": { color: `${colors.gray[100]} !important` },
+        "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": { color: colors.gray[300] },
+      }}>
+        <DataGrid
+          rows={filteredRows}
+          columns={columns}
+          checkboxSelection
+          disableRowSelectionOnClick
+          onRowSelectionModelChange={setSelectedRows}
+          rowSelectionModel={selectedRows}
+          slots={{ Toolbar: GridToolbar }}
+          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+        />
+      </Box>
+
+      <Box display="flex" justifyContent="flex-end" gap={1.5} mt={2}>
+        <Button
+          variant="outlined"
+          startIcon={<RefreshIcon />}
+          onClick={getContactList}
+          sx={{ color: colors.blueAccent[300], borderColor: colors.blueAccent[500], "&:hover": { bgcolor: colors.blueAccent[700], color: colors.primary[900] } }}
+        >
+          Refresh
+        </Button>
         <Button
           variant="contained"
-          color="primary"
-          onClick={handleConvertToProspect}
+          startIcon={<DoneAllIcon />}
+          onClick={() => setConfirmOpen(true)}
           disabled={selectedRows.length === 0}
+          sx={{ bgcolor: colors.greenAccent[500], color: colors.gray[500], "&:hover": { bgcolor: colors.greenAccent[700] } }}
         >
-          Convert Selected to Prospect
+          Convert Selected to Prospect ({selectedRows.length})
         </Button>
       </Box>
 
-      <Box
-        mt={3}
-        height="75vh"
-        sx={{
-          borderRadius: "10px",
-          overflow: "hidden",
-          boxShadow: 2,
-          "& .MuiDataGrid-root": { border: "none" },
-          "& .MuiDataGrid-cell": { borderBottom: "1px solid rgba(224, 224, 224, 1)" },
-          "& .MuiDataGrid-columnHeaders": { backgroundColor: colors.gray[10], fontSize: "16px", fontWeight: "bold" },
-          "& .MuiDataGrid-virtualScroller": { backgroundColor: colors.primary[400] },
-          "& .MuiDataGrid-footerContainer": { backgroundColor: colors.gray[10], borderTop: "1px solid rgba(224, 224, 224, 1)" },
-          "& .MuiCheckbox-root": { color: `${colors.greenAccent[200]} !important` },
-          "& .MuiDataGrid-toolbarContainer .MuiButton-text": { color: `${colors.gray[100]} !important` },
-        }}
-      >
-        <DataGrid
-          rows={leads}
-          columns={columns}
-          components={{ Toolbar: GridToolbar }}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 10,
-              },
-            },
-          }}
-          checkboxSelection
-          onRowSelectionModelChange={handleSelectionModelChange}
-        />
-      </Box>
+      {/* Confirm Dialog */}
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Convert selected lead(s)?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            This will create prospect entries and mark the leads as converted.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
+          <Button onClick={handleConvertToProspect} variant="contained" startIcon={<DoneAllIcon />}>Confirm</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar */}
+      <Snackbar open={snack.open} autoHideDuration={3000} onClose={() => setSnack((s) => ({ ...s, open: false }))}>
+        <Alert onClose={() => setSnack((s) => ({ ...s, open: false }))} severity={snack.severity} sx={{ width: "100%" }}>
+          {snack.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

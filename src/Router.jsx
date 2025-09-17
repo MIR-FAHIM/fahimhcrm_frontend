@@ -94,17 +94,47 @@ import {
  NotificationPage,
  WarehouseList,
  AddNotice,
+ WarehouseDetailsInfo,
+ UserActivityList,
+ OrderDetails,
+ ProjectListByDepartment,
+ DepartmentTask,
+ WorkShop,
+ ContactUsForm,
+
+ DailyWorkReport,
+ WorkReportList,
+ LandingPage,
+ NextFeatures,
+ VisitPlanner,
+ MyVisits,
+ VisitMap,
 } from "./scenes";
 
 const AppRouter = () => {
   return (
-    // <Router basename="/hcrm">
- <Router >
-     
+    //  <Router basename="/hcrm">
+       <Router >      
+    
       <Routes>
       <Route path="/login" element={<Login />}></Route>
+
+
+      
+     {/* <Route path="/landing" element={<LandingPage />}></Route> 
+
+
         <Route path="/" element={<App />}>
-          <Route path="/" element={<Dashboard />} />
+        <Route path="/" element={<Dashboard />} /> 
+        */}
+
+     {/* <Route path="/" element={<LandingPage />}></Route>  */}
+     <Route path="/what-next" element={<NextFeatures />}></Route> 
+
+
+        <Route path="/" element={<App />}>
+        <Route path="/" element={<Dashboard />} />
+         
           
           <Route path="/team" element={<Team />} />
           <Route path="/add-task" element={<AddTaskForm />} />
@@ -131,7 +161,7 @@ const AppRouter = () => {
           <Route path="/add-main-category" element={<AddMainCategory />} />
           <Route path="/add-product-category" element={<AddProductCategory />} />
           <Route path="/all-orders" element={<AllOrders />} />
-          <Route path="/order-details/:id" element={<OrderDetailsPage />} />
+         
           <Route path="/user-details/:id" element={<UserDetail />} />
           <Route path="/withdraw" element={<Withdraws />} />
           <Route path="/social-post" element={<SocialPost />} />
@@ -196,6 +226,18 @@ const AppRouter = () => {
           <Route path="/notification-page" element={<NotificationPage />} />
           <Route path="/warehouse-list" element={<WarehouseList />} />
           <Route path="/add-notices" element={<AddNotice />} />
+          <Route path="/warehouse-details/:id" element={<WarehouseDetailsInfo />} />
+          <Route path="/user-activity-track" element={<UserActivityList />} />
+          <Route path="/order-details/:id" element={<OrderDetails />} />
+          <Route path="/project-by-department/:id" element={<ProjectListByDepartment />} />
+          <Route path="/task-department/:id" element={<DepartmentTask />} />
+          <Route path="/daily-work-report" element={<DailyWorkReport />} />
+          <Route path="/all-work-report" element={<WorkReportList />} />
+          <Route path="/work-shop" element={<WorkShop />} />
+          <Route path="/contact-us-form" element={<ContactUsForm />} />
+          <Route path="/visit-plan" element={<VisitPlanner />} />
+          <Route path="/my-visit" element={<MyVisits />} />
+          <Route path="/visit-map" element={<VisitMap />} />
         
         </Route>
       </Routes>

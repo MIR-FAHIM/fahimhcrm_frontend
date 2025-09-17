@@ -52,6 +52,22 @@ export const loginController = async (data) => {
   }
 
 }
+export const addUserActivity = async (data) => {
+  try {
+    const response = await axiosInstance.post(`/api/add-user-activity`, data,
+      {
+        headers: {
+          'token': 'prefix_67e12b036e3f06.63889147', // Add the token in Authorization header
+        },
+      }
+    );
+    return response.data; // Return the response from the API
+  } catch (error) {
+    console.error("Error login data:", error);
+    throw error; // Rethrow the error for further handling in your component
+  }
+
+}
 export const fetchEmployees = async () => {
   const token = localStorage.getItem("authToken"); // Retrieve token from localStorage
 
@@ -159,6 +175,48 @@ export const getFacebookLeads = async () => {
     return response.data;
   } catch (error) {
     console.error("Error fetching dashBoardReport:", error);
+    return [];
+  }
+}
+export const getAllUserTrack = async () => {
+  const token = localStorage.getItem("authToken"); // Retrieve token from localStorage
+
+  if (!token) {
+    console.error("No auth token found in localStorage.");
+    return []; // Return an empty array or handle as necessary
+  }
+  try {
+    const response = await axiosInstance.get(`/api/get-all-user-activity`,
+      {
+        headers: {
+          'token': localStorage.getItem("authToken"),// Add the token in Authorization header
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching dashBoardReport:", error);
+    return [];
+  }
+}
+export const getUserActivity = async (id) => {
+  const token = localStorage.getItem("authToken"); // Retrieve token from localStorage
+
+  if (!token) {
+    console.error("No auth token found in localStorage.");
+    return []; // Return an empty array or handle as necessary
+  }
+  try {
+    const response = await axiosInstance.get(`/api/get-user-activity?user_id=${id}`,
+      {
+        headers: {
+          'token': localStorage.getItem("authToken"),// Add the token in Authorization header
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching getUserActivity:", error);
     return [];
   }
 }

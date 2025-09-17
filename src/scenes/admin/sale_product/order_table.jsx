@@ -16,7 +16,7 @@ const OrderList = () => {
   const [error, setError] = useState(null);
 
   const handleViewDetails = (id) => {
-    navigate(`/employee-profile/${id}`);
+    navigate(`/order-details/${id}`);
   };
 
   const handleAddEmployee = () => {
@@ -71,7 +71,7 @@ const OrderList = () => {
   return (
     <Box m={4}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Header title="EMPLOYEES" subtitle="Manage and view employees" />
+        <Header title="Order Management" subtitle="Manage Orders" />
         <Button
           variant="contained"
           color="secondary"

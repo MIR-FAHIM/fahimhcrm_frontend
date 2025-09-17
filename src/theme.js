@@ -1,224 +1,199 @@
+// theme/index.js
 import { createTheme } from "@mui/material";
-import { useMemo } from "react";
-import { useState } from "react";
-import { createContext } from "react";
+import { useMemo, useState, createContext } from "react";
 
-// Color Design Tokens
+/** Color tokens */
 export const tokens = (mode) => ({
   ...(mode === "dark"
     ? {
-     
-     
         gray: {
-          10:"#0039a6",
-          100: "#e0e0e0",
-          200: "#c2c2c2",
-          300: "#a3a3a3",
-          400: "#858585",
-          500: "#666666",
-          600: "#525252",
-          700: "#3d3d3d",
-          800: "#292929",
-          900: "#141414",
-        },
-        bg:{
-          100: "#141414",
+          100: "#F5F6FA",
+          200: "#DCE0E8",
+          300: "#B5BBC7",
+          400: "#8D95A3",
+          500: "#666F80",
+          600: "#4A5160",
+          700: "#343946",
+          800: "#2B2D38", // paper
+          900: "#1E1F25", // background
         },
         primary: {
-          100: "#d0d1d5",
-          200: "#a1a4ab",
-          300: "#727681",
-          400: "#434957",
-          500: "#141b2d",
-          600: "#101624",
-          700: "#0c101b",
-          800: "#080b12",
-          900: "#040509",
+          100: "#AECBF9",
+          200: "#86ADF5",
+          300: "#5E8FF1",
+          400: "#3A86FF", // vivid accent
+          500: "#1D4ED8", // brand
+          600: "#153CA6",
+        },
+        /** NEW: blueAccent (cooler UI blues for chips, info, links) */
+        blueAccent: {
+          100: "#EAF2FF",
+          200: "#CFE0FF",
+          300: "#A7C6FF",
+          400: "#7AADFF",
+          500: "#3A86FF",
+          600: "#1D4ED8",
+          700: "#153CA6",
+          800: "#0F2C78",
+          900: "#0A1E52",
         },
         greenAccent: {
-          100: "#dbf5ee",
-          200: "#b7ebde",
-          300: "#94e2cd",
-          400: "#70d8bd",
-          500: "#4cceac",
-          600: "#3da58a",
-          700: "#2e7c67",
-          800: "#1e5245",
-          900: "#0f2922",
+          100: "#D1F5EE",
+          200: "#9DE2D0",
+          300: "#6BD0B4",
+          400: "#2EC4B6",
+          500: "#229A8F",
+        },
+        orangeAccent: {
+          100: "#FFE5C2",
+          200: "#FFD6A5",
+          300: "#FFB347",
+          400: "#FF9F1C",
+          500: "#E67E00",
+        },
+        purpleAccent: {
+          100: "#E0BBF2",
+          200: "#C48AE6",
+          300: "#A960DB",
+          400: "#9B5DE5",
+          500: "#7A3DC1",
         },
         redAccent: {
-          100: "#f8dcdb",
-          200: "#f1b9b7",
-          300: "#e99592",
-          400: "#e2726e",
-          500: "#db4f4a",
-          600: "#af3f3b",
-          700: "#832f2c",
-          800: "#58201e",
-          900: "#2c100f",
-        },
-        blueAccent: {
-          100: "#e1e2fe",
-          200: "#c3c6fd",
-          300: "#a4a9fc",
-          400: "#868dfb",
-          500: "#6870fa",
-          600: "#535ac8",
-          700: "#3e4396",
-          800: "#2a2d64",
-          900: "#151632",
+          100: "#F9C5D0",
+          200: "#F497A9",
+          300: "#F06B88",
+          400: "#EF476F",
+          500: "#C0264B",
         },
       }
     : {
         gray: {
-          100: "#141414",
-          200: "#292929",
-          300: "#3d3d3d",
-          400: "#525252",
-          500: "#666666",
-          600: "#858585",
-          700: "#a3a3a3",
-          800: "#c2c2c2",
-          900: "#e0e0e0",
-        },
-        bg:{
-          100: "#FFFFFF",
+          100: "#1E1F25",
+          200: "#2B2D38",
+          300: "#434956",
+          400: "#666F80",
+          500: "#8D95A3",
+          600: "#B5BBC7",
+          700: "#DCE0E8",
+          800: "#F5F6FA",
+          900: "#FFFFFF",
         },
         primary: {
-          
-          100: "#040509",
-          200: "#080b12",
-          300: "#0c101b",
-          400: "#fcfcfc",
-          500: "#f2f0f0",
-          600: "#434957",
-          700: "#727681",
-          800: "#a1a4ab",
-          900: "#d0d1d5",
+          100: "#EAF2FF",
+          200: "#D4E4FF",
+          300: "#AECBF9",
+          400: "#86ADF5",
+          500: "#3A86FF", // brand
+          600: "#1D4ED8",
+        },
+        /** NEW: blueAccent mirrored for light mode */
+        blueAccent: {
+          100: "#0A1E52",
+          200: "#0F2C78",
+          300: "#153CA6",
+          400: "#1D4ED8",
+          500: "#3A86FF",
+          600: "#7AADFF",
+          700: "#A7C6FF",
+          800: "#CFE0FF",
+          900: "#EAF2FF",
         },
         greenAccent: {
-          100: "#0f2922",
-          200: "#1e5245",
-          300: "#2e7c67",
-          400: "#3da58a",
-          500: "#4cceac",
-          600: "#70d8bd",
-          700: "#94e2cd",
-          800: "#b7ebde",
-          900: "#dbf5ee",
+          100: "#EAFBF8",
+          200: "#D1F5EE",
+          300: "#9DE2D0",
+          400: "#6BD0B4",
+          500: "#2EC4B6",
+        },
+        orangeAccent: {
+          100: "#FFF7E6",
+          200: "#FFE5C2",
+          300: "#FFD6A5",
+          400: "#FFB347",
+          500: "#FF9F1C",
+        },
+        purpleAccent: {
+          100: "#F5E8FF",
+          200: "#E0BBF2",
+          300: "#C48AE6",
+          400: "#A960DB",
+          500: "#9B5DE5",
         },
         redAccent: {
-          100: "#2c100f",
-          200: "#58201e",
-          300: "#832f2c",
-          400: "#af3f3b",
-          500: "#db4f4a",
-          600: "#e2726e",
-          700: "#e99592",
-          800: "#f1b9b7",
-          900: "#f8dcdb",
-        },
-        blueAccent: {
-          100: "#1976d2",
-          200: "#c3c6fd",
-          300: "#a4a9fc",
-          400: "#868dfb",
-          500: "#6870fa",
-          600: "#535ac8",
-          700: "#3e4396",
-          800: "#2a2d64",
-          900: "#151632",
+          100: "#FFE9ED",
+          200: "#F9C5D0",
+          300: "#F497A9",
+          400: "#F06B88",
+          500: "#EF476F",
         },
       }),
 });
 
-// Mui Theme Settings
+/** MUI theme settings */
 export const themeSettings = (mode) => {
   const colors = tokens(mode);
+  const isDark = mode === "dark";
 
   return {
     palette: {
-      mode: mode,
-      ...(mode === "dark"
-        ? {
-            primary: {
-              main: colors.primary[100],
-            },
-            secondary: {
-              main: colors.greenAccent[500],
-            },
-            neutral: {
-              dark: colors.gray[700],
-              main: colors.gray[500],
-              light: colors.gray[100],
-            },
-            background: {
-              default: colors.primary[500],
-            },
-          }
-        : {
-            primary: {
-              main: colors.primary[100],
-            },
-            secondary: {
-              main: colors.greenAccent[500],
-              blue: colors.blueAccent[100],
-            },
-            neutral: {
-              dark: colors.gray[700],
-              main: colors.gray[500],
-              light: colors.gray[100],
-            },
-            background: {
-              default: colors.primary[500],
-            },
-          }),
+      mode,
+      primary: { main: colors.primary[500], light: colors.primary[300], dark: colors.primary[600] },
+      secondary: { main: colors.greenAccent[500] },
+      /** expose blueAccent as a first-class palette entry */
+      blueAccent: {
+        main: colors.blueAccent[500],
+        light: colors.blueAccent[600],
+        dark: colors.blueAccent[400],
+        contrastText: isDark ? "#0B1020" : "#fff",
+      },
+      error: { main: colors.redAccent[400] },
+      warning: { main: colors.orangeAccent[400] },
+      info: { main: colors.blueAccent[500] },
+      success: { main: colors.greenAccent[400] },
+      text: {
+        primary: isDark ? colors.gray[100] : colors.gray[100],
+        secondary: isDark ? colors.gray[400] : colors.gray[500],
+      },
+      background: {
+        default: isDark ? colors.gray[900] : colors.gray[900],
+        paper: isDark ? colors.gray[800] : colors.gray[800],
+      },
+      divider: isDark ? colors.gray[700] : colors.gray[700],
     },
+    shape: { borderRadius: 12 },
     typography: {
-      fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-      fontSize: 12,
-      h1: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-        fontSize: 40,
+      fontFamily: "'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif",
+      h5: { fontWeight: 800 },
+      button: { textTransform: "none", fontWeight: 700 },
+    },
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: { borderRadius: 10 },
+          containedPrimary: { boxShadow: "0 6px 14px rgba(58,134,255,0.25)" },
+        },
       },
-      h2: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-        fontSize: 32,
+      MuiPaper: {
+        styleOverrides: {
+          root: { borderRadius: 16 },
+        },
       },
-      h3: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-        fontSize: 24,
-      },
-      h4: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-        fontSize: 20,
-      },
-      h5: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-        fontSize: 16,
-      },
-      h6: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-        fontSize: 14,
+      MuiAlert: {
+        defaultProps: { variant: "filled" },
       },
     },
   };
 };
 
-// Context For Color Mode
-export const ColorModeContext = createContext({
-  toggleColorMode: () => {},
-});
+/** color mode context & hook */
+export const ColorModeContext = createContext({ toggleColorMode: () => {} });
 
 export const useMode = () => {
   const [mode, setMode] = useState("light");
-
-  const colorMode = useMemo(() => ({
-    toggleColorMode: () =>
-      setMode((prev) => (prev === "light" ? "dark" : "light")),
-  }));
-
-  const theme = useMemo(() => createTheme(themeSettings(mode), [mode]));
-
+  const colorMode = useMemo(
+    () => ({ toggleColorMode: () => setMode((p) => (p === "light" ? "dark" : "light")) }),
+    []
+  );
+  const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
   return [theme, colorMode];
 };

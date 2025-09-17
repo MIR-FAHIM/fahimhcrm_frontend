@@ -19,7 +19,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { tokens } from "../../../theme";
 import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
-import { addProjectMembers , getProjectTeam} from "../../../api/controller/admin_controller/project/project_controller";
+import { addProjectMembers , getProjectTeam, getProjectTeamTaskCount} from "../../../api/controller/admin_controller/project/project_controller";
 import { base_url } from "../../../api/config/index";
 
 const ProjectTeam = ({projectID}) => {
@@ -85,7 +85,7 @@ const ProjectTeam = ({projectID}) => {
         setError("Error fetching data");
         setLoading(false);
       });
-      getProjectTeam(projectID)
+      getProjectTeamTaskCount(projectID)
       .then((response) => {
         if (response.status === "success") {
           setTeams(response.data);
@@ -172,9 +172,9 @@ const ProjectTeam = ({projectID}) => {
                 </Box>
 
                 <Box mt={2} pl={1}>
-                  <Typography variant="body2" mb={0.5}>📋 Total Tasks: <strong>{employee.employee.total_tasks || 0}</strong></Typography>
-                  <Typography variant="body2" mb={0.5}>⏳ Pending: <strong>{employee.employee.pending_tasks || 0}</strong></Typography>
-                  <Typography variant="body2">✅ Completed: <strong>{employee.employee.completed_tasks || 0}</strong></Typography>
+                  <Typography variant="body2" mb={0.5}>📋 Total Tasks: <strong>{employee?.total_task_count || 0}</strong></Typography>
+                  <Typography variant="body2" mb={0.5}>⏳ Pending: <strong>{employee?.total_task_count - employee?.completed_task_count || 0}</strong></Typography>
+                  <Typography variant="body2">✅ Completed: <strong>{employee?.completed_task_count || 0}</strong></Typography>
                 </Box>
               </CardContent>
 

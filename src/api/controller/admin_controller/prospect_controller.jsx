@@ -34,6 +34,21 @@ export const getProspectStagesByLog = async (data) => {
     return [];
   }
 }
+export const deleteProspect = async (id) => {
+  try {
+    const response = await axiosInstance.get(`/api/delete-prospect/${id}`,
+      {
+        headers: {
+          'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching delete :", error);
+    return [];
+  }
+}
 export const updateProspect = async (data) => {
   try {
     const response = await axiosInstance.post(`/api/update-prospect`,data,
@@ -229,6 +244,7 @@ export const fetchAllProspectByStage = async () => {
     return [];
   }
 }
+
 export const getProspectDetails = async (id) => {
   try {
     const response = await axiosInstance.get(`/api/get-prospect-detail/${id}`,
@@ -338,6 +354,7 @@ export const checkProspectAvaiblity = async (data) => {
   }
 
 }
+
 export const convertToPrsspect = async (prospectList) => {
   try {
     const response = await axiosInstance.post(`/api/convert-to-prospect`, {
@@ -463,6 +480,22 @@ export const changeProspectStatus = async (data) => {
 export const addMeeting = async (data) => {
   try {
     const response = await axiosInstance.post(`/api/add-meeting`, data,
+      {
+        headers: {
+          'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+        },
+      }
+    );
+    return response; // Return the response from the API
+  } catch (error) {
+    console.error("Error add addProspect data:", error);
+    throw error; // Rethrow the error for further handling in your component
+  }
+
+}
+export const addContactUs = async (data) => {
+  try {
+    const response = await axiosInstance.post(`/api/add-contact-us`, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header

@@ -13,6 +13,7 @@ import DashboardAttendanceReport from './components/attendance_dashboard_report'
 import AnimatedButton from './components/checkinout_button';
 import NoticeBoard from './components/notice_board';
 import AdjustTimeModal from './components/adjust_time_modal';
+import CheckInOutPanel from './components/checkinout_panel_data';
 
 import {
   Box,
@@ -98,27 +99,27 @@ function Dashboard() {
 
 
   const handleCheckInOut = async () => {
-if(permissions.task == false){
+    if (permissions.task === false) {
 
-  setTestText("i am here");
-  if (isCheckIn === false) {
-      await handleCheckInWithoutLocation();
 
+      if (isCheckIn === false) {
+        await handleCheckInWithoutLocation();
+
+      } else {
+        await handleCheckOutWithOutLocation();
+
+      }
     } else {
-      await handleCheckOutWithOutLocation();
+      
+      if (isCheckIn === false) {
+        await handleCheckIn();
 
+      } else {
+        await handleCheckOut();
+
+      }
     }
-}else{
-  setTestText("i am not here");
-  if (isCheckIn === false) {
-      await handleCheckIn();
 
-    } else {
-      await handleCheckOut();
-
-    }
-}
-  
   }
   const handlePressStart = () => {
     setPressing(true);
@@ -179,7 +180,7 @@ if(permissions.task == false){
     }
   };
   const handleCheckInWithoutLocation = async () => {
-    
+
     try {
       const response = await checkInNow({
         user_id: userID,
@@ -441,8 +442,9 @@ if(permissions.task == false){
         setAttendanceID(response.attendance.id);
         if (response.attendance.is_early_leave === 0) {
 
-          setReasonTitle("Add Early Leave Reason.")
-          setShowLateModal(true); // Show modal if late
+          //  setReasonTitle("Add Early Leave Reason.")
+          //  setShowLateModal(true); // Show modal if late
+           navigate('/check-in-out');
         } else {
           navigate('/check-in-out');
         }
@@ -547,17 +549,11 @@ if(permissions.task == false){
       {/* adjust time modal */}
       {showAdjust && (
         <AdjustTimeModal
+          open={showAdjust}
           userId={userID}
-          type={'in'}
+          type="in"
           attendanceID={todayAttendance.id}
-          onSubmit={(data) => {
-            console.log("Late Reason:", data);
-
-            handleRequestAdjustment(data);
-            // maybe send API call here
-            setAdjust(false);
-
-          }}
+          onSubmit={handleRequestAdjustment}
           onClose={() => setAdjust(false)}
         />
       )}
@@ -581,203 +577,29 @@ if(permissions.task == false){
         }
         gap="20px"
       >
-        {/* Left Box: Your existing full box */}
-        <Box
-          gridColumn="span 7"
-          sx={{
-            background: "#f9f9fb",
-            p: 3,
-            borderRadius: "12px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-            minHeight: "200px",
-          }}
-        >
-          <Box
-            display="grid"
-            gridTemplateColumns={
-              isXlDevices
-                ? "repeat(12, 1fr)"
-                : isMdDevices
-                  ? "repeat(6, 1fr)"
-                  : "repeat(3, 1fr)"
-            }
-            gridAutoRows="140px"
-            gap="20px"
-            columnGap="20px"
-            rowGap="40px"
-          >
-            <Box
-              gridColumn="span 6"
-              sx={{
-                background: "#f9f9fb",
-                p: 3,
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                transition: "0.3s ease-in-out",
-                minHeight: "140px",
-                "&:hover": {
-                  boxShadow: "0 6px 20px rgba(0, 0, 0, 0.12)",
-                },
-              }}
-            >
-              {isCheckIn && todayAttendance ? (
-                <Stack spacing={2}>
-                  {/* Check-in Time */}
-                  <Stack direction="row" spacing={1.5} alignItems="center">
-                    <AccessTimeOutlined sx={{ color: "#4caf50" }} />
-                    <Typography fontSize="15px" fontWeight={600}>
-                      Checked in:
-                      <Typography component="span" sx={{ fontWeight: 500, ml: 1 }}>
-                        {format(new Date(todayAttendance?.check_in_time), "EEEE, hh:mm a")}
-                      </Typography>
-                    </Typography>
-                  </Stack>
-
-                  {/* Check-in Location */}
-                  <Stack direction="row" spacing={1.5} alignItems="center">
-                    <LocationOnOutlined sx={{ color: "#42a5f5" }} />
-                    <Link
-                      component="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleNavigation(todayAttendance?.check_in_lat, todayAttendance?.check_in_lon);
-                      }}
-                      underline="hover"
-                    >
-                      <Typography fontSize="14px" color="text.primary" sx={{ fontWeight: 500 }}>
-                        {todayAttendance?.check_in_location}
-                      </Typography>
-                    </Link>
-
-                  </Stack>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    sx={{
-                      bgcolor: "secondary.blue",
-                      color: "#fff",
-                      fontWeight: 400,
-                      width: "40%",
-                      px: 1,
-                      py: 0.3,
-                      borderRadius: "6px",
-                      boxShadow: "none",
-                      textTransform: "none",
-                      fontSize: "13px",
-                      "&:hover": {
-                        bgcolor: "primary.dark",
-                      },
-                    }}
-                    onClick={() => setAdjust(true)}
-                  >
-                    Adjust Time
-                  </Button>
-                </Stack>
-              ) : (
-                <Typography
-                  variant="body1"
-                  fontWeight="600"
-                  color="error.main"
-                  textAlign="center"
-                >
-                  You have not checked in yet. Please check in now.
-                </Typography>
-              )}
-            </Box>
-
-            <Box
-              gridColumn="span 6"
-              sx={{
-                background: "#fdfefe",
-                p: 3,
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                transition: "0.3s ease-in-out",
-                minHeight: "140px",
-                "&:hover": {
-                  boxShadow: "0 6px 20px rgba(0, 0, 0, 0.12)",
-                },
-              }}
-            >
-              {isCheckIn && todayAttendance ? (
-                <Stack spacing={2}>
-                  {todayAttendance?.check_out_time ? (
-                    <>
-                      {/* Check-out Time */}
-                      <Stack direction="row" spacing={1.5} alignItems="center">
-                        <LogoutOutlined sx={{ color: "#ef5350" }} />
-                        <Typography fontSize="15px" fontWeight={600}>
-                          Checked out:
-                          <Typography component="span" sx={{ fontWeight: 500, ml: 1 }}>
-                            {format(new Date(todayAttendance?.check_out_time), "EEEE, hh:mm a")}
-                          </Typography>
-                        </Typography>
-                      </Stack>
-
-                      {/* Check-out Location */}
-                      <Stack direction="row" spacing={1.5} alignItems="center">
-                        <LocationOnOutlined sx={{ color: "#42a5f5" }} />
-                        <Link
-                          component="button"
-                          onClick={(event) => {
-                            event.preventDefault();
-                            handleNavigation(
-                              todayAttendance?.check_out_lat,
-                              todayAttendance?.check_out_lon
-                            );
-                          }}
-                          underline="hover"
-                        >
-                          <Typography fontSize="14px" color="text.primary" sx={{ fontWeight: 500 }}>
-                            {todayAttendance?.check_out_location}
-                          </Typography>
-                        </Link>
-                      </Stack>
-                    </>
-                  ) : (
-                    <Typography
-                      variant="body1"
-                      fontWeight={600}
-                      color="warning.main"
-                      textAlign="center"
-                    >
-                      Not checked out yet
-                    </Typography>
-                  )}
-                </Stack>
-              ) : (
-                <Typography variant="body1" fontWeight={600} color="error.main" textAlign="center">
-                  You have not checked in yet. Please check in now.
-                </Typography>
-              )}
-            </Box>
-
-
-
-
-          </Box>
+        <Box gridColumn="span 7">
+          <CheckInOutPanel
+            isCheckIn={isCheckIn}
+            todayAttendance={todayAttendance}
+            onAdjust={() => setAdjust(true)}
+            onNavigateToMap={(lat, lon) => handleNavigation(lat, lon)}
+          />
         </Box>
 
-        {/* Right Box: Notice Board */}
+        {/* Right side: keep your NoticeBoard or other widgets */}
         <NoticeBoard notices={notices} />
       </Box>
       {permissions.dashboard && (
         <DashboardAttendanceReport dashboardReport={attendanceDashboardReport} />
       )}
-      {permissions.task && (
+      {permissions.prospect && (
         <DashBetterRead details={textReport} loadReport={handleGetTextReport} />
       )}
 
 
       <Box sx={{ height: '20px' }}></Box>
 
-      {permissions.task && (
+      {permissions.prospect  && (
         <ProspectReportMonthWise />
       )}
 

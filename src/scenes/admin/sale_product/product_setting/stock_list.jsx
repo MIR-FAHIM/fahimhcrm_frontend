@@ -71,7 +71,7 @@ const StockList = () => {
   return (
     <Box m={4}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Header title="EMPLOYEES" subtitle="Manage and view employees" />
+        <Header title="Stock List" subtitle="Manage Stock" />
         <Button
           variant="contained"
           color="secondary"

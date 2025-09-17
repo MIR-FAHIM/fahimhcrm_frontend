@@ -7,7 +7,7 @@ const ActivityList = ({ followUps }) => {
     return (
         <Paper sx={{ padding: 3 }}>
             <Typography variant="h5" gutterBottom>
-                Follow-ups
+                Activity Logs
             </Typography>
             <Divider sx={{ marginY: 2 }} />
 

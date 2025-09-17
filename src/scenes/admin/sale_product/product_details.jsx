@@ -18,7 +18,7 @@ const ProductDetailVariant = () => {
   const [error, setError] = useState(null);
 
   const handleViewDetails = (id) => {
-    navigate(`/client-details/${id}`);
+    navigate(`/product-entry`);
   };
 
   const handleAddProduct = () => {
@@ -46,10 +46,10 @@ const ProductDetailVariant = () => {
     { field: "product_id", headerName: "Name", flex: 2 , valueGetter: (params) => params.row.product?.product_name || "", },
     { field: "type", headerName: "Type", flex: 2 ,},
     { field: "product_code", headerName: "Code", flex: 1 ,},
-    { field: "quantity_required", headerName: "Quantity", flex: 2 , },
-    { field: "stock_id", headerName: "Stock", flex: 2 , },
+    { field: "quantity_required", headerName: "Quantity", flex: 1 , },
+    { field: "stock_id", headerName: "Stock Name", flex: 2, valueGetter: (params) => params.row.stock?.stock_name || "-" },
     { field: "price", headerName: "Price", flex: 2 , },
-    { field: "unit", headerName: "Unit", flex: 2 , },
+    { field: "unit", headerName: "Unit", flex: 1 , },
     { field: "entry_by", headerName: "Entried By", flex: 2 ,  valueGetter: (params) => params.row.entry_by?.name || "",},
    
     { field: "is_active", headerName: "Active", flex: 1, type: "boolean", headerAlign: "center", align: "center" },

@@ -1,10 +1,13 @@
-import { useState, useEffect } from "react";
-import { Box, Button, TextField, Typography, CircularProgress, Autocomplete, Chip, Grid } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { Box, Button, TextField, Typography, CircularProgress, Autocomplete, Chip, Grid, useTheme } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
 import { getStatus, getPriority, getProjects, assignUser, addTask, getTaskType, getProjectsPhases } from "../../../../api/controller/admin_controller/task_controller/task_controller";
 import { fetchEmployees } from "../../../../api/controller/admin_controller/user_controller";
+import { tokens } from "../../../../theme";
 
 const AddTaskFormProspect = ({ prospect_id }) => {
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
   const userID = localStorage.getItem("userId");
   const { control, handleSubmit, reset, setValue, watch } = useForm();
   const [priorities, setPriorities] = useState([]);
@@ -31,8 +34,6 @@ const AddTaskFormProspect = ({ prospect_id }) => {
       setValue("project_id", 0);
     }).catch(console.error);
     fetchEmployees().then((res) => setEmployees(res.data || [])).catch(console.error);
-
-    
   }, [setValue]);
 
   const handleProject = (projectId) => {
@@ -83,16 +84,16 @@ const AddTaskFormProspect = ({ prospect_id }) => {
       component="form"
       onSubmit={handleSubmit(onSubmit)}
       sx={{
-        backgroundColor: "#fff",
-    padding: 3,
-    borderRadius: "8px",
-    boxShadow: 3,
-    width: "100%",     // <-- added width
-    maxWidth: "1200px", // <-- added max width
-    margin: "auto",
+        backgroundColor: theme.palette.background.paper,
+        padding: 3,
+        borderRadius: "8px",
+        boxShadow: 3,
+        width: "100%",
+        maxWidth: "1200px",
+        margin: "auto",
       }}
     >
-      <Typography variant="h5" fontWeight="bold" mb={3}>
+      <Typography variant="h5" fontWeight="bold" mb={3} color={colors.primary[100]}>
         Add New Task
       </Typography>
 
@@ -100,15 +101,43 @@ const AddTaskFormProspect = ({ prospect_id }) => {
         {/* Left Column */}
         <Grid item xs={12} md={6}>
           <Controller name="task_title" control={control} defaultValue="" render={({ field }) => (
-            <TextField {...field} label="Task Title" fullWidth required />
+            <TextField
+              {...field}
+              label="Task Title"
+              fullWidth
+              required
+              sx={{
+                "& .MuiInputBase-input": { color: colors.gray[100] },
+                "& .MuiInputLabel-root": { color: colors.gray[400] },
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": { borderColor: colors.gray[700] },
+                  "&:hover fieldset": { borderColor: colors.gray[500] },
+                  "&.Mui-focused fieldset": { borderColor: colors.blueAccent[500] },
+                },
+              }}
+            />
           )} />
-
           <Box mt={2}>
             <Controller name="task_details" control={control} defaultValue="" render={({ field }) => (
-              <TextField {...field} label="Task Details" fullWidth required multiline rows={4} />
+              <TextField
+                {...field}
+                label="Task Details"
+                fullWidth
+                required
+                multiline
+                rows={4}
+                sx={{
+                  "& .MuiInputBase-input": { color: colors.gray[100] },
+                  "& .MuiInputLabel-root": { color: colors.gray[400] },
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: colors.gray[700] },
+                    "&:hover fieldset": { borderColor: colors.gray[500] },
+                    "&.Mui-focused fieldset": { borderColor: colors.blueAccent[500] },
+                  },
+                }}
+              />
             )} />
           </Box>
-
           <Box mt={2}>
             <Controller
               name="user_id"
@@ -118,23 +147,52 @@ const AddTaskFormProspect = ({ prospect_id }) => {
                 <Autocomplete
                   options={employees}
                   getOptionLabel={(option) => option.name}
-                  renderInput={(params) => <TextField {...params} label="Assign To (Optional)" fullWidth />}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Assign To (Optional)"
+                      fullWidth
+                      sx={{
+                        "& .MuiInputBase-input": { color: colors.gray[100] },
+                        "& .MuiInputLabel-root": { color: colors.gray[400] },
+                        "& .MuiOutlinedInput-root": {
+                          "& fieldset": { borderColor: colors.gray[700] },
+                          "&:hover fieldset": { borderColor: colors.gray[500] },
+                          "&.Mui-focused fieldset": { borderColor: colors.blueAccent[500] },
+                        },
+                      }}
+                    />
+                  )}
                   onChange={(event, newValue) => field.onChange(newValue ? newValue.id : "")}
                 />
               )}
             />
           </Box>
-
           <Box mt={2}>
             <Controller name="due_date" control={control} defaultValue="" render={({ field }) => (
-              <TextField {...field} label="Due Date" type="date" InputLabelProps={{ shrink: true }} fullWidth />
+              <TextField
+                {...field}
+                label="Due Date"
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+                sx={{
+                  "& .MuiInputBase-input": { color: colors.gray[100] },
+                  "& .MuiInputLabel-root": { color: colors.gray[400] },
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": { borderColor: colors.gray[700] },
+                    "&:hover fieldset": { borderColor: colors.gray[500] },
+                    "&.Mui-focused fieldset": { borderColor: colors.blueAccent[500] },
+                  },
+                }}
+              />
             )} />
           </Box>
         </Grid>
 
         {/* Right Column */}
         <Grid item xs={12} md={6}>
-          <Typography variant="subtitle2" mb={1}>Priority</Typography>
+          <Typography variant="subtitle2" mb={1} color={colors.primary[100]}>Priority</Typography>
           <Box display="flex" gap={1} flexWrap="wrap" mb={2}>
             {priorities.map((priority) => (
               <Chip
@@ -143,11 +201,15 @@ const AddTaskFormProspect = ({ prospect_id }) => {
                 label={priority.priority_name}
                 color={watch("priority_id") === priority.id ? "primary" : "default"}
                 onClick={() => setValue("priority_id", priority.id)}
+                sx={{
+                  backgroundColor: watch("priority_id") === priority.id ? colors.blueAccent[500] : colors.gray[800],
+                  color: watch("priority_id") === priority.id ? colors.primary[900] : colors.gray[100],
+                }}
               />
             ))}
           </Box>
 
-          <Typography variant="subtitle2" mb={1}>Task Type</Typography>
+          <Typography variant="subtitle2" mb={1} color={colors.primary[100]}>Task Type</Typography>
           <Box display="flex" gap={1} flexWrap="wrap" mb={2}>
             {taskTypes.map((type) => (
               <Chip
@@ -156,11 +218,15 @@ const AddTaskFormProspect = ({ prospect_id }) => {
                 label={type.type_name}
                 color={watch("task_type_id") === type.id ? "primary" : "default"}
                 onClick={() => setValue("task_type_id", type.id)}
+                sx={{
+                  backgroundColor: watch("task_type_id") === type.id ? colors.blueAccent[500] : colors.gray[800],
+                  color: watch("task_type_id") === type.id ? colors.primary[900] : colors.gray[100],
+                }}
               />
             ))}
           </Box>
 
-          <Typography variant="subtitle2" mb={1}>Status</Typography>
+          <Typography variant="subtitle2" mb={1} color={colors.primary[100]}>Status</Typography>
           <Box display="flex" gap={1} flexWrap="wrap" mb={2}>
             {statuses.map((status) => (
               <Chip
@@ -169,11 +235,15 @@ const AddTaskFormProspect = ({ prospect_id }) => {
                 label={status.status_name}
                 color={watch("status_id") === status.id ? "primary" : "default"}
                 onClick={() => setValue("status_id", status.id)}
+                sx={{
+                  backgroundColor: watch("status_id") === status.id ? colors.blueAccent[500] : colors.gray[800],
+                  color: watch("status_id") === status.id ? colors.primary[900] : colors.gray[100],
+                }}
               />
             ))}
           </Box>
 
-          <Typography variant="subtitle2" mb={1}>Project</Typography>
+          <Typography variant="subtitle2" mb={1} color={colors.primary[100]}>Project</Typography>
           <Box display="flex" gap={1} flexWrap="wrap" mb={2}>
             {projects.map((project) => (
               <Chip
@@ -182,11 +252,15 @@ const AddTaskFormProspect = ({ prospect_id }) => {
                 label={project.project_name}
                 color={watch("project_id") === project.id ? "primary" : "default"}
                 onClick={() => handleProject(project.id)}
+                sx={{
+                  backgroundColor: watch("project_id") === project.id ? colors.blueAccent[500] : colors.gray[800],
+                  color: watch("project_id") === project.id ? colors.primary[900] : colors.gray[100],
+                }}
               />
             ))}
           </Box>
 
-          <Typography variant="subtitle2" mb={1}>Project Phase</Typography>
+          <Typography variant="subtitle2" mb={1} color={colors.primary[100]}>Project Phase</Typography>
           <Box display="flex" gap={1} flexWrap="wrap">
             {phases.map((phase) => (
               <Chip
@@ -195,6 +269,10 @@ const AddTaskFormProspect = ({ prospect_id }) => {
                 label={phase.phase_name}
                 color={watch("project_phase_id") === phase.id ? "primary" : "default"}
                 onClick={() => setValue("project_phase_id", phase.id)}
+                sx={{
+                  backgroundColor: watch("project_phase_id") === phase.id ? colors.blueAccent[500] : colors.gray[800],
+                  color: watch("project_phase_id") === phase.id ? colors.primary[900] : colors.gray[100],
+                }}
               />
             ))}
           </Box>
@@ -203,8 +281,20 @@ const AddTaskFormProspect = ({ prospect_id }) => {
 
       {/* Submit Button Centered Below */}
       <Box mt={4} textAlign="center">
-        <Button type="submit" variant="contained" color="primary" disabled={loading} fullWidth>
-          {loading ? <CircularProgress size={24} /> : "Create Task"}
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={loading}
+          fullWidth
+          sx={{
+            backgroundColor: colors.greenAccent[500],
+            color: colors.gray[500],
+            "&:hover": {
+              backgroundColor: colors.greenAccent[700],
+            },
+          }}
+        >
+          {loading ? <CircularProgress size={24} sx={{ color: colors.primary[900] }} /> : "Create Task"}
         </Button>
       </Box>
     </Box>

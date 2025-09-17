@@ -1,174 +1,177 @@
+// src/scenes/task/components_task/task_components.jsx
 import React, { useState, useEffect } from "react";
-import { getAssignedTaskByUsers, getStatus, updateTaskStatus } from "../../../../api/controller/admin_controller/task_controller/task_controller";
+import {
+  Box,
+  CircularProgress,
+  Chip,
+  Select,
+  MenuItem,
+  Button,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import {
-    Box, CircularProgress, Chip, Select, MenuItem, Button, Card, CardContent, CardActions,
-    Avatar, Typography
-} from "@mui/material";
-import { base_url, image_file_url } from "../../../../api/config/index";
-import { AccessAlarm, CheckCircle, Warning, PriorityHigh } from '@mui/icons-material';
+  getAssignedTaskByUsers,
+  getStatus,
+  updateTaskStatus,
+} from "../../../../api/controller/admin_controller/task_controller/task_controller";
+import { image_file_url } from "../../../../api/config/index";
 
-const TaskComponents = ({userID}) => {
-  
-    const navigate = useNavigate();
+// ✅ Reuse the shared card
+import TaskCardView from "../../task/components_task/task_card_view";
 
-    const [tasks, setTasks] = useState([]);
-    const [filteredTasks, setFilteredTasks] = useState([]);
-    const [statuses, setStatuses] = useState([]);
-    const [selectedStatus, setSelectedStatus] = useState("");
-    const [loading, setLoading] = useState(true);
+const TaskComponents = ({ user, refreshTrigger }) => {
+  const theme = useTheme();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchTasks();
-        fetchStatuses();
-    }, []);
+  const [tasks, setTasks] = useState([]);
+  const [filteredTasks, setFilteredTasks] = useState([]);
+  const [statuses, setStatuses] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [loading, setLoading] = useState(true);
 
-    const handleNavigation = () => navigate("/add-task",{
-        state: {
-          'project_id': 0,
-          'project_phase_id': 0,
-        },
-      });
+  useEffect(() => {
+    fetchTasks();
+    fetchStatuses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, refreshTrigger]);
 
-    const fetchTasks = async () => {
-        try {
-            const response = await getAssignedTaskByUsers(userID);
-            console.log("Fetched tasks:", response.data);  // Debugging the task response
-            
-            // Flatten the tasks by priority into a single array
-            const allTasks = response.data.map(task => ({
-                ...task.task,
-                assigned_person: task.assigned_person, // Add assigned person data
-                assigned_by: task.assigned_by, // Add assigned by data
-                task_id: task.task_id, // Include task_id for reference
-            }));
-            setTasks(allTasks);
-            setFilteredTasks(allTasks);  // Initialize filteredTasks with all tasks
-        } catch (error) {
-            console.error("Error fetching tasks:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleNavigation = () =>
+    navigate("/add-task", {
+      state: { project_id: 0, project_phase_id: 0 },
+    });
 
-    const fetchStatuses = async () => {
-        try {
-            const response = await getStatus();
-            console.log("Fetched statuses:", response.data);  // Debugging the status response
-            setStatuses(response.data);
-        } catch (error) {
-            console.error("Error fetching statuses:", error);
-        }
-    };
+  const fetchTasks = async () => {
+    try {
+      const res = await getAssignedTaskByUsers(user);
+      const all = (res?.data || []).map((t) => ({
+        // flatten & normalize id so TaskCardView works everywhere
+        ...t.task,
+        id: t.task_id, // ← normalize
+        task_id: t.task_id,
+        assigned_person: t.assigned_person,
+        assigned_by: t.assigned_by,
+      }));
 
-    const handleStatusClick = (status) => {
-        setSelectedStatus(status);
-        setFilteredTasks(status === "" ? tasks : tasks.filter(task => task.status.status_name === status));
-    };
+      setTasks(all);
+      setFilteredTasks(
+        selectedStatus ? all.filter((x) => x.status?.status_name === selectedStatus) : all
+      );
+    } catch (e) {
+      console.error("Error fetching tasks:", e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleStatusChange = async (taskId, newStatusId) => {
-        try {
-            await updateTaskStatus({ task_id: taskId, status_id: newStatusId });
+  const fetchStatuses = async () => {
+    try {
+      const res = await getStatus();
+      setStatuses(res?.data || []);
+    } catch (e) {
+      console.error("Error fetching statuses:", e);
+    }
+  };
 
-            const updatedStatus = statuses.find((s) => s.id === newStatusId);
-
-            setTasks((prevTasks) =>
-                prevTasks.map((task) =>
-                    task.id === taskId ? { ...task, status: updatedStatus } : task
-                )
-            );
-
-            setFilteredTasks((prevFilteredTasks) =>
-                prevFilteredTasks.map((task) =>
-                    task.id === taskId ? { ...task, status: updatedStatus } : task
-                )
-            );
-        } catch (error) {
-            console.error("Error updating task status:", error);
-        }
-    };
-
-    const renderPriorityIcon = (priorityName) => {
-        switch(priorityName) {
-            case 'Important':
-                return <PriorityHigh color="error" />;
-            case 'Low':
-                return <AccessAlarm color="warning" />;
-            default:
-                return <Warning color="disabled" />;
-        }
-    };
-
-    return (
-        <Box sx={{ padding: 3 }}>
-            {loading ? (
-                <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-                    <CircularProgress />
-                </Box>
-            ) : (
-                <>
-                    {/* Status Filter */}
-                    <Box sx={{ display: "flex", gap: 1, overflowX: "auto", mb: 2, alignItems: "center" }}>
-                        <Button variant="contained" color="secondary" sx={{ borderRadius: "25px" }} onClick={handleNavigation}>
-                            + Add Task
-                        </Button>
-                        <Chip label={`All (${tasks.length})`} onClick={() => handleStatusClick("")} color={selectedStatus === "" ? "primary" : "default"} clickable />
-                        {statuses.map((status) => (
-                            <Chip
-                                key={status.id}
-                                label={status.status_name}
-                                onClick={() => handleStatusClick(status.status_name)}
-                                color={selectedStatus === status.status_name ? "primary" : "default"}
-                                clickable
-                            />
-                        ))}
-                    </Box>
-
-                    {/* Task Cards Grouped by Priority */}
-                    <Box sx={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 2 }}>
-                        {filteredTasks.length > 0 ? (
-                            filteredTasks.map((task) => (
-                                <Card key={task.id} sx={{ padding: 2, borderRadius: 3, boxShadow: 3, backgroundColor: task.priority.priority_name === 'Important' ? '#ffe6e6' : '#f0f8ff' }}>
-                                    <CardContent>
-                                        <Typography variant="h6" sx={{ fontWeight: "bold", color:
-                                             task.priority.priority_name === 'Important' ? 'red' : 'black' }}>
-                                            {task.task_title}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">{task.task_details}</Typography>
-                                        <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
-                                            <Typography variant="caption" sx={{ fontWeight: "bold" }}>Priority:</Typography>
-                                            <Chip label={task.priority.priority_name} sx={{ ml: 1, backgroundColor: task.priority.priority_name === 'Important' ? 'red' : 'yellow' }} />
-                                            {renderPriorityIcon(task.priority.priority_name)}
-                                        </Box>
-                                        <Box sx={{ display: "flex", alignItems: "center", mt: 1 }}>
-                                            <Avatar src={`${image_file_url}/${task.creator.photo}`} sx={{ width: 30, height: 30, mr: 1 }} />
-                                            <Typography variant="caption">{task.creator.name}</Typography>
-                                        </Box>
-                                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mt: 1 }}>
-                                            {/* Displaying assigned person's avatar */}
-                                            <Avatar src={`${image_file_url}/${task.assigned_person.photo}`} sx={{ width: 30, height: 30 }} />
-                                            <Typography variant="caption" sx={{ ml: 1 }}>
-                                                Assigned to: {task.assigned_person.name}
-                                            </Typography>
-                                        </Box>
-                                    </CardContent>
-                                    <CardActions>
-                                        <Select value={task.status.id} onChange={(e) => handleStatusChange(task.id, e.target.value)} sx={{ minWidth: 120 }}>
-                                            {statuses.map((status) => (
-                                                <MenuItem key={status.id} value={status.id}>{status.status_name}</MenuItem>
-                                            ))}
-                                        </Select>
-                                    </CardActions>
-                                </Card>
-                            ))
-                        ) : (
-                            <Typography align="center" variant="body2">No tasks found</Typography>
-                        )}
-                    </Box>
-                </>
-            )}
-        </Box>
+  const handleStatusClick = (statusName) => {
+    setSelectedStatus(statusName);
+    setFilteredTasks(
+      statusName ? tasks.filter((t) => t.status?.status_name === statusName) : tasks
     );
+  };
+
+  const handleStatusChange = async (taskId, newStatusId) => {
+    try {
+      const res = await updateTaskStatus({ task_id: taskId, status_id: newStatusId });
+      if (res?.status === "success") {
+        // Refresh to keep everything in sync
+        await fetchTasks();
+      }
+    } catch (e) {
+      console.error("Error updating task status:", e);
+    }
+  };
+
+  const goTaskDetails = (taskId) => navigate(`/task-details/${taskId}`);
+
+  return (
+    <Box sx={{ p: 3, bgcolor: theme.palette.background.default }}>
+      {loading ? (
+        <Box sx={{ display: "grid", placeItems: "center", height: "70vh" }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <>
+          {/* Filter row */}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              overflowX: "auto",
+              mb: 2,
+              alignItems: "center",
+            }}
+          >
+            <Button variant="contained" color="secondary" sx={{ borderRadius: "24px" }} onClick={handleNavigation}>
+              + Add Task
+            </Button>
+
+            <Chip
+              label={`All (${tasks.length})`}
+              onClick={() => handleStatusClick("")}
+              color={selectedStatus === "" ? "primary" : "default"}
+              clickable
+            />
+            {statuses.map((s) => (
+              <Chip
+                key={s.id}
+                label={s.status_name}
+                onClick={() => handleStatusClick(s.status_name)}
+                color={selectedStatus === s.status_name ? "primary" : "default"}
+                clickable
+              />
+            ))}
+          </Box>
+
+          {/* Cards grid — 4 per row on xl, scales down responsively */}
+          <Box
+            sx={{
+              display: "grid",
+              gap: 2,
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                lg: "repeat(3, 1fr)",
+                xl: "repeat(4, 1fr)", // ← 4 per row
+              },
+            }}
+          >
+            {filteredTasks.length > 0 ? (
+              filteredTasks.map((task) => (
+                <TaskCardView
+                  key={task.id}
+                  task={task}
+                  statuses={statuses}
+                  imageBaseUrl={image_file_url}
+                  onDetails={goTaskDetails}
+                  onStatusChange={handleStatusChange}
+                />
+              ))
+            ) : (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ gridColumn: "1 / -1", textAlign: "center", py: 6 }}
+              >
+                No tasks found
+              </Typography>
+            )}
+          </Box>
+        </>
+      )}
+    </Box>
+  );
 };
 
 export default TaskComponents;

@@ -1,7 +1,6 @@
 {
   "name": "admin-dashboard",
   "private": true,
-  
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -38,6 +37,8 @@
     "formik": "^2.4.5",
     "framer-motion": "^12.5.0",
     "notistack": "^3.0.2",
+    "pusher-js": "^8.4.0",
+    "quill": "^2.0.3",
     "react": "^18.3.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-big-calendar": "^1.18.0",
@@ -52,6 +53,7 @@
     "react-toastify": "^11.0.5",
     "recharts": "^2.15.3",
     "sonner": "^2.0.1",
+    "xlsx": "^0.18.5",
     "yup": "^1.6.1"
   },
   "devDependencies": {

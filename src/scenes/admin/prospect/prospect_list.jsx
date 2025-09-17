@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// src/scenes/prospect/ProspectListPage.jsx
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -7,7 +8,11 @@ import {
   Paper,
   TextField,
   Tooltip,
+  Chip,
+  Link,
+  useTheme,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import dayjs from "dayjs";
 import {
   Call,
@@ -22,353 +27,445 @@ import {
   fetchAllProspect,
   getAllProspectStageOverview,
 } from "../../../api/controller/admin_controller/prospect_controller";
-import { themeSettings } from "../../../theme";
 
 const ProspectListPage = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+
+  const brand = theme.palette.blueAccent?.main ?? theme.palette.info.main;
+  const brandHover = theme.palette.blueAccent?.dark ?? brand;
+  const brandContrast =
+    theme.palette.blueAccent?.contrastText ??
+    theme.palette.getContrastText(brand);
 
   const [prospects, setProspects] = useState([]);
-  const [prospectAllStages, setProspectAllStage] = useState([]);
+  const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedStageId, setSelectedStageId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const goProspectListStage = () => {
-    navigate("/prospect-list-by-stage");
-  };
+  const goProspectListStage = () => navigate("/prospect-list-by-stage");
+  const handleAddProspect = () => navigate("/add-prospect");
+  const handleViewProspectDetails = (id) => navigate(`/prospect-detail/${id}`);
 
   useEffect(() => {
-    fetchAllProspect()
-      .then((response) => {
-        if (response.status === "success") {
-          setProspects(response.data);
-        } else {
-          setError("Failed to fetch prospects");
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setError("Error fetching data");
-        setLoading(false);
-      });
+    (async () => {
+      try {
+        const [pRes, sRes] = await Promise.all([
+          fetchAllProspect(),
+          getAllProspectStageOverview(),
+        ]);
+        if (pRes?.status === "success") setProspects(pRes.data || []);
+        else setError("Failed to fetch prospects");
 
-    getAllProspectStageOverview()
-      .then((response) => {
-        if (response.status === "success") {
-          setProspectAllStage(response.data);
-        } else {
-          setError("Failed to fetch stages");
-        }
+        if (sRes?.status === "success") setStages(sRes.data || []);
+        else setError((e) => e || "Failed to fetch stages");
+      } catch {
+        setError("Error fetching data");
+      } finally {
         setLoading(false);
-      })
-      .catch(() => {
-        setError("Error fetching stage overview");
-        setLoading(false);
-      });
+      }
+    })();
   }, []);
 
-  const handleViewProspectDetails = (id) => {
-    navigate(`/prospect-detail/${id}`);
-  };
-
-  const handleAddProspect = () => {
-    navigate("/add-prospect");
-  };
-
-  const handleStageFilter = (stageId) => {
+  const handleStageFilter = (stageId) =>
     setSelectedStageId((prev) => (prev === stageId ? null : stageId));
-  };
 
-  const filteredProspects = selectedStageId
-    ? prospects.filter((p) => p.stage_id === selectedStageId)
-    : prospects;
+  const filteredProspects = useMemo(() => {
+    const base = selectedStageId
+      ? prospects.filter((p) => p.stage_id === selectedStageId)
+      : prospects;
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return base;
+    return base.filter(
+      (p) =>
+        (p.prospect_name || "").toLowerCase().includes(q) ||
+        (p.address || "").toLowerCase().includes(q) ||
+        (p.website_link || "").toLowerCase().includes(q)
+    );
+  }, [prospects, selectedStageId, searchQuery]);
+
+  // semantic colors for activity icons/chips
+  const activityColor = {
+    call: theme.palette.error.main,
+    whatsapp: theme.palette.info.main,
+    message: theme.palette.info.main,
+    visit: theme.palette.primary.main,
+    email: theme.palette.warning.main,
+    task: theme.palette.success.main,
+  };
 
   const columns = [
     {
       field: "id",
       headerName: "ID",
-      flex: 0.3,
+      flex: 0.4,
       headerAlign: "center",
       align: "center",
       renderCell: (params) => (
-        <Box sx={{ p: 2 }}>
-          <Typography fontWeight={600}>{params.value}</Typography>
-  
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 1.25 }}>
+          <Typography fontWeight={800} color="text.primary">
+            {params.value}
+          </Typography>
           {params.row.is_opportunity === 1 && (
-              <img
-                src={opportunity} // Replace with actual image path
-                alt="Opportunity"
-                style={{ height: 24 }} // adjust size as needed
-              />
-            )}
+            <Tooltip title="Qualified opportunity">
+              <Box component="img" src={opportunity} alt="Opportunity" sx={{ height: 20, mt: 0.25 }} />
+            </Tooltip>
+          )}
         </Box>
-      )
+      ),
     },
     {
       field: "prospectInfo",
-      headerName: "Prospect Info",
+      headerName: "Prospect",
       flex: 2,
-      renderCell: (params) => (
-        <Box sx={{ p: 2 }}>
-          <Typography fontWeight={600}>{params.row.prospect_name}</Typography>
-          <Typography variant="body2" color="text.secondary">{params.row.address}</Typography>
-          {params.row.website_link && (
-            <Typography variant="body2" color="primary">
-              <a
-                href={params.row.website_link}
+      sortable: false,
+      renderCell: (params) => {
+        const url = params.row.website_link;
+        const safeUrl = url && (url.startsWith("http") ? url : `https://${url}`);
+        return (
+          <Box sx={{ py: 1.25 }}>
+            <Typography fontWeight={800} color="text.primary" noWrap>
+              {params.row.prospect_name}
+            </Typography>
+            {params.row.address && (
+              <Typography variant="body2" color="text.secondary" noWrap>
+                {params.row.address}
+              </Typography>
+            )}
+            {safeUrl && (
+              <Link
+                href={safeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ color: '#1a0dab', textDecoration: 'underline' }}
+                underline="hover"
+                variant="body2"
+                sx={{ color: brand, display: "inline-block", maxWidth: 340, wordBreak: "break-all" }}
               >
-                {params.row.website_link}
-              </a>
-            </Typography>
-          )}
-        </Box>
-      )
+                {url}
+              </Link>
+            )}
+          </Box>
+        );
+      },
     },
     {
       field: "stage_name",
       headerName: "Stage",
-      flex: 1.5,
+      flex: 1.2,
       valueGetter: (params) => params.row.stage?.stage_name || "N/A",
-      renderCell: (params) => (
-        <Box
-        sx={{
-          backgroundColor: params.row.stage?.color_code || "transparent",
-          width: "100%",
-          p: 2,
-          borderRadius: 1,
-        }}
-      >
-        <Typography variant="body7" fontWeight={500}>{params.value}</Typography>
-      </Box>
-      )
+      renderCell: (params) => {
+        const bg = params.row.stage?.color_code || alpha(brand, 0.18);
+        const fg = theme.palette.getContrastText(bg);
+        return (
+          <Chip
+            label={params.value}
+            size="small"
+            sx={{
+              bgcolor: bg,
+              color: fg,
+              fontWeight: 700,
+            }}
+          />
+        );
+      },
     },
     {
       field: "industry_source_zone",
-      headerName: "Industry / Source / Zone",
+      headerName: "Industry / Source / Zone / Product",
       flex: 2,
+      sortable: false,
       renderCell: (params) => {
         const industry = params.row.industry_type?.industry_type_name || "N/A";
         const source = params.row.information_source?.information_source_name || "N/A";
         const zone = params.row.zone?.zone_name || "N/A";
         const product = params.row.interested_for?.product_name || "N/A";
-
         return (
-          <Box display="flex" flexDirection="column" fontSize="0.9em" sx={{ p: 2 }}>
-            <Typography><strong>Industry:</strong> {industry}</Typography>
-            <Typography><strong>Source:</strong> {source}</Typography>
-            <Typography><strong>Zone:</strong> {zone}</Typography>
-            <Typography><strong>Interested On:</strong> {product}</Typography>
+          <Box display="grid" gap={0.25} sx={{ py: 1.25 }}>
+            <Typography variant="body2" color="text.secondary">
+              <strong>Industry:</strong> {industry}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              <strong>Source:</strong> {source}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              <strong>Zone:</strong> {zone}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              <strong>Interested On:</strong> {product}
+            </Typography>
           </Box>
         );
-      }
+      },
     },
     {
       field: "concernPersons",
-      headerName: "Contact Persons",
-      flex: 2.5,
+      headerName: "Contacts",
+      flex: 1.8,
+      sortable: false,
       renderCell: (params) => {
         const persons = params.row.concern_persons || [];
-        const firstPerson = persons[0];
-
-        const tooltipContent = (
+        const first = persons[0];
+        const tooltip = (
           <Box>
             {persons.map((p, i) => (
-              <Typography key={i} fontSize="1.5em" py={0.5}>
+              <Typography key={i} fontSize="0.95rem" py={0.25}>
                 {p.person_name} ({p.mobile})
               </Typography>
             ))}
           </Box>
         );
-
         return (
-          <Tooltip
-            title={tooltipContent}
-            placement="top-start"
-            arrow
-            enterDelay={300}
-          >
-            <Box sx={{ p: 2 }}>
-              <Typography fontWeight={500} sx={{ cursor: 'pointer' }}>
-                {firstPerson?.person_name} ({firstPerson?.mobile})
-                {persons.length > 1 && (
-                  <Typography variant="caption" color="text.secondary" ml={1}>
-                    +{persons.length - 1} more
-                  </Typography>
-                )}
-              </Typography>
+          <Tooltip title={tooltip} placement="top-start" arrow enterDelay={300}>
+            <Box sx={{ py: 1.25 }}>
+              {first ? (
+                <Typography fontWeight={700} sx={{ cursor: "pointer" }} color="text.primary" noWrap>
+                  {first.person_name} ({first.mobile})
+                  {persons.length > 1 && (
+                    <Typography component="span" variant="caption" color="text.secondary" ml={1}>
+                      +{persons.length - 1} more
+                    </Typography>
+                  )}
+                </Typography>
+              ) : (
+                <Typography variant="body2" color="text.secondary">No contact</Typography>
+              )}
             </Box>
           </Tooltip>
         );
-      }
+      },
     },
     {
       field: "followup_activity",
-      headerName: "Followup Activity",
-      flex: 2.2,
+      headerName: "Activity",
+      flex: 1.8,
+      sortable: false,
       renderCell: (params) => {
-        const { call = 0, whatsapp = 0, visit = 0, email = 0, task = 0 } = params.row.activity_summary || {};
-
-        const activityItems = [
-          { icon: <Call fontSize="small" color="primary" />, label: call, tooltip: "Calls" },
-          { icon: <Message fontSize="small" color="primary" />, label: whatsapp, tooltip: "Messages" },
-          { icon: <LocationOn fontSize="small" color="primary" />, label: visit, tooltip: "Visits" },
-          { icon: <Email fontSize="small" color="primary" />, label: email, tooltip: "Emails" },
-          { icon: <AssignmentTurnedIn fontSize="small" color="primary" />, label: task, tooltip: "Tasks" },
+        const { call = 0, whatsapp = 0, visit = 0, email = 0, task = 0 } =
+          params.row.activity_summary || {};
+        const items = [
+          { icon: <Call sx={{ color: activityColor.call }} fontSize="small" />, label: call, tip: "Calls" },
+          { icon: <Message sx={{ color: activityColor.whatsapp }} fontSize="small" />, label: whatsapp, tip: "Messages" },
+          { icon: <LocationOn sx={{ color: activityColor.visit }} fontSize="small" />, label: visit, tip: "Visits" },
+          { icon: <Email sx={{ color: activityColor.email }} fontSize="small" />, label: email, tip: "Emails" },
+          { icon: <AssignmentTurnedIn sx={{ color: activityColor.task }} fontSize="small" />, label: task, tip: "Tasks" },
         ];
-
         return (
-          <Box display="flex" gap={1} sx={{ p: 2 }}>
-            {activityItems.map((item, i) => (
-              <Tooltip title={`${item.tooltip}: ${item.label}`} key={i}>
-                <Box display="flex" alignItems="center" gap={0.5}>
-                  {item.icon}
-                  <Typography variant="body2">{item.label}</Typography>
-                </Box>
+          <Box display="flex" gap={1} sx={{ py: 1.25, flexWrap: "wrap" }}>
+            {items.map((it, i) => (
+              <Tooltip key={i} title={`${it.tip}: ${it.label}`}>
+                <Chip
+                  icon={it.icon}
+                  label={it.label}
+                  size="small"
+                  sx={{
+                    bgcolor: alpha(
+                      // pick the icon color safely
+                      (it.icon.props.sx && it.icon.props.sx.color) || theme.palette.text.secondary,
+                      0.12
+                    ),
+                    "& .MuiChip-icon": {
+                      // icon already colored
+                    },
+                    fontWeight: 700,
+                  }}
+                />
               </Tooltip>
             ))}
           </Box>
         );
-      }
+      },
     },
     {
       field: "activity_date",
-      headerName: "Activity Dates",
-      flex: 2,
-      renderCell: (params) => {
-        return (
-          <Box fontSize="0.9em" sx={{ p: 2 }}>
-            <Typography><strong>Last:</strong> {dayjs(params.row.last_activity).format("MMM D, YYYY")}</Typography>
-            <Typography><strong>Next:</strong> {dayjs(params.row.next_activity).format("MMM D, YYYY")}</Typography>
-          </Box>
-        );
-      }
+      headerName: "Dates",
+      flex: 1.4,
+      sortable: false,
+      renderCell: (params) => (
+        <Box sx={{ py: 1.25 }}>
+          <Typography variant="body2" color="text.secondary">
+            <strong>Last:</strong>{" "}
+            {params.row.last_activity ? dayjs(params.row.last_activity).format("MMM D, YYYY") : "N/A"}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            <strong>Next:</strong>{" "}
+            {params.row.next_activity ? dayjs(params.row.next_activity).format("MMM D, YYYY") : "N/A"}
+          </Typography>
+        </Box>
+      ),
     },
     {
       field: "view_details",
       headerName: "Actions",
-      flex: 1,
+      flex: 0.9,
+      sortable: false,
       renderCell: (params) => (
-        <Box sx={{ p: 2 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{
-              borderRadius: 20,
-              textTransform: "none",
-              fontSize: "14px",
-              fontWeight: "bold",
-              px: 2
-            }}
-            onClick={() => handleViewProspectDetails(params.row.id)}
-          >
-            View Details
-          </Button>
-        </Box>
-      )
-    }
+        <Button
+          variant="contained"
+          onClick={() => handleViewProspectDetails(params.row.id)}
+          sx={{
+            borderRadius: 2,
+            textTransform: "none",
+            fontWeight: 800,
+            px: 1.75,
+            bgcolor: brand,
+            color: brandContrast,
+            "&:hover": { bgcolor: brandHover },
+          }}
+        >
+          View
+        </Button>
+      ),
+    },
   ];
 
-  const getRowClassName = (params) => {
-    return params.row.stage?.color_code ? `status-${params.row.stage.color_code.replace('#', '')}` : '';
-  };
-
-  if (loading) return <Typography variant="h6" color="primary">Loading...</Typography>;
-  if (error) return <Typography variant="h6" color="error">{error}</Typography>;
+  if (loading)
+    return (
+      <Typography variant="h6" color="primary" sx={{ px: 3, py: 2 }}>
+        Loading…
+      </Typography>
+    );
+  if (error)
+    return (
+      <Typography variant="h6" color="error" sx={{ px: 3, py: 2 }}>
+        {error}
+      </Typography>
+    );
 
   return (
-    <Box sx={{ p: 4, backgroundColor: "#f3f4f6", minHeight: "100vh" }}>
-      <Box
-        display="flex"
-        alignItems="center"
-        flexWrap="wrap"
-        gap={2}
-        mb={4}
-      >
-        <Typography variant="h5" fontWeight={700}>
-          🧭 Leads
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: theme.palette.background.default, minHeight: "100vh" }}>
+      {/* Header actions */}
+      <Box display="flex" alignItems="center" flexWrap="wrap" gap={1.5} mb={3}>
+        <Typography variant="h5" fontWeight={800} color="text.primary">
+          Leads
         </Typography>
 
-        <Button variant="contained" color="primary" onClick={handleAddProspect}>
-          ➕ Add Prospect
-        </Button>
+        <TextField
+          size="small"
+          placeholder="Search all prospects"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{
+            width: 280,
+            ml: 1,
+            "& .MuiOutlinedInput-root": { bgcolor: theme.palette.background.paper },
+          }}
+        />
 
-        <Button variant="outlined" color="secondary" onClick={() => window.location.reload()}>
-          🔄 Refresh
-        </Button>
-
-        <Button variant="contained" color="info" onClick={goProspectListStage}>
-          📊 Stage View
-        </Button>
+        <Box sx={{ ml: "auto", display: "flex", gap: 1 }}>
+          <Button
+            variant="contained"
+            onClick={handleAddProspect}
+            sx={{ bgcolor: brand, color: brandContrast, "&:hover": { bgcolor: brandHover } }}
+          >
+            Add Prospect
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => window.location.reload()}
+            sx={{
+              borderColor: brand,
+              color: brand,
+              "&:hover": { bgcolor: alpha(brand, 0.12), borderColor: brand },
+            }}
+          >
+            Refresh
+          </Button>
+          <Button
+            variant="contained"
+            onClick={goProspectListStage}
+            sx={{ bgcolor: brand, color: brandContrast, "&:hover": { bgcolor: brandHover } }}
+          >
+            Stage View
+          </Button>
+        </Box>
       </Box>
-      <Paper sx={{ p: 2, mb: 4 }}>
-        <Box display="flex" gap={2} overflow="auto">
-          {prospectAllStages.map((label, index) => {
-            const isSelected = selectedStageId === label.id;
+
+      {/* Stage filter strip */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2,
+          mb: 3,
+          bgcolor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+          borderRadius: 2,
+        }}
+      >
+        <Box display="flex" gap={1} overflow="auto">
+          {stages.map((s) => {
+            const isSelected = selectedStageId === s.id;
+            const chipBg = s.color_code || alpha(brand, 0.16);
+            const chipFg = theme.palette.getContrastText(chipBg);
             return (
-              <Box
-                key={index}
-                textAlign="center"
-                minWidth={100}
+              <Chip
+                key={s.id}
+                label={`${s.stage_name} • ${s.prospects_count}`}
+                onClick={() => handleStageFilter(s.id)}
+                clickable
                 sx={{
-                  cursor: "pointer",
-                  px: 2,
-                  py: 1.5,
+                  bgcolor: isSelected ? alpha(brand, 0.2) : chipBg,
+                  color: isSelected ? brand : chipFg,
+                  fontWeight: 700,
                   borderRadius: 2,
-                  border: `2px solid ${isSelected ? "#3b82f6" : "#e0e0e0"}`,
-                  backgroundColor: isSelected ? "#dbeafe" : label.color_code,
-                  boxShadow: isSelected ? 3 : 1,
-                  transition: "all 0.2s ease-in-out",
-                  "&:hover": {
-                    boxShadow: 3,
-                    borderColor: "#3b82f6",
-                  },
+                  border: `1px solid ${isSelected ? brand : alpha(chipFg, 0.25)}`,
                 }}
-                onClick={() => handleStageFilter(label.id)}
-              >
-                <Typography variant="h6" color={isSelected ? "primary" : "textPrimary"}>
-                  {label.prospects_count}
-                </Typography>
-                <Typography variant="caption" color="textSecondary">{label.stage_name}</Typography>
-              </Box>
+              />
             );
           })}
         </Box>
-
-        <TextField size="small" placeholder="Search all prospects" sx={{ width: 300, mt: 2 }} />
       </Paper>
 
+      {/* DataGrid */}
       <Box
-        mt={3}
-        height="75vh"
         sx={{
-          borderRadius: "10px",
+          height: "75vh",
+          borderRadius: 2,
           overflow: "hidden",
-          boxShadow: 2,
-          "& .MuiDataGrid-root": { border: "none" },
-          "& .MuiDataGrid-cell": { borderBottom: "1px solid rgba(224, 224, 224, 1)" },
-          "& .MuiDataGrid-columnHeaders": { backgroundColor: "#e5e7eb", fontSize: "16px", fontWeight: "bold" },
-          "& .MuiDataGrid-virtualScroller": { backgroundColor: "#f9fafb" },
-          "& .MuiDataGrid-footerContainer": { backgroundColor: "#e5e7eb", borderTop: "1px solid rgba(224, 224, 224, 1)" },
+          boxShadow: theme.shadows[2],
+          "& .MuiDataGrid-root": {
+            border: "none",
+            bgcolor: theme.palette.background.paper,
+            color: theme.palette.text.primary,
+          },
+          "& .MuiDataGrid-columnHeaders": {
+            bgcolor: alpha(brand, 0.10),
+            color: theme.palette.text.primary,
+            borderBottom: `1px solid ${theme.palette.divider}`,
+            fontWeight: 800,
+          },
+          "& .MuiDataGrid-cell": {
+            borderBottom: `1px solid ${theme.palette.divider}`,
+          },
+          "& .MuiDataGrid-footerContainer": {
+            bgcolor: alpha(brand, 0.10),
+            borderTop: `1px solid ${theme.palette.divider}`,
+          },
+          "& .MuiDataGrid-toolbarContainer": {
+            p: 1,
+            "& .MuiButton-text": { color: theme.palette.text.primary },
+          },
+          "& .MuiDataGrid-row:hover": {
+            backgroundColor:
+              theme.palette.action?.hover || alpha(theme.palette.text.primary, 0.04),
+          },
+          "& .MuiDataGrid-row.Mui-selected": {
+            backgroundColor:
+              theme.palette.action?.selected || alpha(brand, 0.12),
+          },
         }}
       >
         <DataGrid
           rows={filteredProspects}
           columns={columns}
-          components={{ Toolbar: GridToolbar }}
           getRowId={(row) => row.id}
-          getRowClassName={getRowClassName}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 10,
-              },
-            },
-          }}
           checkboxSelection
+          disableRowSelectionOnClick
+          components={{ Toolbar: GridToolbar }}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 10 } },
+          }}
         />
       </Box>
     </Box>

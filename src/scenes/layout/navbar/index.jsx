@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { tokens, ColorModeContext } from "../../../theme";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import {
   DarkModeOutlined,
   LightModeOutlined,
@@ -30,19 +30,22 @@ import { modulePermission } from "../../../api/controller/admin_controller/user_
 
 const Navbar = () => {
   const userID = localStorage.getItem("userId");
-    const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+
   const theme = useTheme();
+  const inputRef = useRef(null);
   const colorMode = useContext(ColorModeContext);
   const { toggled, setToggled } = useContext(ToggledContext);
   const isMdDevices = useMediaQuery("(max-width:768px)");
   const isXsDevices = useMediaQuery("(max-width:466px)");
   const colors = tokens(theme.palette.mode);
-  
+
   const [openNotificationModal, setOpenNotificationModal] = useState(false);
 
 
-const [permissions, setPermissions] = useState({});
+  const [permissions, setPermissions] = useState({});
   const handleGetModulePermission = async () => {
     try {
 
@@ -69,6 +72,11 @@ const [permissions, setPermissions] = useState({});
   const handleNavigate = () => {
     navigate(`employee-profile/${userID}`);
   };
+  const handleNavigateTask = (id) => {
+    navigate(`task-details/${id}`);
+    setSearchQuery('');
+
+  };
   const navigateToMessageBox = () => {
     navigate(`conversation-room-list`);
   };
@@ -76,7 +84,12 @@ const [permissions, setPermissions] = useState({});
   // Handle notification modal open/close
   const handleNotificationClick = () => {
     navigate(`notification-page`);
-    
+
+    // setOpenNotificationModal(true);
+  };
+  const handleContactUsClick = () => {
+    navigate(`contact-us-form`);
+
     // setOpenNotificationModal(true);
   };
 
@@ -96,9 +109,18 @@ const [permissions, setPermissions] = useState({});
         <IconButton sx={{ display: `${isMdDevices ? "flex" : "none"}` }} onClick={() => setToggled(!toggled)}>
           <MenuOutlined />
         </IconButton>
-        <Box display="flex" alignItems="center" bgcolor={colors.primary[400]} borderRadius="3px" sx={{ display: `${isXsDevices ? "none" : "flex"}` }}>
-          <InputBase placeholder="Search" sx={{ ml: 2, flex: 1 }} />
-          <IconButton type="button" sx={{ p: 1 }}>
+        <Box display="flex" alignItems="center" bgcolor={colors.gray[900]} borderRadius="3px" sx={{ display: `${isXsDevices ? "none" : "flex"}` }}>
+          <InputBase
+            placeholder="Find Task By ID"
+            sx={{ ml: 2, flex: 1 }}
+            // Control the input's value with state.
+            value={searchQuery}
+            // Update the state on every keystroke.
+            onChange={(e) => setSearchQuery(e.target.value)}
+
+
+          />
+          <IconButton type="button" sx={{ p: 1 }} onClick={() => { handleNavigateTask(searchQuery); }}>
             <SearchOutlined />
           </IconButton>
         </Box>
@@ -106,26 +128,38 @@ const [permissions, setPermissions] = useState({});
 
       <Box>
 
-         {permissions.task && (
-           <IconButton onClick={navigateToMessageBox}>
-          <Badge badgeContent={1} color="error">
-            <ChatBubbleOutlineIcon />
-          </Badge>
-        </IconButton>
-         )}
-       
+
+        {permissions.prospect && (
+          <Button
+            size="small"
+            sx={{ textTransform: "none" }}
+            onClick={() => handleContactUsClick()
+            }
+          >
+            Contact with Developer
+          </Button>
+        )}
+
+        {permissions.task && (
+          <IconButton onClick={navigateToMessageBox}>
+            <Badge badgeContent={1} color="error">
+              <ChatBubbleOutlineIcon />
+            </Badge>
+          </IconButton>
+        )}
+
         <IconButton onClick={colorMode.toggleColorMode}>
           {theme.palette.mode === "dark" ? <LightModeOutlined /> : <DarkModeOutlined />}
         </IconButton>
-         {permissions.task && (
-           <IconButton onClick={handleNotificationClick}>
-             <Badge badgeContent={1} color="error">
-          <NotificationsOutlined />
-          </Badge>
-          
-        </IconButton>
-         )}
-       
+        {permissions.task && (
+          <IconButton onClick={handleNotificationClick}>
+            <Badge badgeContent={1} color="error">
+              <NotificationsOutlined />
+            </Badge>
+
+          </IconButton>
+        )}
+
         <IconButton>
           <SettingsOutlined />
         </IconButton>

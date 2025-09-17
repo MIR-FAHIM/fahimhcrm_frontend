@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Box, Button, TextField, Typography, CircularProgress, Autocomplete, Chip, Grid } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
+import { useTheme } from "@mui/material/styles"; // Import useTheme hook
 import { getStatus, getPriority, getProjects, assignUser, addTask, getTaskType, getProjectsPhases } from "../../../../api/controller/admin_controller/task_controller/task_controller";
 import { fetchEmployees } from "../../../../api/controller/admin_controller/user_controller";
 
 const AddTaskFormProject = ({projectId, statusID}) => {
+  const theme = useTheme(); // Use the theme hook to access palette
   const userID = localStorage.getItem("userId");
   const { control, handleSubmit, reset, setValue, watch } = useForm();
   const [priorities, setPriorities] = useState([]);
@@ -37,7 +39,7 @@ const AddTaskFormProject = ({projectId, statusID}) => {
     fetchEmployees().then((res) => setEmployees(res.data || [])).catch(console.error);
 
     
-  }, [setValue]);
+  }, [setValue, projectId, statusID]); // Added dependencies to useEffect
 
   const handleProject = (projectId) => {
     setValue("project_id", projectId);
@@ -87,16 +89,16 @@ const AddTaskFormProject = ({projectId, statusID}) => {
       component="form"
       onSubmit={handleSubmit(onSubmit)}
       sx={{
-        backgroundColor: "#fff",
-    padding: 3,
-    borderRadius: "8px",
-    boxShadow: 3,
-    width: "100%",     // <-- added width
-    maxWidth: "1200px", // <-- added max width
-    margin: "auto",
+        backgroundColor: theme.palette.background.paper, // Use theme for background color
+        padding: 3,
+        borderRadius: "8px",
+        boxShadow: theme.shadows[3], // Use theme for box shadow
+        width: "100%",
+        maxWidth: "1200px",
+        margin: "auto",
       }}
     >
-      <Typography variant="h5" fontWeight="bold" mb={3}>
+      <Typography variant="h5" fontWeight="bold" mb={3} color="text.primary">
         Add New Task
       </Typography>
 
@@ -104,12 +106,12 @@ const AddTaskFormProject = ({projectId, statusID}) => {
         {/* Left Column */}
         <Grid item xs={12} md={6}>
           <Controller name="task_title" control={control} defaultValue="" render={({ field }) => (
-            <TextField {...field} label="Task Title" fullWidth required />
+            <TextField {...field} label="Task Title" fullWidth required variant="outlined" color="primary" />
           )} />
 
           <Box mt={2}>
             <Controller name="task_details" control={control} defaultValue="" render={({ field }) => (
-              <TextField {...field} label="Task Details" fullWidth required multiline rows={4} />
+              <TextField {...field} label="Task Details" fullWidth required multiline rows={4} variant="outlined" color="primary" />
             )} />
           </Box>
 
@@ -122,7 +124,7 @@ const AddTaskFormProject = ({projectId, statusID}) => {
                 <Autocomplete
                   options={employees}
                   getOptionLabel={(option) => option.name}
-                  renderInput={(params) => <TextField {...params} label="Assign To (Optional)" fullWidth />}
+                  renderInput={(params) => <TextField {...params} label="Assign To (Optional)" fullWidth variant="outlined" color="primary" />}
                   onChange={(event, newValue) => field.onChange(newValue ? newValue.id : "")}
                 />
               )}
@@ -131,14 +133,14 @@ const AddTaskFormProject = ({projectId, statusID}) => {
 
           <Box mt={2}>
             <Controller name="due_date" control={control} defaultValue="" render={({ field }) => (
-              <TextField {...field} label="Due Date" type="date" InputLabelProps={{ shrink: true }} fullWidth />
+              <TextField {...field} label="Due Date" type="date" InputLabelProps={{ shrink: true }} fullWidth variant="outlined" color="primary" />
             )} />
           </Box>
         </Grid>
 
         {/* Right Column */}
         <Grid item xs={12} md={6}>
-          <Typography variant="subtitle2" mb={1}>Priority</Typography>
+          <Typography variant="subtitle2" mb={1} color="text.secondary">Priority</Typography>
           <Box display="flex" gap={1} flexWrap="wrap" mb={2}>
             {priorities.map((priority) => (
               <Chip
@@ -151,7 +153,7 @@ const AddTaskFormProject = ({projectId, statusID}) => {
             ))}
           </Box>
 
-          <Typography variant="subtitle2" mb={1}>Task Type</Typography>
+          <Typography variant="subtitle2" mb={1} color="text.secondary">Task Type</Typography>
           <Box display="flex" gap={1} flexWrap="wrap" mb={2}>
             {taskTypes.map((type) => (
               <Chip
@@ -164,7 +166,7 @@ const AddTaskFormProject = ({projectId, statusID}) => {
             ))}
           </Box>
 
-          <Typography variant="subtitle2" mb={1}>Status</Typography>
+          <Typography variant="subtitle2" mb={1} color="text.secondary">Status</Typography>
           <Box display="flex" gap={1} flexWrap="wrap" mb={2}>
             {statuses.map((status) => (
               <Chip
@@ -177,7 +179,7 @@ const AddTaskFormProject = ({projectId, statusID}) => {
             ))}
           </Box>
 
-          <Typography variant="subtitle2" mb={1}>Project</Typography>
+          <Typography variant="subtitle2" mb={1} color="text.secondary">Project</Typography>
           <Box display="flex" gap={1} flexWrap="wrap" mb={2}>
             {projects.map((project) => (
               <Chip
@@ -190,7 +192,7 @@ const AddTaskFormProject = ({projectId, statusID}) => {
             ))}
           </Box>
 
-          <Typography variant="subtitle2" mb={1}>Project Phase</Typography>
+          <Typography variant="subtitle2" mb={1} color="text.secondary">Project Phase</Typography>
           <Box display="flex" gap={1} flexWrap="wrap">
             {phases.map((phase) => (
               <Chip

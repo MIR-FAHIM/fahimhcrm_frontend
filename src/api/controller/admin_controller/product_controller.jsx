@@ -76,6 +76,22 @@ export const getProductWithVariants = async (id) => {
     return [];
   }
 }
+
+export const getAllVarients = async () => {
+  try {
+    const response = await axiosInstance.get(`/api/product-variant/get-all-varients`,
+        {
+            headers: {
+              // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+              'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+            },}
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching product-variant/get-all-varients:", error);
+    return [];
+  }
+}
 export const addProduct = async (data) => {
   try {
     const response = await axiosInstance.post(`/api/product/add`, data,
@@ -88,6 +104,36 @@ export const addProduct = async (data) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching addProduct:", error);
+    return [];
+  }
+}
+export const createMultipleCart = async (data) => {
+  try {
+    const response = await axiosInstance.post(`/api/cart/multiple`, data,
+        {
+            headers: {
+              // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+              'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+            },}
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching addProduct:", error);
+    return [];
+  }
+}
+export const addOrder = async (data) => {
+  try {
+    const response = await axiosInstance.post(`/api/product-orders/add-order`, data,
+        {
+            headers: {
+              // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+              'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+            },}
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching product-orders/add-order:", error);
     return [];
   }
 }

@@ -16,6 +16,7 @@ export const fetchDepartment = async () => {
     return [];
   }
 }
+
 export const fetchZone = async () => {
   try {
     const response = await axiosInstance.get(`/api/zones`,

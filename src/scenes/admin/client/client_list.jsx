@@ -81,9 +81,9 @@ const ClientList = () => {
           boxShadow: 2,
           "& .MuiDataGrid-root": { border: "none" },
           "& .MuiDataGrid-cell": { borderBottom: "1px solid rgba(224, 224, 224, 1)" },
-          "& .MuiDataGrid-columnHeaders": { backgroundColor: colors.gray[10], fontSize: "16px", fontWeight: "bold" },
+          "& .MuiDataGrid-columnHeaders": { backgroundColor: colors.gray[800], fontSize: "16px", fontWeight: "bold" },
           "& .MuiDataGrid-virtualScroller": { backgroundColor: colors.primary[400] },
-          "& .MuiDataGrid-footerContainer": { backgroundColor: colors.gray[10], borderTop: "1px solid rgba(224, 224, 224, 1)" },
+          "& .MuiDataGrid-footerContainer": { backgroundColor: colors.gray[800], borderTop: "1px solid rgba(224, 224, 224, 1)" },
           "& .MuiCheckbox-root": { color: `${colors.greenAccent[200]} !important` },
           "& .MuiDataGrid-toolbarContainer .MuiButton-text": { color: `${colors.gray[100]} !important` },
         }}
