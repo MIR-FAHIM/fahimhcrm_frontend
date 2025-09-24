@@ -43,34 +43,8 @@ const fmtDateTime = (val) => {
   }
 };
 
-const statusChipColor = (status) => {
-  switch ((status || "").toLowerCase()) {
-    case "scheduled":
-      return "default";
-    case "started":
-    case "in progress":
-      return "info";
-    case "completed":
-      return "success";
-    case "cancelled":
-    case "canceled":
-      return "error";
-    default:
-      return "default";
-  }
-};
 
-const typeChipColor = (type) => {
-  switch ((type || "").toLowerCase()) {
-    case "planned":
-      return "primary";
-    case "ad-hoc":
-    case "adhoc":
-      return "secondary";
-    default:
-      return "default";
-  }
-};
+
 
 const getCoords = (v) => {
   // Prefer check-in coordinates if present; else fallback to lead coords if your API returns them
@@ -218,14 +192,29 @@ export default function DateWiseVisit() {
                           <Stack direction="row" spacing={1} alignItems="center">
                             <Chip
                               size="small"
-                              label={v.status || "—"}
-                              color={statusChipColor(v.status)}
+                              label={v.id || "—"}
+                              sx={{
+                                bgcolor: v.priority?.color_code || "grey.300",
+                               color: "#110101ff",
+                              }}
+                              variant="outlined"
+                            />
+                            <Chip
+                              size="small"
+                              label={v.status?.status_name || "—"}
+                              sx={{
+                                bgcolor: v.priority?.color_code || "grey.300",
+                                color: "#110101ff",
+                              }}
                               variant="outlined"
                             />
                             <Chip
                               size="small"
                               label={v.visit_type || "—"}
-                              color={typeChipColor(v.visit_type)}
+                              sx={{
+                                bgcolor: v.priority?.color_code || "grey.300",
+                                color: "#110101ff",
+                              }}
                               variant="outlined"
                             />
                           </Stack>
@@ -301,6 +290,12 @@ export default function DateWiseVisit() {
                               <MapIcon sx={{ fontSize: 16, color: "text.secondary" }} />
                               <Typography variant="body2">
                                 Zone: <strong>{v?.zone?.zone_name || "—"}</strong>
+                              </Typography>
+                            </Stack>
+                            <Stack direction="row" alignItems="center" spacing={0.75}>
+                              <MapIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                              <Typography variant="body2">
+                                Priority: <strong>{v?.priority?.priority_name || "—"}</strong>
                               </Typography>
                             </Stack>
                           </Stack>

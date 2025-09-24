@@ -148,8 +148,8 @@ const VisitMap = () => {
       </button>
 
       <APIProvider apiKey={google_map_key}>
-        <div style={{ width: "100%", height: "100%" }}>
-          <Map gestureHandling="greedy" style={{ width: "100%", height: "100%" }}>
+        <div style={{ width: "100%", height: "100%" }}> 
+          <Map gestureHandling="greedy" style={{ width: "100%", height: "100%" }} >
             {prospectMarkers.length === 0 ? (
               <Box
                 sx={{

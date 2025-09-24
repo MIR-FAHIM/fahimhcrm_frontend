@@ -295,12 +295,12 @@ export default function MyVisits() {
                       {/* When */}
                       <TableCell>
                         <Stack direction="row" spacing={1} alignItems="center">
-                         
+
                           <Box>
                             <Typography variant="body2" fontWeight={700}>
                               {v.id}
                             </Typography>
-                            
+
                           </Box>
                         </Stack>
                       </TableCell>
@@ -336,15 +336,37 @@ export default function MyVisits() {
                       </TableCell>
 
                       {/* Purpose & Note */}
-                      <TableCell sx={{ maxWidth: 360 }}>
-                        <Typography variant="body2" fontWeight={600} noWrap title={v.purpose}>
+                      <TableCell sx={{ maxWidth: 260, minWidth: 180 }}>
+                        <Typography
+                          variant="body2"
+                          fontWeight={600}
+                          sx={{
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "normal",
+                            maxWidth: "240px",
+                          }}
+                          title={v.purpose}
+                        >
                           {v.purpose || "—"}
                         </Typography>
                         {v.note && (
                           <Typography
                             variant="caption"
                             color="text.secondary"
-                            noWrap
+                            sx={{
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "normal",
+                              maxWidth: "240px",
+                              mt: 0.5,
+                            }}
                             title={v.note}
                           >
                             {v.note}

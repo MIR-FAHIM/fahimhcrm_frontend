@@ -369,9 +369,11 @@ export default function VisitPlanner() {
                   >
                     <thead>
                       <tr>
+                        <th style={th}>ID</th>
                         <th style={th}>Employee</th>
                         <th style={th}>Lead</th>
                         <th style={th}>Zone</th>
+                        <th style={th}>Priority</th>
                         <th style={th}>Scheduled At</th>
                         <th style={th}>Purpose</th>
                       </tr>
@@ -379,6 +381,7 @@ export default function VisitPlanner() {
                     <tbody>
                       {visits.map((v) => (
                         <tr key={v.id}>
+                           <td style={td}>{v.id}</td>
                           <td style={td}>{v.employee?.name || "—"}</td>
                           <td style={td}>
                             {v.lead?.prospect_name
@@ -386,6 +389,7 @@ export default function VisitPlanner() {
                               : "—"}
                           </td>
                           <td style={td}>{v.zone?.zone_name || "—"}</td>
+                          <td style={td}>{v.priority?.priority_name || "—"}</td>
                           <td style={td}>{fmtDateTime(v.scheduled_at)}</td>
                           <td style={td}>{v.purpose}</td>
                         </tr>
