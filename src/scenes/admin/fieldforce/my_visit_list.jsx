@@ -22,14 +22,20 @@ import {
   Select,
   FormControl,
   InputLabel,
+  IconButton,
   Box,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
+
 import SearchIcon from "@mui/icons-material/Search";
 import EventIcon from "@mui/icons-material/Event";
 import FmdGoodIcon from "@mui/icons-material/FmdGood";
 import WorkHistoryIcon from "@mui/icons-material/WorkHistory";
+import MyLocationIcon from "@mui/icons-material/MyLocation";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
-// 👉 Import your controller function
+// Controller
 import { getEmpVisit } from "../../../api/controller/admin_controller/visit_controller";
 
 const fmtDate = (val) => {
@@ -43,15 +49,23 @@ const fmtDate = (val) => {
 
 export default function MyVisits() {
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState([]);
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");     // Scheduled / Started / Completed …
-  const [typeFilter, setTypeFilter] = useState("all");         // Planned / Ad-hoc …
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [snack, setSnack] = useState({ open: false, msg: "", sev: "error" });
 
-  const userID = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+  const userID =
+    typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+
+  const handleOpenMap = (lat, lng) => {
+    if (lat != null && lng != null) {
+      navigate(`/google-map?lat=${lat}&lng=${lng}`);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -73,7 +87,7 @@ export default function MyVisits() {
     })();
   }, [userID]);
 
-  // Build unique filter options from data
+  // Build filter options
   const allStatuses = useMemo(
     () => ["all", ...Array.from(new Set(rows.map((r) => r?.status).filter(Boolean)))],
     [rows]
@@ -136,6 +150,30 @@ export default function MyVisits() {
         return "default";
     }
   };
+
+  const brand = theme.palette.primary.main;
+  const divider = theme.palette.divider;
+  const textSec = theme.palette.text.secondary;
+
+  // Helper to get preferred coords (check-in first, else lead coords)
+  const getCoords = (v) => {
+    const parseNum = (x) => {
+      const n = Number(x);
+      return Number.isFinite(n) ? n : null;
+    };
+    const lat =
+      parseNum(v?.checkin_latitude) ??
+      parseNum(v?.lead?.latitude) ??
+      null;
+    const lng =
+      parseNum(v?.checkin_longitude) ??
+      parseNum(v?.lead?.longitude) ??
+      null;
+    return { lat, lng };
+  };
+
+  // Column count (update if you add/remove columns)
+  const COLS = 8; // Increased by 1 for details column
 
   return (
     <>
@@ -218,19 +256,22 @@ export default function MyVisits() {
           <Table stickyHeader size="small" aria-label="my visits table">
             <TableHead>
               <TableRow>
+                <TableCell>ID</TableCell>
                 <TableCell>When</TableCell>
                 <TableCell>Lead / Zone</TableCell>
                 <TableCell>Purpose & Note</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Type</TableCell>
+                <TableCell>Location</TableCell>
                 <TableCell>Planner</TableCell>
+                <TableCell>Details</TableCell> {/* New column */}
               </TableRow>
             </TableHead>
 
             <TableBody>
               {loading && (
                 <TableRow>
-                  <TableCell colSpan={6} sx={{ p: 0 }}>
+                  <TableCell colSpan={COLS} sx={{ p: 0 }}>
                     <LinearProgress />
                   </TableCell>
                 </TableRow>
@@ -238,93 +279,157 @@ export default function MyVisits() {
 
               {!loading && filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                  <TableCell colSpan={COLS} align="center" sx={{ py: 4, color: "text.secondary" }}>
                     No visits found.
                   </TableCell>
                 </TableRow>
               )}
 
               {!loading &&
-                filtered.map((v) => (
-                  <TableRow key={v.id} hover>
-                    {/* When */}
-                    <TableCell>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <EventIcon sx={{ fontSize: 18, color: "text.secondary" }} />
-                        <Box>
-                          <Typography variant="body2" fontWeight={700}>
-                            {fmtDate(v.scheduled_at)}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {v.actual_start_at || v.actual_end_at
-                              ? `Actual: ${fmtDate(v.actual_start_at)} → ${fmtDate(v.actual_end_at)}`
-                              : "—"}
-                          </Typography>
-                        </Box>
-                      </Stack>
-                    </TableCell>
+                filtered.map((v) => {
+                  const { lat, lng } = getCoords(v);
+                  const hasCoords = lat != null && lng != null;
 
-                    {/* Lead / Zone */}
-                    <TableCell>
-                      <Stack spacing={0.5}>
-                        <Stack direction="row" alignItems="center" spacing={0.75}>
-                          <FmdGoodIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-                          <Typography variant="body2" fontWeight={700}>
-                            {v.lead?.prospect_name || "—"}
+                  return (
+                    <TableRow key={v.id} hover>
+                      {/* When */}
+                      <TableCell>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                         
+                          <Box>
+                            <Typography variant="body2" fontWeight={700}>
+                              {v.id}
+                            </Typography>
+                            
+                          </Box>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <EventIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+                          <Box>
+                            <Typography variant="body2" fontWeight={700}>
+                              {fmtDate(v.scheduled_at)}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {v.actual_start_at || v.actual_end_at
+                                ? `Actual: ${fmtDate(v.actual_start_at)} → ${fmtDate(v.actual_end_at)}`
+                                : "—"}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                      </TableCell>
+
+                      {/* Lead / Zone */}
+                      <TableCell>
+                        <Stack spacing={0.5}>
+                          <Stack direction="row" alignItems="center" spacing={0.75}>
+                            <FmdGoodIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                            <Typography variant="body2" fontWeight={700}>
+                              {v.lead?.prospect_name || "—"}
+                            </Typography>
+                          </Stack>
+                          <Typography variant="caption" color="text.secondary">
+                            Zone: {v.zone?.zone_name || "—"}
                           </Typography>
                         </Stack>
-                        <Typography variant="caption" color="text.secondary">
-                          Zone: {v.zone?.zone_name || "—"}
-                        </Typography>
-                      </Stack>
-                    </TableCell>
+                      </TableCell>
 
-                    {/* Purpose & Note */}
-                    <TableCell sx={{ maxWidth: 360 }}>
-                      <Typography variant="body2" fontWeight={600} noWrap title={v.purpose}>
-                        {v.purpose || "—"}
-                      </Typography>
-                      {v.note && (
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          noWrap
-                          title={v.note}
+                      {/* Purpose & Note */}
+                      <TableCell sx={{ maxWidth: 360 }}>
+                        <Typography variant="body2" fontWeight={600} noWrap title={v.purpose}>
+                          {v.purpose || "—"}
+                        </Typography>
+                        {v.note && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            noWrap
+                            title={v.note}
+                          >
+                            {v.note}
+                          </Typography>
+                        )}
+                      </TableCell>
+
+                      {/* Status */}
+                      <TableCell>
+                        <Chip
+                          size="small"
+                          label={v.status || "—"}
+                          color={statusChipColor(v.status)}
+                          variant="outlined"
+                        />
+                      </TableCell>
+
+                      {/* Type */}
+                      <TableCell>
+                        <Chip
+                          size="small"
+                          label={v.visit_type || "—"}
+                          color={typeChipColor(v.visit_type)}
+                          variant="outlined"
+                        />
+                      </TableCell>
+
+                      {/* Location */}
+                      <TableCell>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (hasCoords) handleOpenMap(lat, lng);
+                            }}
+                            disabled={!hasCoords}
+                            sx={{
+                              borderRadius: 2,
+                              bgcolor: hasCoords ? alpha(brand, 0.08) : "transparent",
+                              border: `1px solid ${hasCoords ? alpha(brand, 0.3) : divider}`,
+                              "&:hover": {
+                                bgcolor: hasCoords ? alpha(brand, 0.16) : "transparent",
+                              },
+                            }}
+                          >
+                            <MyLocationIcon
+                              sx={{
+                                fontSize: 18,
+                                color: hasCoords ? brand : textSec,
+                              }}
+                            />
+                          </IconButton>
+                          <Typography variant="caption" color="text.secondary" noWrap>
+                            {hasCoords ? `${lat.toFixed(5)}, ${lng.toFixed(5)}` : "—"}
+                          </Typography>
+                        </Stack>
+                      </TableCell>
+
+                      {/* Planner */}
+                      <TableCell>
+                        <Stack direction="row" spacing={0.75} alignItems="center">
+                          <WorkHistoryIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                          <Typography variant="body2">{v.planner?.name || "—"}</Typography>
+                        </Stack>
+                      </TableCell>
+
+                      {/* Details column */}
+                      <TableCell>
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => {
+                            const tid = v.task_visit_relation?.task_id;
+                            if (tid) navigate(`/task-details/${tid}`);
+                          }}
+                          disabled={!v.task_visit_relation?.task_id}
+                          sx={{ borderRadius: 2 }}
                         >
-                          {v.note}
-                        </Typography>
-                      )}
-                    </TableCell>
-
-                    {/* Status */}
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        label={v.status || "—"}
-                        color={statusChipColor(v.status)}
-                        variant="outlined"
-                      />
-                    </TableCell>
-
-                    {/* Type */}
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        label={v.visit_type || "—"}
-                        color={typeChipColor(v.visit_type)}
-                        variant="outlined"
-                      />
-                    </TableCell>
-
-                    {/* Planner */}
-                    <TableCell>
-                      <Stack direction="row" spacing={0.75} alignItems="center">
-                        <WorkHistoryIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-                        <Typography variant="body2">{v.planner?.name || "—"}</Typography>
-                      </Stack>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                          <VisibilityIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
             </TableBody>
           </Table>
         </TableContainer>

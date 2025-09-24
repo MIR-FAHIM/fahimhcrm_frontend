@@ -109,6 +109,8 @@ import {
  VisitPlanner,
  MyVisits,
  VisitMap,
+ DateWiseVisit,
+ PrivacyPolicy,
 } from "./scenes";
 
 const AppRouter = () => {
@@ -127,15 +129,13 @@ const AppRouter = () => {
         <Route path="/" element={<App />}>
         <Route path="/" element={<Dashboard />} /> 
         */}
-
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
      {/* <Route path="/" element={<LandingPage />}></Route>  */}
      <Route path="/what-next" element={<NextFeatures />}></Route> 
 
 
         <Route path="/" element={<App />}>
         <Route path="/" element={<Dashboard />} />
-         
-          
           <Route path="/team" element={<Team />} />
           <Route path="/add-task" element={<AddTaskForm />} />
           <Route path="/my-task" element={<MyTaskTable />} />
@@ -161,13 +161,10 @@ const AppRouter = () => {
           <Route path="/add-main-category" element={<AddMainCategory />} />
           <Route path="/add-product-category" element={<AddProductCategory />} />
           <Route path="/all-orders" element={<AllOrders />} />
-         
           <Route path="/user-details/:id" element={<UserDetail />} />
           <Route path="/withdraw" element={<Withdraws />} />
           <Route path="/social-post" element={<SocialPost />} />
           <Route path="/add-attribute" element={<AddAttribute />} />
-
-        
           <Route path="/department-view" element={<DepartmentView />} />
           <Route path="/designation-view" element={<DesignationView />} />
           <Route path="/role-view" element={<RoleView />} />
@@ -238,6 +235,8 @@ const AppRouter = () => {
           <Route path="/visit-plan" element={<VisitPlanner />} />
           <Route path="/my-visit" element={<MyVisits />} />
           <Route path="/visit-map" element={<VisitMap />} />
+          <Route path="/datewise-visit" element={<DateWiseVisit />} />
+
         
         </Route>
       </Routes>

@@ -15,6 +15,36 @@ export const getAllVisit = async () => {
     return [];
   }
 }
+export const getVisitByDateEmp = async (date, emp) => {
+  try {
+    const response = await axiosInstance.get(`/api/visit/date/emp?date=${date}&employee_id=${emp}`,
+        {
+            headers: {
+              // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+              'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+            },}
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching getStock:", error);
+    return [];
+  }
+}
+export const getDateWiseVisit = async () => {
+  try {
+    const response = await axiosInstance.get(`/api/visit/all/datewise`,
+        {
+            headers: {
+              // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+              'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+            },}
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching getStock:", error);
+    return [];
+  }
+}
 export const getEmpVisit = async (id) => {
   try {
     const response = await axiosInstance.get(`/api/visit/employee/${id}`,

@@ -124,6 +124,8 @@ import MyWaitingTask from "./admin/task/my-task/my_waiting_task";// Import the W
 import VisitPlanner from "./admin/fieldforce/visit_plan";// Import the WorkShop component
 import MyVisits from "./admin/fieldforce/my_visit_list";// Import the WorkShop component
 import VisitMap from "./admin/fieldforce/visit_map";// Import the WorkShop component
+import DateWiseVisit from "./admin/fieldforce/date_wise_visit";// Import the WorkShop component
+import PrivacyPolicy from "./admin/setting/privacy_policy";// Import the WorkShop component
 
 
 
@@ -253,5 +255,6 @@ export {
   VisitPlanner,
   MyVisits,
   VisitMap,
-  
+  DateWiseVisit,
+  PrivacyPolicy,
 };

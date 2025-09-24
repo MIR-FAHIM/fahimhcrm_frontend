@@ -403,7 +403,7 @@ const SideBar = () => {
         </Collapse>
 
         {/* visit */}
-        <GroupHeader id="fieldforce" label="Fied Force" icon={<img src={AppIcons.Visit} style={iconStyle} />} show={permissions.prospect} />
+        <GroupHeader id="fieldforce" label="Field Force" icon={<img src={AppIcons.Visit} style={iconStyle} />} show={permissions.prospect} />
         <Collapse in={expandedCategory === "fieldforce"} unmountOnExit>
           <Menu menuItemStyles={{ button: ({ active }) => ({
               color: active ? textPrimary : textSecondary,
@@ -413,6 +413,7 @@ const SideBar = () => {
             }),
           }}>
             <Item title="Visit Planner" path="/visit-plan" icon={<SourceOutlined sx={iconStyleSub} />} />
+            <Item title="Date Wise Visit" path="/datewise-visit" icon={<SourceOutlined sx={iconStyleSub} />} />
             <Item title="My Visit" path="/my-visit" icon={<SourceOutlined sx={iconStyleSub} />} />
             <Item title="Visit Map" path="/visit-map" icon={<SourceOutlined sx={iconStyleSub} />} />
           </Menu>

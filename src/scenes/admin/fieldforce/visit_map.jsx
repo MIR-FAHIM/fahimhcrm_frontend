@@ -1,338 +1,197 @@
-// VisitMap.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Paper,
-  Box,
-  Typography,
-  Stack,
-  Chip,
-  CircularProgress,
-  useTheme,
-  Snackbar,
-  Alert,
-} from "@mui/material";
-import RoomIcon from "@mui/icons-material/Room";
-import EventIcon from "@mui/icons-material/Event";
-import PersonIcon from "@mui/icons-material/Person";
-import {
-  GoogleMap,
-  Marker,
-  InfoWindow,
-  useLoadScript,
-  MarkerClusterer,
-} from "@react-google-maps/api";
-
-// Config + API
+import React, { useState, useEffect } from "react";
+import { APIProvider, Map, Marker, InfoWindow } from "@vis.gl/react-google-maps";
 import { google_map_key } from "../../../api/config/index";
-import { getAllVisit } from "../../../api/controller/admin_controller/visit_controller";
+import { useLocation, useNavigate } from "react-router-dom";
+import { getVisitByDateEmp } from "../../../api/controller/admin_controller/visit_controller";
+import { TextField, MenuItem, Box, CircularProgress } from "@mui/material";
+import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
 
-const mapContainerStyle = { width: "100%", height: 520, borderRadius: 12 };
-const defaultCenter = { lat: 23.777176, lng: 90.399452 }; // Dhaka fallback
+const VisitMap = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  const lat = parseFloat(searchParams.get("lat")) || 23.8103;
+  const lng = parseFloat(searchParams.get("lng")) || 90.4125;
 
-const statusChipColor = (status) => {
-  switch ((status || "").toLowerCase()) {
-    case "scheduled":
-      return "default";
-    case "started":
-    case "in progress":
-      return "info";
-    case "completed":
-      return "success";
-    case "cancelled":
-    case "canceled":
-      return "error";
-    default:
-      return "default";
-  }
-};
+  const [prospects, setProspects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedMarker, setSelectedMarker] = useState(null);
+  const [employees, setEmployees] = useState([]);
+  const [selectedEmp, setSelectedEmp] = useState("");
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
-const typeChipColor = (type) => {
-  switch ((type || "").toLowerCase()) {
-    case "planned":
-      return "primary";
-    case "ad-hoc":
-    case "adhoc":
-      return "secondary";
-    default:
-      return "default";
-  }
-};
+  const defaultPosition = { lat, lng };
 
-/** Safely parse number */
-const n = (v) => {
-  const num = Number(v);
-  return Number.isFinite(num) ? num : null;
-};
-
-/** Convert visit -> marker-ready object.
- *  Priority: checkin_lat/long -> lead.lat/long; skip if none.
- */
-const toMarker = (v) => {
-  const cLat = n(v?.checkin_latitude);
-  const cLng = n(v?.checkin_longitude);
-  const lLat = n(v?.lead?.latitude);
-  const lLng = n(v?.lead?.longitude);
-
-  const lat = cLat ?? lLat;
-  const lng = cLng ?? lLng;
-  if (lat == null || lng == null) return null;
-
-  return {
-    id: v.id,
-    position: { lat, lng },
-    title:
-      v?.lead?.prospect_name ||
-      v?.zone?.zone_name ||
-      `Visit #${v.id}`,
-    zone: v?.zone?.zone_name || null,
-    when: v?.scheduled_at,
-    status: v?.status,
-    type: v?.visit_type,
-    planner: v?.planner?.name || null,
-    employee: v?.employee?.name || null,
-    purpose: v?.purpose || "",
-    note: v?.note || "",
-    usedCheckin: cLat != null && cLng != null,
-  };
-};
-
-export default function VisitMap() {
-  const theme = useTheme();
-
-  const [markers, setMarkers] = useState([]);
-  const [loadingData, setLoadingData] = useState(true);
-  const [snack, setSnack] = useState({ open: false, msg: "", sev: "error" });
-  const [activeId, setActiveId] = useState(null);
-
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: google_map_key || "",
-    libraries: ["places"],
-  });
-
-  // Fetch visits and build markers
+  // Fetch employees from API
   useEffect(() => {
-    (async () => {
+    const fetchEmpList = async () => {
       try {
-        const res = await getAllVisit();
-        const list = Array.isArray(res?.data) ? res.data : [];
-        const ms = list.map(toMarker).filter(Boolean);
-        setMarkers(ms);
-      } catch (e) {
-        console.error(e);
-        setSnack({ open: true, msg: "Failed to load visits.", sev: "error" });
-      } finally {
-        setLoadingData(false);
+        const response = await fetchEmployees();
+        if (response.status === "success") {
+          setEmployees([{ id: "", name: "All Employees" }, ...response.data.map(emp => ({ id: emp.id, name: emp.name }))]);
+        } else {
+          setError("Failed to fetch employees");
+        }
+      } catch {
+        setError("Error fetching employees");
       }
-    })();
+    };
+    fetchEmpList();
   }, []);
 
-  // Map ref + fit bounds
-  const mapRef = useRef(null);
-  const onMapLoad = (map) => {
-    mapRef.current = map;
-    // Fit bounds on first load if we already have markers
-    if (markers.length > 0 && window.google?.maps) {
-      const bounds = new window.google.maps.LatLngBounds();
-      markers.forEach((m) => bounds.extend(m.position));
-      map.fitBounds(bounds, 64);
-    } else {
-      map.setCenter(defaultCenter);
-      map.setZoom(11);
-    }
-  };
-
-  // Refit when markers change
+  // Fetch visits based on selected employee and date
   useEffect(() => {
-    if (!mapRef.current || !isLoaded || markers.length === 0) return;
-    const bounds = new window.google.maps.LatLngBounds();
-    markers.forEach((m) => bounds.extend(m.position));
-    mapRef.current.fitBounds(bounds, 64);
-  }, [markers, isLoaded]);
+    const fetchVisits = async () => {
+      setLoading(true);
+      try {
+        const response = await getVisitByDateEmp(selectedDate, selectedEmp);
+        if (response.status === "success") {
+          setProspects(response.data);
+          setError(null);
+        } else {
+          setError("Failed to fetch prospects");
+        }
+      } catch {
+        setError("Error fetching data");
+      }
+      setLoading(false);
+    };
+    fetchVisits();
+  }, [selectedDate, selectedEmp]);
 
-  const activeMarker = useMemo(
-    () => markers.find((m) => m.id === activeId) || null,
-    [markers, activeId]
-  );
+  const handleMarkerClick = (marker) => setSelectedMarker(marker);
+  const handleCloseInfoWindow = () => setSelectedMarker(null);
+  const handleAddWarehouse = () => navigate("/visit-plan");
 
-  // Simple color per status
-  const markerColor = (status) => {
-    switch ((status || "").toLowerCase()) {
-      case "completed":
-        return "#2e7d32";
-      case "started":
-      case "in progress":
-        return "#0288d1";
-      case "scheduled":
-        return "#6d6d6d";
-      default:
-        return theme.palette.primary.main;
-    }
-  };
+  if (loading) return <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}><CircularProgress /></Box>;
+  if (error) return <div>Error: {error}</div>;
 
-  if (loadError) {
-    return (
-      <Paper sx={{ p: 2, borderRadius: 3 }}>
-        <Typography color="error">Failed to load Google Maps.</Typography>
-      </Paper>
-    );
-  }
+  const prospectMarkers = prospects
+    .filter(
+      (prospect) =>
+        prospect.checkin_latitude &&
+        prospect.checkin_longitude &&
+        !isNaN(parseFloat(prospect.checkin_latitude)) &&
+        !isNaN(parseFloat(prospect.checkin_longitude))
+    )
+    .map((prospect) => ({
+      position: {
+        lat: parseFloat(prospect.checkin_latitude),
+        lng: parseFloat(prospect.checkin_longitude),
+      },
+      info: prospect.prospect_name,
+      createdAt: prospect.created_at,
+    }));
+
+  const allMarkers = [
+    { position: defaultPosition, info: "Default Location" },
+    ...prospectMarkers,
+  ];
 
   return (
-    <>
-      <Paper
-        elevation={0}
-        sx={{
-          border: `1px solid ${theme.palette.divider}`,
-          borderRadius: 3,
-          overflow: "hidden",
+    <div style={{ width: "100%", height: "100vh", position: "relative" }}>
+      {/* Filters */}
+      <Box sx={{
+        position: "absolute",
+        top: 20,
+        left: 20,
+        zIndex: 1000,
+        display: "flex",
+        gap: 2,
+        bgcolor: "rgba(255,255,255,0.95)",
+        p: 2,
+        borderRadius: 2,
+        boxShadow: 2,
+        alignItems: "center"
+      }}>
+        <TextField
+          select
+          label="Employee"
+          size="small"
+          value={selectedEmp}
+          onChange={e => setSelectedEmp(e.target.value)}
+          sx={{ minWidth: 160 }}
+        >
+          {employees.map(emp => (
+            <MenuItem key={emp.id} value={emp.id}>{emp.name}</MenuItem>
+          ))}
+        </TextField>
+        <TextField
+          type="date"
+          label="Date"
+          size="small"
+          value={selectedDate}
+          onChange={e => setSelectedDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+          sx={{ minWidth: 140 }}
+        />
+      </Box>
+
+      {/* Add Warehouse Button */}
+      <button
+        onClick={handleAddWarehouse}
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          zIndex: 1000,
+          padding: "10px 15px",
+          backgroundColor: "#007bff",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
         }}
       >
-        <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-          <Typography variant="h6" fontWeight={800}>
-            Visit Map
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Showing {markers.length} {markers.length === 1 ? "location" : "locations"}.
-          </Typography>
-        </Box>
+        + Add Visit Plan
+      </button>
 
-        {!isLoaded || loadingData ? (
-          <Box
-            sx={{
-              height: mapContainerStyle.height,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        ) : (
-          <GoogleMap
-            mapContainerStyle={mapContainerStyle}
-            onLoad={onMapLoad}
-            center={defaultCenter} // overridden by fitBounds
-            zoom={10}
-            options={{
-              mapTypeControl: false,
-              streetViewControl: false,
-              fullscreenControl: true,
-              clickableIcons: false,
-            }}
-          >
-            <MarkerClusterer>
-              {(clusterer) =>
-                markers.map((m) => (
-                  <Marker
-                    key={m.id}
-                    clusterer={clusterer}
-                    position={m.position}
-                    onClick={() => setActiveId(m.id)}
-                    icon={{
-                      path: "M12 2C8.14 2 5 5.14 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.86-3.14-7-7-7z",
-                      fillColor: markerColor(m.status),
-                      fillOpacity: 1,
-                      strokeWeight: 1,
-                      strokeColor: "white",
-                      scale: 1.3,
-                      anchor: new window.google.maps.Point(12, 24),
-                    }}
-                    title={m.title}
-                  />
-                ))
-              }
-            </MarkerClusterer>
-
-            {activeMarker && (
-              <InfoWindow
-                position={activeMarker.position}
-                onCloseClick={() => setActiveId(null)}
+      <APIProvider apiKey={google_map_key}>
+        <div style={{ width: "100%", height: "100%" }}>
+          <Map gestureHandling="greedy" style={{ width: "100%", height: "100%" }}>
+            {prospectMarkers.length === 0 ? (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  bgcolor: "rgba(255,255,255,0.95)",
+                  p: 3,
+                  borderRadius: 2,
+                  boxShadow: 2,
+                  zIndex: 2000,
+                }}
               >
-                <Box sx={{ maxWidth: 300 }}>
-                  <Typography variant="subtitle1" fontWeight={800} gutterBottom>
-                    {activeMarker.title}
-                  </Typography>
+                <h3>No visit found</h3>
+              </Box>
+            ) : (
+              allMarkers.map((marker, index) => (
+                <Marker
+                  key={index}
+                  position={marker.position}
+                  onClick={() => handleMarkerClick(marker)}
+                />
+              ))
+            )}
 
-                  <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
-                    <Chip
-                      size="small"
-                      label={activeMarker.status || "—"}
-                      color={statusChipColor(activeMarker.status)}
-                      variant="outlined"
-                    />
-                    <Chip
-                      size="small"
-                      label={activeMarker.type || "—"}
-                      color={typeChipColor(activeMarker.type)}
-                      variant="outlined"
-                    />
-                    {activeMarker.usedCheckin && (
-                      <Chip size="small" label="Check-in" variant="outlined" />
-                    )}
-                  </Stack>
-
-                  {activeMarker.zone && (
-                    <Typography variant="body2" sx={{ mb: 0.5 }}>
-                      <RoomIcon
-                        sx={{ fontSize: 16, verticalAlign: "middle", mr: 0.5 }}
-                      />
-                      Zone: {activeMarker.zone}
-                    </Typography>
-                  )}
-
-                  <Typography variant="body2" sx={{ mb: 0.5 }}>
-                    <EventIcon
-                      sx={{ fontSize: 16, verticalAlign: "middle", mr: 0.5 }}
-                    />
-                    {activeMarker.when
-                      ? new Date(activeMarker.when).toLocaleString()
-                      : "—"}
-                  </Typography>
-
-                  {activeMarker.employee && (
-                    <Typography variant="body2" sx={{ mb: 0.25 }}>
-                      <PersonIcon
-                        sx={{ fontSize: 16, verticalAlign: "middle", mr: 0.5 }}
-                      />
-                      Employee: {activeMarker.employee}
-                    </Typography>
-                  )}
-                  {activeMarker.planner && (
-                    <Typography variant="body2" sx={{ mb: 0.5 }}>
-                      <PersonIcon
-                        sx={{ fontSize: 16, verticalAlign: "middle", mr: 0.5 }}
-                      />
-                      Planner: {activeMarker.planner}
-                    </Typography>
-                  )}
-
-                  {activeMarker.purpose && (
-                    <Typography variant="body2" sx={{ mt: 0.5 }}>
-                      <strong>Purpose:</strong> {activeMarker.purpose}
-                    </Typography>
-                  )}
-                  {activeMarker.note && (
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Note:</strong> {activeMarker.note}
-                    </Typography>
-                  )}
-                </Box>
+            {selectedMarker && (
+              <InfoWindow
+                position={selectedMarker.position}
+                onCloseClick={handleCloseInfoWindow}
+              >
+                <div>
+                  <h3>{selectedMarker.info}</h3>
+                  <p>Visited At: {selectedMarker.createdAt ? new Date(selectedMarker.createdAt).toLocaleString() : "N/A"}</p>
+                </div>
               </InfoWindow>
             )}
-          </GoogleMap>
-        )}
-      </Paper>
-
-      <Snackbar
-        open={snack.open}
-        autoHideDuration={2600}
-        onClose={() => setSnack((s) => ({ ...s, open: false }))}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert severity={snack.sev} sx={{ width: "100%" }}>
-          {snack.msg}
-        </Alert>
-      </Snackbar>
-    </>
+          </Map>
+        </div>
+      </APIProvider>
+    </div>
   );
-}
+};
+
+export default VisitMap;

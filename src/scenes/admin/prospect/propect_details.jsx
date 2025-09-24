@@ -12,6 +12,8 @@ import {
 } from "../../../api/controller/admin_controller/prospect_controller";
 import { addOpportunity } from "../../../api/controller/admin_controller/opportunity_controller";
 import OpportunityComponent from "./components/opportunity_components";
+import ProspectSidebar from "./components/detail_prospect_side_panel";
+import NoteComponent from "./components/top_note";
 import {
   Box,
   Typography,
@@ -122,11 +124,14 @@ export default function ProspectDetailsPage() {
   const updateProspectInfo = async (data) => {
     const updateRes = await updateProspect(data);
     if (updateRes.status === "success") {
-      const detailsRes = await getProspectDetails(id);
-      if (detailsRes.status === "success") {
-        setProspectDetail(detailsRes.data);
-        setProspectStage(detailsRes.data.stage_id);
-      }
+   handleGetDetails();
+      setIsEditing(false);
+    }
+  };
+  const handleSaveNote = async (data) => {
+    const updateRes = await updateProspect(data);
+    if (updateRes.status === "success") {
+   handleGetDetails();
       setIsEditing(false);
     }
   };
@@ -228,15 +233,24 @@ export default function ProspectDetailsPage() {
   const onSubmitOpportunity = async (data) => {
     const addRes = await addOpportunity(data);
   };
+const handleGetContactPersons = async () => {
+    const contactPersonRes = await getContactPersonProspect(id);
+    if (contactPersonRes.status === "success") {
+      setContactPersonList(contactPersonRes.data);
+    }
+  }
 
+  const handleGetDetails = async () => {
+    const detailsRes = await getProspectDetails(id);
+    if (detailsRes.status === "success") {
+      setProspectDetail(detailsRes.data);
+      setProspectStage(detailsRes.data.stage_id);
+    }
+  } 
   useEffect(() => {
     (async () => {
       try {
-        const detailsRes = await getProspectDetails(id);
-        if (detailsRes.status === "success") {
-          setProspectDetail(detailsRes.data);
-          setProspectStage(detailsRes.data.stage_id);
-        }
+        handleGetDetails();
         const stagesRes = await getProspectAllStatus();
         if (stagesRes.status === "success") {
           setStages(stagesRes.data);
@@ -251,10 +265,7 @@ export default function ProspectDetailsPage() {
         if (assignedPersonsRes.status === "success") {
           setAssignedPersons(assignedPersonsRes.data);
         }
-        const contactPersonRes = await getContactPersonProspect(id);
-        if (contactPersonRes.status === "success") {
-          setContactPersonList(contactPersonRes.data);
-        }
+   handleGetContactPersons();
         const logActivityRes = await getAllLogActivityOfProspect(id);
         if (logActivityRes.status === true) {
           setLogActivityList(logActivityRes.data);
@@ -272,10 +283,12 @@ export default function ProspectDetailsPage() {
 
   return (
     <Box sx={{ p: 3, backgroundColor: theme.palette.background.default, minHeight: "100vh" }}>
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold", color: colors.gray[100] }}>
-        Lead
-      </Typography>
-
+<Box sx={{ display: 'flex', alignItems: 'center' }}>
+     <NoteComponent
+      details={details} // Replace with your actual details object
+      onSaveNote={handleSaveNote}
+    />
+</Box>
       <Box
         sx={{
           display: "flex",
@@ -284,216 +297,22 @@ export default function ProspectDetailsPage() {
         }}
       >
         {/* Left Section */}
-        <Box sx={{ width: { xs: "100%", md: "25%" } }}>
-          <Paper sx={{ p: 3, backgroundColor: theme.palette.background.paper, borderRadius: 3, boxShadow: 3 }}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                py: 1,
-              }}
-            >
-              {isEditing ? (
-                <>
-                  <TextField
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    variant="standard"
-                    size="small"
-                    sx={{
-                      minWidth: 200,
-                      "& input": {
-                        fontSize: "1rem",
-                        color: colors.blueAccent[500],
-                      },
-                    }}
-                  />
-                  <IconButton
-                    onClick={() =>
-                      updateProspectInfo({ prospect_id: id, prospect_name: text })
-                    }
-                    size="small"
-                    color="primary"
-                    sx={{ ml: 0.5, color: colors.blueAccent[500] }}
-                  >
-                    <SaveIcon fontSize="small" />
-                  </IconButton>
-                </>
-              ) : (
-                <>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      color: colors.blueAccent[500],
-                      fontWeight: 500,
-                    }}
-                  >
-                    {details.prospect_name}
-                  </Typography>
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      setText(details.prospect_name);
-                      setIsEditing(true);
-                    }}
-                    sx={{
-                      ml: 0.5,
-                      p: 0.5,
-                      color: colors.gray[400],
-                      "&:hover": {
-                        backgroundColor: "transparent",
-                        color: colors.gray[100],
-                      },
-                    }}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </>
-              )}
-            </Box>
-            <OpportunityComponent details={details} onToggleOpportunity={onToggleOpportunityController} onSubmitOpportunity={onSubmitOpportunity} />
-            <Typography variant="caption" display="block" gutterBottom sx={{ color: colors.gray[400] }}>
-              Created: Mehrun Nesa on {dayjs(details.created_at).format("MMMM D, YYYY")}
-            </Typography>
-
-            <AdressProspect details={details} onAddressUpdate={updateProspectInfo} />
-            <Button
-              variant="outlined"
-              onClick={goToMap}
-              sx={{
-                backgroundColor: theme.palette.background.paper,
-                borderColor: colors.blueAccent[500],
-                borderWidth: 2,
-                borderRadius: 1,
-                whiteSpace: "nowrap",
-                color: colors.blueAccent[500],
-                '&:hover': {
-                  backgroundColor: colors.blueAccent[900],
-                  borderColor: colors.blueAccent[700],
-                  color: colors.blueAccent[100],
-                }
-              }}
-            >
-              View Map
-            </Button>
-            <Divider sx={{ my: 2, backgroundColor: colors.gray[700] }} />
-            <ContactPersonsProspect contactPersonList={contactPersonList} />
-            {(details.is_opportunity === 0 ? ["Assigned To", "Details", "Attached Files"] : ["Assigned To", "Details", "Attached Files", "Leads", "Quotations", "Orders"])
-              .map((label, i) => (
-                <Accordion key={i} sx={{ mt: 2, backgroundColor: theme.palette.background.paper, color: colors.gray[100] }}>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: colors.gray[100] }} />}>
-                    {label}
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    {label === 'Details' ?
-                      <DetailsProspectInfo details={details} onAddressUpdate={removeAssignedPerson} />
-                      :
-                      label === "Assigned To" ?
-                        <Box>
-                          <Box sx={{ mb: 2 }}>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                gap: 2,
-                                flexWrap: "wrap",
-                              }}
-                            >
-                              <FormControl fullWidth sx={{ flex: 1, minWidth: 250 }}>
-                                <InputLabel id="assign-to-label" sx={{ color: colors.gray[400] }}>Assign To</InputLabel>
-                                <Select
-                                  labelId="assign-to-label"
-                                  multiple
-                                  name="assign_to_ids"
-                                  value={concernPersons.assign_to_ids}
-                                  onChange={handleConcernsChange}
-                                  renderValue={(selected) =>
-                                    employees
-                                      .filter((e) => selected.includes(e.id))
-                                      .map((e) => e.name)
-                                      .join(", ")
-                                  }
-                                  sx={{ color: colors.gray[100] }}
-                                >
-                                  {employees.map((option) => (
-                                    <MenuItem key={option.id} value={option.id}>
-                                      <Checkbox checked={concernPersons.assign_to_ids.includes(option.id)} sx={{ color: colors.greenAccent[500] }} />
-                                      <ListItemText primary={option.name} />
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                              </FormControl>
-                              <Button
-                                variant="contained"
-                                onClick={addMultipleConernPersons}
-                                sx={{
-                                  whiteSpace: "nowrap",
-                                  backgroundColor: colors.greenAccent[500],
-                                  color: colors.gray[500],
-                                  "&:hover": { backgroundColor: colors.greenAccent[700] },
-                                }}
-                              >
-                                Add
-                              </Button>
-                            </Box>
-                          </Box>
-                          <Box
-                            sx={{
-                              maxHeight: 250,
-                              overflowY: "auto",
-                              mt: 1,
-                              pr: 1,
-                            }}
-                          >
-                            {assignedPersons && assignedPersons.length > 0 ? (
-                              assignedPersons.map((person) => (
-                                <Box
-                                  key={person.id}
-                                  sx={{
-                                    mb: 1.5,
-                                    p: 1.5,
-                                    backgroundColor: colors.primary[700],
-                                    borderRadius: 2,
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  <Box>
-                                    <Typography variant="body1" fontWeight="bold" sx={{ color: colors.gray[100] }}>
-                                      {person.employee.name}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ color: colors.gray[400] }}>
-                                      📱 {person.employee.phone}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ color: colors.blueAccent[300] }}>
-                                      ✉️ {person.employee.email}
-                                    </Typography>
-                                  </Box>
-                                  <IconButton
-                                    onClick={() => removeAssignedPerson(person.employee.id)}
-                                    sx={{ color: colors.redAccent[500] }}
-                                  >
-                                    <DeleteIcon />
-                                  </IconButton>
-                                </Box>
-                              ))
-                            ) : (
-                              <Typography variant="body2" sx={{ color: colors.gray[400] }} mt={1}>
-                                No concerned persons assigned.
-                              </Typography>
-                            )}
-                          </Box>
-                        </Box>
-                        : <Box></Box>
-                    }
-                  </AccordionDetails>
-                </Accordion>
-              ))}
-          </Paper>
-        </Box>
+<ProspectSidebar
+  theme={theme}
+  details={details}
+  onAdded = {handleGetContactPersons}
+  contactPersonList={contactPersonList}
+  employees={employees}
+  assignedPersons={assignedPersons}
+  concernPersons={concernPersons}
+  updateProspectInfo={updateProspectInfo}
+  onToggleOpportunityController={onToggleOpportunityController}
+  onSubmitOpportunity={onSubmitOpportunity}
+  goToMap={goToMap}
+  handleConcernsChange={handleConcernsChange}
+  addMultipleConernPersons={addMultipleConernPersons}
+  removeAssignedPerson={removeAssignedPerson}
+/>
 
         {/* Right Section */}
         <Box sx={{ width: { xs: "100%", md: "75%" } }}>

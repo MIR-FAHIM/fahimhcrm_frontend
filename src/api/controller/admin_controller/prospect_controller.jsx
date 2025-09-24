@@ -355,10 +355,10 @@ export const checkProspectAvaiblity = async (data) => {
 
 }
 
-export const convertToPrsspect = async (prospectList) => {
+export const convertToPrsspect = async (ids) => {
   try {
     const response = await axiosInstance.post(`/api/convert-to-prospect`, {
-      data: prospectList // ✅ wrapping in `data` key like your curl
+      ids // ✅ wrapping in `data` key like your curl
     },
       {
         headers: {

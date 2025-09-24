@@ -40,7 +40,7 @@ const StatusChip = ({ status, colors }) => {
   return <Chip size="small" label={label} sx={{ bgcolor: bg, color: fg }} />;
 };
 
-const Toolbar = ({ query, setQuery, onRefresh, colors, selectionCount, filter, setFilter }) => (
+const Toolbar = ({ query, setQuery, onRefresh, colors, selectionCount, filter, setFilter, reports }) => (
   <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap", p: 1, borderBottom: `1px solid ${colors.gray[700]}` }}>
     <Typography variant="h6" sx={{ fontWeight: 800, color: colors.gray[100] }}>Facebook Leads</Typography>
 
@@ -75,6 +75,71 @@ const Toolbar = ({ query, setQuery, onRefresh, colors, selectionCount, filter, s
         <option value="new">New</option>
         <option value="converted">Converted</option>
       </TextField>
+<Box
+  sx={{
+    display: "flex",
+    flexDirection: { xs: "column", sm: "row" },
+    gap: 2,
+    alignItems: { xs: "flex-start", sm: "center" },
+    bgcolor: colors.gray[900],
+    px: 2,
+    py: 1,
+    borderRadius: 2,
+    boxShadow: 1,
+    minWidth: 340,
+  }}
+>
+  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+    <Chip
+      label={`Today: ${reports?.today_onboard ?? 0}`}
+      color="success"
+      sx={{
+        fontWeight: 700,
+        fontSize: "1rem",
+        bgcolor: colors.greenAccent[700],
+        color: colors.gray[100],
+        px: 2,
+        py: 1,
+      }}
+    />
+    <Chip
+      label={`Yesterday: ${reports?.yesterday_onboard ?? 0}`}
+      color="info"
+      sx={{
+        fontWeight: 700,
+        fontSize: "1rem",
+        bgcolor: colors.blueAccent[700],
+        color: colors.gray[100],
+        px: 2,
+        py: 1,
+      }}
+    />
+    <Chip
+      label={`Last 7 Days: ${reports?.last_7_days_onboard ?? 0}`}
+      color="warning"
+      sx={{
+        fontWeight: 700,
+        fontSize: "1rem",
+        bgcolor: colors.orangeAccent[700],
+        color: colors.gray[100],
+        px: 2,
+        py: 1,
+      }}
+    />
+    <Chip
+      label={`Last Month: ${reports?.last_1_month_onboard ?? 0}`}
+      color="error"
+      sx={{
+        fontWeight: 700,
+        fontSize: "1rem",
+        bgcolor: colors.redAccent[700],
+        color: colors.gray[100],
+        px: 2,
+        py: 1,
+      }}
+    />
+  </Box>
+</Box>
     </Box>
 
     <Box sx={{ ml: "auto", display: "flex", gap: 1 }}>
@@ -94,6 +159,7 @@ const FacebookLeadsTable = () => {
   const navigate = useNavigate();
 
   const [leads, setLeads] = useState([]);
+  const [reports, setReports] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
@@ -112,6 +178,7 @@ const FacebookLeadsTable = () => {
       const response = await getFacebookLeads();
       if (response.status === "success") {
         setLeads(response.data || []);
+        setReports(response.report);
       } else {
         setError("Failed to fetch Facebook leads");
       }
@@ -150,6 +217,7 @@ const FacebookLeadsTable = () => {
         priority_id: 2,
         status: 1,
         is_active: 1,
+        type: 'prospect',
         website_link: "https://example.com",
         facebook_page: "https://facebook.com/ridoyfahim",
         linkedin: "https://linkedin.com/in/fahimridoy",
@@ -162,7 +230,8 @@ const FacebookLeadsTable = () => {
 
       const idList = { ids: selectedRows };
 
-      await convertToPrsspect(payload);
+      await convertToPrsspect(selectedRows);
+ 
       await convertContactRowStatusMultipleForFacebook(idList);
       await getContactList();
 
@@ -217,6 +286,7 @@ const FacebookLeadsTable = () => {
   return (
     <Box m={4} sx={{ bgcolor: theme.palette.background.default, borderRadius: 2, boxShadow: 1 }}>
       <Toolbar
+      reports={reports}
         query={query}
         setQuery={setQuery}
         onRefresh={getContactList}

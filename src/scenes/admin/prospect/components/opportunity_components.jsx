@@ -94,7 +94,7 @@ const OpportunityComponent = ({ details, onToggleOpportunity, onSubmitOpportunit
             px: 1.5,
             py: 0.5,
             borderRadius: 1,
-            backgroundColor: details.is_individual === 1
+            backgroundColor: details.is_individual === true
               ? theme.palette.info.light
               : theme.palette.primary.light,
             color: details.is_individual === 1
@@ -106,7 +106,7 @@ const OpportunityComponent = ({ details, onToggleOpportunity, onSubmitOpportunit
             alignItems: 'center'
           }}
         >
-          {details.is_individual === 1 ? 'Individual' : 'Organization'}
+          {details.is_individual === true ? 'Individual' : 'Organization'}
         </Box>
 
         <FormControlLabel
