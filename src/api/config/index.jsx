@@ -4,8 +4,8 @@ export const google_map_key = "AIzaSyBgU4tHGpYmeb5KYEB9Ml4qoz1w-JJmKb8";
 
 // paystation
 
-// export const base_url = "http://192.168.1.76/fahimcrm_api/public";
-// export const image_file_url = "http://192.168.1.76/fahimcrm_api/storage/app/public";
+// export const base_url = "https://hrmfahim.asadgadget.com/public";
+// export const image_file_url = "https://hrmfahim.asadgadget.com/fahimcrm_api/storage/app/public";
 // export const appname = "PS Work";
 // export const siteName = "PSWork";
 // export const companyID = "1";
