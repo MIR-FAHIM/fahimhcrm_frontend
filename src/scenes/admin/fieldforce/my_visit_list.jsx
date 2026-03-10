@@ -24,6 +24,7 @@ import {
   InputLabel,
   IconButton,
   Box,
+  useMediaQuery,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
@@ -50,6 +51,7 @@ const fmtDate = (val) => {
 export default function MyVisits() {
   const theme = useTheme();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState([]);
@@ -87,29 +89,60 @@ export default function MyVisits() {
     })();
   }, [userID]);
 
+  const displayLabel = (value, fallback = "—") => {
+    if (typeof value === "string" || typeof value === "number") return String(value);
+    if (value && typeof value === "object") {
+      return (
+        value.status_name ||
+        value.name ||
+        value.type ||
+        value.label ||
+        value.value ||
+        fallback
+      );
+    }
+    return fallback;
+  };
+
+  const normalizeValue = (value) =>
+    String(displayLabel(value, "")).toLowerCase();
+
   // Build filter options
-  const allStatuses = useMemo(
-    () => ["all", ...Array.from(new Set(rows.map((r) => r?.status).filter(Boolean)))],
-    [rows]
-  );
-  const allTypes = useMemo(
-    () => ["all", ...Array.from(new Set(rows.map((r) => r?.visit_type).filter(Boolean)))],
-    [rows]
-  );
+  const allStatuses = useMemo(() => {
+    const values = rows
+      .map((r) => displayLabel(r?.status, ""))
+      .filter(Boolean)
+      .map((v) => String(v));
+    return ["all", ...Array.from(new Set(values))];
+  }, [rows]);
+
+  const allTypes = useMemo(() => {
+    const values = rows
+      .map((r) => displayLabel(r?.visit_type, ""))
+      .filter(Boolean)
+      .map((v) => String(v));
+    return ["all", ...Array.from(new Set(values))];
+  }, [rows]);
 
   // Apply filters + search
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const statusKey = statusFilter === "all" ? "all" : statusFilter.toLowerCase();
+    const typeKey = typeFilter === "all" ? "all" : typeFilter.toLowerCase();
+
     return rows.filter((r) => {
-      if (statusFilter !== "all" && r?.status !== statusFilter) return false;
-      if (typeFilter !== "all" && r?.visit_type !== typeFilter) return false;
+      const rowStatus = normalizeValue(r?.status);
+      const rowType = normalizeValue(r?.visit_type);
+
+      if (statusKey !== "all" && rowStatus !== statusKey) return false;
+      if (typeKey !== "all" && rowType !== typeKey) return false;
 
       if (!q) return true;
       const hay = [
         r?.purpose,
         r?.note,
-        r?.status,
-        r?.visit_type,
+        displayLabel(r?.status, ""),
+        displayLabel(r?.visit_type, ""),
         r?.planner?.name,
         r?.lead?.prospect_name,
         r?.zone?.zone_name,
@@ -123,7 +156,7 @@ export default function MyVisits() {
   }, [rows, query, statusFilter, typeFilter]);
 
   const statusChipColor = (status) => {
-    switch ((status || "").toLowerCase()) {
+    switch (normalizeValue(status)) {
       case "scheduled":
         return "default";
       case "started":
@@ -140,7 +173,7 @@ export default function MyVisits() {
   };
 
   const typeChipColor = (type) => {
-    switch ((type || "").toLowerCase()) {
+    switch (normalizeValue(type)) {
       case "planned":
         return "primary";
       case "ad-hoc":
@@ -173,7 +206,7 @@ export default function MyVisits() {
   };
 
   // Column count (update if you add/remove columns)
-  const COLS = 8; // Increased by 1 for details column
+  const COLS = 9; // Includes details column
 
   return (
     <>
@@ -205,7 +238,7 @@ export default function MyVisits() {
             placeholder="Search visits…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            sx={{ minWidth: { xs: 200, sm: 260 } }}
+            sx={{ minWidth: { xs: "100%", sm: 260 } }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -216,8 +249,8 @@ export default function MyVisits() {
           />
 
           {/* Filters */}
-          <Stack direction="row" spacing={1} sx={{ minWidth: { xs: "100%", md: "auto" } }}>
-            <FormControl size="small" sx={{ minWidth: 140 }}>
+          <Stack direction="row" spacing={1} sx={{ minWidth: { xs: "100%", md: "auto" }, flexWrap: "wrap" }}>
+            <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 140 } }}>
               <InputLabel id="status-filter-label">Status</InputLabel>
               <Select
                 labelId="status-filter-label"
@@ -233,7 +266,7 @@ export default function MyVisits() {
               </Select>
             </FormControl>
 
-            <FormControl size="small" sx={{ minWidth: 140 }}>
+            <FormControl size="small" sx={{ minWidth: { xs: "100%", sm: 140 } }}>
               <InputLabel id="type-filter-label">Type</InputLabel>
               <Select
                 labelId="type-filter-label"
@@ -251,151 +284,96 @@ export default function MyVisits() {
           </Stack>
         </Toolbar>
 
-        {/* Table */}
-        <TableContainer sx={{ maxHeight: 560 }}>
-          <Table stickyHeader size="small" aria-label="my visits table">
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>When</TableCell>
-                <TableCell>Lead / Zone</TableCell>
-                <TableCell>Purpose & Note</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Type</TableCell>
-                <TableCell>Location</TableCell>
-                <TableCell>Planner</TableCell>
-                <TableCell>Details</TableCell> {/* New column */}
-              </TableRow>
-            </TableHead>
+        {isMobile ? (
+          <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+            {loading && <LinearProgress />}
 
-            <TableBody>
-              {loading && (
-                <TableRow>
-                  <TableCell colSpan={COLS} sx={{ p: 0 }}>
-                    <LinearProgress />
-                  </TableCell>
-                </TableRow>
-              )}
+            {!loading && filtered.length === 0 && (
+              <Typography align="center" sx={{ py: 4, color: "text.secondary" }}>
+                No visits found.
+              </Typography>
+            )}
 
-              {!loading && filtered.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={COLS} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                    No visits found.
-                  </TableCell>
-                </TableRow>
-              )}
+            {!loading &&
+              filtered.map((v) => {
+                const { lat, lng } = getCoords(v);
+                const hasCoords = lat != null && lng != null;
+                const statusLabel = displayLabel(v.status);
+                const typeLabel = displayLabel(v.visit_type);
 
-              {!loading &&
-                filtered.map((v) => {
-                  const { lat, lng } = getCoords(v);
-                  const hasCoords = lat != null && lng != null;
-
-                  return (
-                    <TableRow key={v.id} hover>
-                      {/* When */}
-                      <TableCell>
-                        <Stack direction="row" spacing={1} alignItems="center">
-
-                          <Box>
-                            <Typography variant="body2" fontWeight={700}>
-                              {v.id}
-                            </Typography>
-
-                          </Box>
-                        </Stack>
-                      </TableCell>
-                      <TableCell>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <EventIcon sx={{ fontSize: 18, color: "text.secondary" }} />
-                          <Box>
-                            <Typography variant="body2" fontWeight={700}>
-                              {fmtDate(v.scheduled_at)}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {v.actual_start_at || v.actual_end_at
-                                ? `Actual: ${fmtDate(v.actual_start_at)} → ${fmtDate(v.actual_end_at)}`
-                                : "—"}
-                            </Typography>
-                          </Box>
-                        </Stack>
-                      </TableCell>
-
-                      {/* Lead / Zone */}
-                      <TableCell>
-                        <Stack spacing={0.5}>
-                          <Stack direction="row" alignItems="center" spacing={0.75}>
-                            <FmdGoodIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-                            <Typography variant="body2" fontWeight={700}>
-                              {v.lead?.prospect_name || "—"}
-                            </Typography>
-                          </Stack>
-                          <Typography variant="caption" color="text.secondary">
-                            Zone: {v.zone?.zone_name || "—"}
-                          </Typography>
-                        </Stack>
-                      </TableCell>
-
-                      {/* Purpose & Note */}
-                      <TableCell sx={{ maxWidth: 260, minWidth: 180 }}>
-                        <Typography
-                          variant="body2"
-                          fontWeight={600}
-                          sx={{
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "normal",
-                            maxWidth: "240px",
-                          }}
-                          title={v.purpose}
-                        >
-                          {v.purpose || "—"}
+                return (
+                  <Paper key={v.id} variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={1.5}>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="subtitle2" fontWeight={800} noWrap>
+                          {v.lead?.prospect_name || "Visit"}
                         </Typography>
-                        {v.note && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{
-                              display: "-webkit-box",
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: "vertical",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "normal",
-                              maxWidth: "240px",
-                              mt: 0.5,
-                            }}
-                            title={v.note}
-                          >
-                            {v.note}
+                        <Typography variant="caption" color="text.secondary">
+                          ID: {v.id}
+                        </Typography>
+                      </Box>
+                      <Stack direction="row" spacing={1}>
+                        <Chip size="small" label={statusLabel} color={statusChipColor(v.status)} variant="outlined" />
+                        <Chip size="small" label={typeLabel} color={typeChipColor(v.visit_type)} variant="outlined" />
+                      </Stack>
+                    </Box>
+
+                    <Box sx={{ mt: 1.5 }}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <EventIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+                        <Box>
+                          <Typography variant="body2" fontWeight={700}>
+                            {fmtDate(v.scheduled_at)}
                           </Typography>
-                        )}
-                      </TableCell>
+                          <Typography variant="caption" color="text.secondary">
+                            {v.actual_start_at || v.actual_end_at
+                              ? `Actual: ${fmtDate(v.actual_start_at)} → ${fmtDate(v.actual_end_at)}`
+                              : "—"}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                    </Box>
 
-                      {/* Status */}
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={v.status || "—"}
-                          color={statusChipColor(v.status)}
-                          variant="outlined"
-                        />
-                      </TableCell>
+                    <Box sx={{ mt: 1.5 }}>
+                      <Stack direction="row" spacing={0.75} alignItems="center">
+                        <FmdGoodIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                        <Typography variant="body2" fontWeight={700}>
+                          {v.lead?.prospect_name || "—"}
+                        </Typography>
+                      </Stack>
+                      <Typography variant="caption" color="text.secondary">
+                        Zone: {v.zone?.zone_name || "—"}
+                      </Typography>
+                    </Box>
 
-                      {/* Type */}
-                      <TableCell>
-                        <Chip
-                          size="small"
-                          label={v.visit_type || "—"}
-                          color={typeChipColor(v.visit_type)}
-                          variant="outlined"
-                        />
-                      </TableCell>
+                    <Box sx={{ mt: 1.5 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        Purpose
+                      </Typography>
+                      <Typography variant="body2" fontWeight={600}>
+                        {v.purpose || "—"}
+                      </Typography>
+                      {v.note && (
+                        <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 0.5 }}>
+                          {v.note}
+                        </Typography>
+                      )}
+                    </Box>
 
-                      {/* Location */}
-                      <TableCell>
+                    <Box sx={{ mt: 1.5, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Planner
+                        </Typography>
+                        <Stack direction="row" spacing={0.75} alignItems="center">
+                          <WorkHistoryIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                          <Typography variant="body2">{v.planner?.name || "—"}</Typography>
+                        </Stack>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Location
+                        </Typography>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <IconButton
                             size="small"
@@ -424,37 +402,232 @@ export default function MyVisits() {
                             {hasCoords ? `${lat.toFixed(5)}, ${lng.toFixed(5)}` : "—"}
                           </Typography>
                         </Stack>
-                      </TableCell>
+                      </Box>
+                    </Box>
 
-                      {/* Planner */}
-                      <TableCell>
-                        <Stack direction="row" spacing={0.75} alignItems="center">
-                          <WorkHistoryIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-                          <Typography variant="body2">{v.planner?.name || "—"}</Typography>
-                        </Stack>
-                      </TableCell>
+                    <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => {
+                          const tid = v.task_visit_relation?.task_id;
+                          if (tid) navigate(`/task-details/${tid}`);
+                        }}
+                        disabled={!v.task_visit_relation?.task_id}
+                        sx={{ borderRadius: 2 }}
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
+                    </Box>
+                  </Paper>
+                );
+              })}
+          </Box>
+        ) : (
+          <TableContainer sx={{ maxHeight: 560 }}>
+            <Table stickyHeader size="small" aria-label="my visits table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>ID</TableCell>
+                  <TableCell>When</TableCell>
+                  <TableCell>Lead / Zone</TableCell>
+                  <TableCell>Purpose & Note</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Type</TableCell>
+                  <TableCell>Location</TableCell>
+                  <TableCell>Planner</TableCell>
+                  <TableCell>Details</TableCell>
+                </TableRow>
+              </TableHead>
 
-                      {/* Details column */}
-                      <TableCell>
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          onClick={() => {
-                            const tid = v.task_visit_relation?.task_id;
-                            if (tid) navigate(`/task-details/${tid}`);
-                          }}
-                          disabled={!v.task_visit_relation?.task_id}
-                          sx={{ borderRadius: 2 }}
-                        >
-                          <VisibilityIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              <TableBody>
+                {loading && (
+                  <TableRow>
+                    <TableCell colSpan={COLS} sx={{ p: 0 }}>
+                      <LinearProgress />
+                    </TableCell>
+                  </TableRow>
+                )}
+
+                {!loading && filtered.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={COLS} align="center" sx={{ py: 4, color: "text.secondary" }}>
+                      No visits found.
+                    </TableCell>
+                  </TableRow>
+                )}
+
+                {!loading &&
+                  filtered.map((v) => {
+                    const { lat, lng } = getCoords(v);
+                    const hasCoords = lat != null && lng != null;
+                    const statusLabel = displayLabel(v.status);
+                    const typeLabel = displayLabel(v.visit_type);
+
+                    return (
+                      <TableRow key={v.id} hover>
+                        {/* When */}
+                        <TableCell>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Box>
+                              <Typography variant="body2" fontWeight={700}>
+                                {v.id}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </TableCell>
+                        <TableCell>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <EventIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+                            <Box>
+                              <Typography variant="body2" fontWeight={700}>
+                                {fmtDate(v.scheduled_at)}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {v.actual_start_at || v.actual_end_at
+                                  ? `Actual: ${fmtDate(v.actual_start_at)} → ${fmtDate(v.actual_end_at)}`
+                                  : "—"}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </TableCell>
+
+                        {/* Lead / Zone */}
+                        <TableCell>
+                          <Stack spacing={0.5}>
+                            <Stack direction="row" alignItems="center" spacing={0.75}>
+                              <FmdGoodIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                              <Typography variant="body2" fontWeight={700}>
+                                {v.lead?.prospect_name || "—"}
+                              </Typography>
+                            </Stack>
+                            <Typography variant="caption" color="text.secondary">
+                              Zone: {v.zone?.zone_name || "—"}
+                            </Typography>
+                          </Stack>
+                        </TableCell>
+
+                        {/* Purpose & Note */}
+                        <TableCell sx={{ maxWidth: 260, minWidth: 180 }}>
+                          <Typography
+                            variant="body2"
+                            fontWeight={600}
+                            sx={{
+                              display: "-webkit-box",
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "normal",
+                              maxWidth: "240px",
+                            }}
+                            title={v.purpose}
+                          >
+                            {v.purpose || "—"}
+                          </Typography>
+                          {v.note && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{
+                                display: "-webkit-box",
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "normal",
+                                maxWidth: "240px",
+                                mt: 0.5,
+                              }}
+                              title={v.note}
+                            >
+                              {v.note}
+                            </Typography>
+                          )}
+                        </TableCell>
+
+                        {/* Status */}
+                        <TableCell>
+                          <Chip
+                            size="small"
+                            label={statusLabel}
+                            color={statusChipColor(v.status)}
+                            variant="outlined"
+                          />
+                        </TableCell>
+
+                        {/* Type */}
+                        <TableCell>
+                          <Chip
+                            size="small"
+                            label={typeLabel}
+                            color={typeChipColor(v.visit_type)}
+                            variant="outlined"
+                          />
+                        </TableCell>
+
+                        {/* Location */}
+                        <TableCell>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (hasCoords) handleOpenMap(lat, lng);
+                              }}
+                              disabled={!hasCoords}
+                              sx={{
+                                borderRadius: 2,
+                                bgcolor: hasCoords ? alpha(brand, 0.08) : "transparent",
+                                border: `1px solid ${hasCoords ? alpha(brand, 0.3) : divider}`,
+                                "&:hover": {
+                                  bgcolor: hasCoords ? alpha(brand, 0.16) : "transparent",
+                                },
+                              }}
+                            >
+                              <MyLocationIcon
+                                sx={{
+                                  fontSize: 18,
+                                  color: hasCoords ? brand : textSec,
+                                }}
+                              />
+                            </IconButton>
+                            <Typography variant="caption" color="text.secondary" noWrap>
+                              {hasCoords ? `${lat.toFixed(5)}, ${lng.toFixed(5)}` : "—"}
+                            </Typography>
+                          </Stack>
+                        </TableCell>
+
+                        {/* Planner */}
+                        <TableCell>
+                          <Stack direction="row" spacing={0.75} alignItems="center">
+                            <WorkHistoryIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+                            <Typography variant="body2">{v.planner?.name || "—"}</Typography>
+                          </Stack>
+                        </TableCell>
+
+                        {/* Details column */}
+                        <TableCell>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => {
+                              const tid = v.task_visit_relation?.task_id;
+                              if (tid) navigate(`/task-details/${tid}`);
+                            }}
+                            disabled={!v.task_visit_relation?.task_id}
+                            sx={{ borderRadius: 2 }}
+                          >
+                            <VisibilityIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
       </Paper>
 
       <Snackbar

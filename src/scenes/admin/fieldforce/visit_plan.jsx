@@ -23,6 +23,7 @@ import {
   InputAdornment,
   useTheme,
   Paper,
+  useMediaQuery,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
@@ -49,6 +50,7 @@ const fmtDateTime = (v) => {
 
 export default function VisitPlanner() {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [employees, setEmployees] = useState([]);
   const [leads, setLeads] = useState([]);
@@ -337,12 +339,21 @@ export default function VisitPlanner() {
                 </Box>
               </Box>
             </CardContent>
-            <CardActions sx={{ px: 2, pb: 2, pt: 0, justifyContent: "flex-end" }}>
+            <CardActions
+              sx={{
+                px: 2,
+                pb: 2,
+                pt: 0,
+                justifyContent: "flex-end",
+                flexWrap: "wrap",
+              }}
+            >
               <Button
                 onClick={handleSubmit}
                 variant="contained"
                 startIcon={<AddIcon />}
                 disabled={saving}
+                sx={{ width: { xs: "100%", sm: "auto" } }}
               >
                 {saving ? "Saving…" : "Create Visit"}
               </Button>
@@ -360,43 +371,108 @@ export default function VisitPlanner() {
             />
             <CardContent sx={{ pt: 0 }}>
               {visits?.length ? (
-                <Box sx={{ overflowX: "auto" }}>
-                  <table
-                    style={{
-                      width: "100%",
-                      borderCollapse: "collapse",
-                    }}
-                  >
-                    <thead>
-                      <tr>
-                        <th style={th}>ID</th>
-                        <th style={th}>Employee</th>
-                        <th style={th}>Lead</th>
-                        <th style={th}>Zone</th>
-                        <th style={th}>Priority</th>
-                        <th style={th}>Scheduled At</th>
-                        <th style={th}>Purpose</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {visits.map((v) => (
-                        <tr key={v.id}>
-                           <td style={td}>{v.id}</td>
-                          <td style={td}>{v.employee?.name || "—"}</td>
-                          <td style={td}>
-                            {v.lead?.prospect_name
-                              ? v.lead.prospect_name
-                              : "—"}
-                          </td>
-                          <td style={td}>{v.zone?.zone_name || "—"}</td>
-                          <td style={td}>{v.priority?.priority_name || "—"}</td>
-                          <td style={td}>{fmtDateTime(v.scheduled_at)}</td>
-                          <td style={td}>{v.purpose}</td>
+                isMobile ? (
+                  <Box display="flex" flexDirection="column" gap={2} mt={1}>
+                    {visits.map((v) => (
+                      <Paper
+                        key={v.id}
+                        variant="outlined"
+                        sx={{ p: 2, borderRadius: 2 }}
+                      >
+                        <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={1}>
+                          <Box>
+                            <Typography variant="subtitle2" fontWeight={700}>
+                              {v.lead?.prospect_name || "Visit"}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              ID: {v.id}
+                            </Typography>
+                          </Box>
+                          <Chip
+                            size="small"
+                            label={v.priority?.priority_name || "—"}
+                            variant="outlined"
+                          />
+                        </Box>
+
+                        <Divider sx={{ my: 1.5 }} />
+
+                        <Grid container spacing={1.5}>
+                          <Grid item xs={6}>
+                            <Typography variant="caption" color="text.secondary">
+                              Employee
+                            </Typography>
+                            <Typography variant="body2">
+                              {v.employee?.name || "—"}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <Typography variant="caption" color="text.secondary">
+                              Zone
+                            </Typography>
+                            <Typography variant="body2">
+                              {v.zone?.zone_name || "—"}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={12}>
+                            <Typography variant="caption" color="text.secondary">
+                              Scheduled At
+                            </Typography>
+                            <Typography variant="body2">
+                              {fmtDateTime(v.scheduled_at)}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={12}>
+                            <Typography variant="caption" color="text.secondary">
+                              Purpose
+                            </Typography>
+                            <Typography variant="body2">
+                              {v.purpose || "—"}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Paper>
+                    ))}
+                  </Box>
+                ) : (
+                  <Box sx={{ overflowX: "auto" }}>
+                    <table
+                      style={{
+                        width: "100%",
+                        borderCollapse: "collapse",
+                      }}
+                    >
+                      <thead>
+                        <tr>
+                          <th style={th}>ID</th>
+                          <th style={th}>Employee</th>
+                          <th style={th}>Lead</th>
+                          <th style={th}>Zone</th>
+                          <th style={th}>Priority</th>
+                          <th style={th}>Scheduled At</th>
+                          <th style={th}>Purpose</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </Box>
+                      </thead>
+                      <tbody>
+                        {visits.map((v) => (
+                          <tr key={v.id}>
+                             <td style={td}>{v.id}</td>
+                            <td style={td}>{v.employee?.name || "—"}</td>
+                            <td style={td}>
+                              {v.lead?.prospect_name
+                                ? v.lead.prospect_name
+                                : "—"}
+                            </td>
+                            <td style={td}>{v.zone?.zone_name || "—"}</td>
+                            <td style={td}>{v.priority?.priority_name || "—"}</td>
+                            <td style={td}>{fmtDateTime(v.scheduled_at)}</td>
+                            <td style={td}>{v.purpose}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </Box>
+                )
               ) : (
                 <Typography color="text.secondary" sx={{ py: 2 }}>
                   No visits planned yet.
@@ -408,7 +484,14 @@ export default function VisitPlanner() {
 
         {/* RIGHT: Selector Panel */}
         <Grid item xs={12} md={5} lg={4}>
-          <Card variant="outlined" sx={{ borderRadius: 3, position: "sticky", top: 16 }}>
+          <Card
+            variant="outlined"
+            sx={{
+              borderRadius: 3,
+              position: { xs: "static", md: "sticky" },
+              top: { md: 16 },
+            }}
+          >
             <CardHeader
               title={<Typography variant="h6" fontWeight={800}>Select a Destination</Typography>}
               subheader="Choose either a lead or a zone for this visit."
@@ -419,6 +502,9 @@ export default function VisitPlanner() {
                 onChange={(_, v) => setActiveTab(v)}
                 textColor="primary"
                 indicatorColor="primary"
+                variant={isMobile ? "scrollable" : "standard"}
+                scrollButtons={isMobile ? "auto" : false}
+                allowScrollButtonsMobile
                 sx={{ mb: 2 }}
               >
                 <Tab value="lead" label="Leads" />

@@ -1,5 +1,5 @@
 // src/scenes/lead/ContactUsLead.jsx
-import { Box, Button, Typography, useTheme, Paper } from "@mui/material";
+import { Box, Button, Typography, useTheme, Paper, useMediaQuery, Checkbox } from "@mui/material";
 import { Header } from "../../../components";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useEffect, useState, useMemo } from "react";
@@ -14,6 +14,7 @@ import {
 
 const ContactUsLead = () => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
 
   const brand = theme.palette.blueAccent?.main ?? theme.palette.info.main;
@@ -56,6 +57,12 @@ const ContactUsLead = () => {
   const handleSelectionModelChange = (newSelectionModel) => {
     // DataGrid gives an array of selected row IDs
     setSelectedRows(newSelectionModel);
+  };
+
+  const toggleRowSelection = (rowId) => {
+    setSelectedRows((prev) =>
+      prev.includes(rowId) ? prev.filter((id) => id !== rowId) : [...prev, rowId]
+    );
   };
 
   const handleConvertToProspect = async () => {
@@ -126,7 +133,8 @@ const ContactUsLead = () => {
       <Box
         display="flex"
         justifyContent="space-between"
-        alignItems="center"
+        alignItems={{ xs: "stretch", sm: "center" }}
+        flexDirection={{ xs: "column", sm: "row" }}
         gap={2}
         mb={2}
       >
@@ -142,6 +150,7 @@ const ContactUsLead = () => {
           sx={{
             bgcolor: brand,
             color: brandContrast,
+            width: { xs: "100%", sm: "auto" },
             "&:hover": { bgcolor: brandHover },
           }}
         >
@@ -149,76 +158,162 @@ const ContactUsLead = () => {
         </Button>
       </Box>
 
-      <Paper
-        elevation={0}
-        sx={{
-          mt: 3,
-          height: "75vh",
-          borderRadius: 2,
-          overflow: "hidden",
-          bgcolor: paper,
-          border: `1px solid ${divider}`,
-          boxShadow: theme.shadows[2],
-          // DataGrid theming mapped to your palette
-          "& .MuiDataGrid-root": { border: "none", color: textPri },
-          "& .MuiDataGrid-columnHeaders": {
-            bgcolor: theme.palette.mode === "dark"
-              ? theme.palette.gray?.[800] ?? paper
-              : theme.palette.gray?.[800] ?? paper,
-            color: textPri,
-            borderBottom: `1px solid ${divider}`,
-            fontWeight: 800,
-          },
-          "& .MuiDataGrid-columnHeaderTitle": { fontSize: 14 },
-          "& .MuiDataGrid-cell": {
-            borderBottom: `1px solid ${divider}`,
-          },
-          "& .MuiDataGrid-virtualScroller": {
+      {isMobile ? (
+        <Box display="flex" flexDirection="column" gap={2} mt={2}>
+          {leads.length > 0 ? (
+            leads.map((lead) => (
+              <Paper
+                key={lead.id}
+                elevation={0}
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor: paper,
+                  border: `1px solid ${divider}`,
+                  boxShadow: theme.shadows[1],
+                }}
+              >
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={1.5}>
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight={700} color={textPri}>
+                      {lead.person_name || "Unknown"}
+                    </Typography>
+                    <Typography variant="caption" color={textSec}>
+                      ID: {lead.id}
+                    </Typography>
+                  </Box>
+                  <Checkbox
+                    checked={selectedRows.includes(lead.id)}
+                    onChange={() => toggleRowSelection(lead.id)}
+                    sx={{ color: `${theme.palette.success.main} !important` }}
+                  />
+                </Box>
+
+                <Box sx={{ mt: 1, borderTop: `1px solid ${divider}` }} />
+
+                <Box mt={1.5} display="grid" gridTemplateColumns="1fr 1fr" gap={1.5}>
+                  <Box>
+                    <Typography variant="caption" color={textSec}>
+                      Email
+                    </Typography>
+                    <Typography variant="body2" color={textPri}>
+                      {lead.email || "—"}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color={textSec}>
+                      Mobile
+                    </Typography>
+                    <Typography variant="body2" color={textPri}>
+                      {lead.mobile || "—"}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color={textSec}>
+                      Type
+                    </Typography>
+                    <Typography variant="body2" color={textPri}>
+                      {lead.type || "—"}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ gridColumn: "1 / -1" }}>
+                    <Typography variant="caption" color={textSec}>
+                      Query
+                    </Typography>
+                    <Typography variant="body2" color={textPri}>
+                      {lead.query || "—"}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Paper>
+            ))
+          ) : (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 3,
+                borderRadius: 2,
+                bgcolor: paper,
+                border: `1px solid ${divider}`,
+                textAlign: "center",
+              }}
+            >
+              <Typography sx={{ color: textSec }}>No leads found.</Typography>
+            </Paper>
+          )}
+        </Box>
+      ) : (
+        <Paper
+          elevation={0}
+          sx={{
+            mt: 3,
+            height: "75vh",
+            borderRadius: 2,
+            overflow: "hidden",
             bgcolor: paper,
-          },
-          "& .MuiDataGrid-footerContainer": {
-            bgcolor: theme.palette.mode === "dark"
-              ? theme.palette.gray?.[800] ?? paper
-              : theme.palette.gray?.[800] ?? paper,
-            borderTop: `1px solid ${divider}`,
-            color: textSec,
-          },
-          "& .MuiCheckbox-root": {
-            // success token -> matches your greenAccent via palette.success
-            color: `${theme.palette.success.main} !important`,
-          },
-          "& .MuiDataGrid-toolbarContainer": {
-            p: 1,
-            "& .MuiButton-text": { color: textPri },
-          },
-          "& .MuiTablePagination-displayedRows, & .MuiTablePagination-selectLabel":
-            { color: textSec },
-          "& .MuiDataGrid-row:hover": {
-            backgroundColor:
-              theme.palette.action?.hover ||
-              "rgba(0,0,0,0.04)",
-          },
-          "& .MuiDataGrid-row.Mui-selected": {
-            backgroundColor:
-              theme.palette.action?.selected ||
-              "rgba(0,0,0,0.08)",
-          },
-        }}
-      >
-        <DataGrid
-          rows={leads}
-          columns={columns}
-          checkboxSelection
-          disableRowSelectionOnClick
-          onRowSelectionModelChange={handleSelectionModelChange}
-          // FYI: In MUI X v6+, use `slots={{ toolbar: GridToolbar }}`; in v5, `components` is correct.
-          components={{ Toolbar: GridToolbar }}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 10 } },
-            columns: { columnVisibilityModel: { id: true } },
+            border: `1px solid ${divider}`,
+            boxShadow: theme.shadows[2],
+            // DataGrid theming mapped to your palette
+            "& .MuiDataGrid-root": { border: "none", color: textPri },
+            "& .MuiDataGrid-columnHeaders": {
+              bgcolor: theme.palette.mode === "dark"
+                ? theme.palette.gray?.[800] ?? paper
+                : theme.palette.gray?.[800] ?? paper,
+              color: textPri,
+              borderBottom: `1px solid ${divider}`,
+              fontWeight: 800,
+            },
+            "& .MuiDataGrid-columnHeaderTitle": { fontSize: 14 },
+            "& .MuiDataGrid-cell": {
+              borderBottom: `1px solid ${divider}`,
+            },
+            "& .MuiDataGrid-virtualScroller": {
+              bgcolor: paper,
+            },
+            "& .MuiDataGrid-footerContainer": {
+              bgcolor: theme.palette.mode === "dark"
+                ? theme.palette.gray?.[800] ?? paper
+                : theme.palette.gray?.[800] ?? paper,
+              borderTop: `1px solid ${divider}`,
+              color: textSec,
+            },
+            "& .MuiCheckbox-root": {
+              // success token -> matches your greenAccent via palette.success
+              color: `${theme.palette.success.main} !important`,
+            },
+            "& .MuiDataGrid-toolbarContainer": {
+              p: 1,
+              "& .MuiButton-text": { color: textPri },
+            },
+            "& .MuiTablePagination-displayedRows, & .MuiTablePagination-selectLabel":
+              { color: textSec },
+            "& .MuiDataGrid-row:hover": {
+              backgroundColor:
+                theme.palette.action?.hover ||
+                "rgba(0,0,0,0.04)",
+            },
+            "& .MuiDataGrid-row.Mui-selected": {
+              backgroundColor:
+                theme.palette.action?.selected ||
+                "rgba(0,0,0,0.08)",
+            },
           }}
-        />
-      </Paper>
+        >
+          <DataGrid
+            rows={leads}
+            columns={columns}
+            checkboxSelection
+            disableRowSelectionOnClick
+            onRowSelectionModelChange={handleSelectionModelChange}
+            // FYI: In MUI X v6+, use `slots={{ toolbar: GridToolbar }}`; in v5, `components` is correct.
+            components={{ Toolbar: GridToolbar }}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 10 } },
+              columns: { columnVisibilityModel: { id: true } },
+            }}
+          />
+        </Paper>
+      )}
     </Box>
   );
 };

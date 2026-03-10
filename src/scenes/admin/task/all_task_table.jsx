@@ -106,9 +106,9 @@ const AllTaskTable = () => {
   }
 
   return (
-    <Box sx={{ p: 3, backgroundColor: theme.palette.background.default }}>
+    <Box sx={{ p: { xs: 2, md: 3 }, backgroundColor: theme.palette.background.default }}>
       {/* Status filter chips */}
-      <Box sx={{ display: "flex", gap: 1.25, overflowX: "auto", mb: 2 }}>
+      <Box sx={{ display: "flex", gap: 1.25, overflowX: "auto", mb: 2, pb: 0.5 }}>
         <Chip
           label="All Tasks"
           onClick={() => handleStatusFilter("")}
@@ -141,11 +141,11 @@ const AllTaskTable = () => {
           gap: 2,
           flexWrap: "wrap",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: { xs: "flex-start", sm: "space-between" },
           mb: 3,
         }}
       >
-        <FormControl sx={{ minWidth: 220 }}>
+        <FormControl sx={{ minWidth: { xs: "100%", sm: 220 } }}>
           <InputLabel sx={{ color: colors.gray[400] }}>Filter by Employee</InputLabel>
           <Select
             label="Filter by Employee"
@@ -173,6 +173,7 @@ const AllTaskTable = () => {
             backgroundColor: colors.primary[600],
             color: colors.primary[900],
             "&:hover": { backgroundColor: colors.primary[700] },
+            width: { xs: "100%", sm: "auto" },
           }}
         >
           + Add Task
@@ -183,8 +184,12 @@ const AllTaskTable = () => {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)", // always 4 columns
-
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(3, 1fr)",
+            lg: "repeat(4, 1fr)",
+          },
           gap: 2,
         }}
       >

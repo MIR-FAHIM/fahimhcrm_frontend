@@ -18,6 +18,9 @@ import {
   DialogContentText,
   DialogActions,
   CircularProgress,
+  Paper,
+  Checkbox,
+  useMediaQuery,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
@@ -44,7 +47,7 @@ const Toolbar = ({ query, setQuery, onRefresh, colors, selectionCount, filter, s
   <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap", p: 1, borderBottom: `1px solid ${colors.gray[700]}` }}>
     <Typography variant="h6" sx={{ fontWeight: 800, color: colors.gray[100] }}>Facebook Leads</Typography>
 
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: { xs: 0, md: 2 } }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: { xs: 0, md: 2 }, flexWrap: "wrap", width: { xs: "100%", md: "auto" } }}>
       <TextField
         size="small"
         placeholder="Search name, email, mobile"
@@ -52,7 +55,7 @@ const Toolbar = ({ query, setQuery, onRefresh, colors, selectionCount, filter, s
         onChange={(e) => setQuery(e.target.value)}
         InputProps={{ startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: colors.gray[400] }} /> }}
         sx={{
-          minWidth: 260,
+          minWidth: { xs: "100%", sm: 260 },
           "& .MuiOutlinedInput-root": { bgcolor: "background.default", color: colors.gray[100] },
           "& fieldset": { borderColor: colors.gray[700] },
         }}
@@ -66,7 +69,7 @@ const Toolbar = ({ query, setQuery, onRefresh, colors, selectionCount, filter, s
         onChange={(e) => setFilter(e.target.value)}
         SelectProps={{ native: true }}
         sx={{
-          minWidth: 140,
+          minWidth: { xs: "100%", sm: 140 },
           "& .MuiOutlinedInput-root": { bgcolor: "background.default", color: colors.gray[100] },
           "& fieldset": { borderColor: colors.gray[700] },
         }}
@@ -75,71 +78,71 @@ const Toolbar = ({ query, setQuery, onRefresh, colors, selectionCount, filter, s
         <option value="new">New</option>
         <option value="converted">Converted</option>
       </TextField>
-<Box
-  sx={{
-    display: "flex",
-    flexDirection: { xs: "column", sm: "row" },
-    gap: 2,
-    alignItems: { xs: "flex-start", sm: "center" },
-    bgcolor: colors.gray[900],
-    px: 2,
-    py: 1,
-    borderRadius: 2,
-    boxShadow: 1,
-    minWidth: 340,
-  }}
->
-  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-    <Chip
-      label={`Today: ${reports?.today_onboard ?? 0}`}
-      color="success"
-      sx={{
-        fontWeight: 700,
-        fontSize: "1rem",
-        bgcolor: colors.greenAccent[700],
-        color: colors.gray[100],
-        px: 2,
-        py: 1,
-      }}
-    />
-    <Chip
-      label={`Yesterday: ${reports?.yesterday_onboard ?? 0}`}
-      color="info"
-      sx={{
-        fontWeight: 700,
-        fontSize: "1rem",
-        bgcolor: colors.blueAccent[700],
-        color: colors.gray[100],
-        px: 2,
-        py: 1,
-      }}
-    />
-    <Chip
-      label={`Last 7 Days: ${reports?.last_7_days_onboard ?? 0}`}
-      color="warning"
-      sx={{
-        fontWeight: 700,
-        fontSize: "1rem",
-        bgcolor: colors.orangeAccent[700],
-        color: colors.gray[100],
-        px: 2,
-        py: 1,
-      }}
-    />
-    <Chip
-      label={`Last Month: ${reports?.last_1_month_onboard ?? 0}`}
-      color="error"
-      sx={{
-        fontWeight: 700,
-        fontSize: "1rem",
-        bgcolor: colors.redAccent[700],
-        color: colors.gray[100],
-        px: 2,
-        py: 1,
-      }}
-    />
-  </Box>
-</Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 1.25,
+          alignItems: { xs: "flex-start", sm: "center" },
+          bgcolor: colors.gray[900],
+          px: 2,
+          py: 1,
+          borderRadius: 2,
+          boxShadow: 1,
+          minWidth: { xs: "100%", sm: 340 },
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+          <Chip
+            size="small"
+            label={`Today: ${reports?.today_onboard ?? 0}`}
+            color="success"
+            sx={{
+              fontWeight: 700,
+              fontSize: { xs: "0.75rem", sm: "0.85rem" },
+              bgcolor: colors.greenAccent[700],
+              color: colors.gray[100],
+              px: 1.5,
+            }}
+          />
+          <Chip
+            size="small"
+            label={`Yesterday: ${reports?.yesterday_onboard ?? 0}`}
+            color="info"
+            sx={{
+              fontWeight: 700,
+              fontSize: { xs: "0.75rem", sm: "0.85rem" },
+              bgcolor: colors.blueAccent[700],
+              color: colors.gray[100],
+              px: 1.5,
+            }}
+          />
+          <Chip
+            size="small"
+            label={`Last 7 Days: ${reports?.last_7_days_onboard ?? 0}`}
+            color="warning"
+            sx={{
+              fontWeight: 700,
+              fontSize: { xs: "0.75rem", sm: "0.85rem" },
+              bgcolor: colors.orangeAccent[700],
+              color: colors.gray[100],
+              px: 1.5,
+            }}
+          />
+          <Chip
+            size="small"
+            label={`Last Month: ${reports?.last_1_month_onboard ?? 0}`}
+            color="error"
+            sx={{
+              fontWeight: 700,
+              fontSize: { xs: "0.75rem", sm: "0.85rem" },
+              bgcolor: colors.redAccent[700],
+              color: colors.gray[100],
+              px: 1.5,
+            }}
+          />
+        </Box>
+      </Box>
     </Box>
 
     <Box sx={{ ml: "auto", display: "flex", gap: 1 }}>
@@ -156,6 +159,7 @@ const Toolbar = ({ query, setQuery, onRefresh, colors, selectionCount, filter, s
 const FacebookLeadsTable = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
 
   const [leads, setLeads] = useState([]);
@@ -191,6 +195,12 @@ const FacebookLeadsTable = () => {
 
   const handleSelectionModelChange = (newSelectionModel) => {
     setSelectedRows(newSelectionModel);
+  };
+
+  const toggleRowSelection = (rowId) => {
+    setSelectedRows((prev) =>
+      prev.includes(rowId) ? prev.filter((id) => id !== rowId) : [...prev, rowId]
+    );
   };
 
   const filteredRows = useMemo(() => {
@@ -284,7 +294,7 @@ const FacebookLeadsTable = () => {
   }
 
   return (
-    <Box m={4} sx={{ bgcolor: theme.palette.background.default, borderRadius: 2, boxShadow: 1 }}>
+    <Box sx={{ m: { xs: 2, md: 4 }, bgcolor: theme.palette.background.default, borderRadius: 2, boxShadow: 1 }}>
       <Toolbar
       reports={reports}
         query={query}
@@ -296,38 +306,141 @@ const FacebookLeadsTable = () => {
         setFilter={setFilter}
       />
 
-      <Box mt={0} height="72vh" sx={{
-        borderRadius: 2,
-        overflow: "hidden",
-        boxShadow: 2,
-        border: `1px solid ${colors.gray[700]}`,
-        "& .MuiDataGrid-root": { border: "none" },
-        "& .MuiDataGrid-columnHeaders": { bgcolor: colors.gray[900], color: colors.gray[100], fontWeight: 700, borderBottom: `1px solid ${colors.gray[700]}` },
-        "& .MuiDataGrid-cell": { borderBottom: `1px solid ${colors.gray[800]}`, color: colors.gray[100] },
-        "& .MuiDataGrid-virtualScroller": { bgcolor: theme.palette.background.paper },
-        "& .MuiDataGrid-footerContainer": { bgcolor: colors.gray[900], borderTop: `1px solid ${colors.gray[700]}`, color: colors.gray[100] },
-        "& .MuiCheckbox-root": { color: `${colors.greenAccent[400]} !important` },
-        "& .MuiDataGrid-toolbarContainer .MuiButton-text": { color: `${colors.gray[100]} !important` },
-        "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": { color: colors.gray[300] },
-      }}>
-        <DataGrid
-          rows={filteredRows}
-          columns={columns}
-          checkboxSelection
-          disableRowSelectionOnClick
-          onRowSelectionModelChange={setSelectedRows}
-          rowSelectionModel={selectedRows}
-          slots={{ Toolbar: GridToolbar }}
-          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-        />
-      </Box>
+      {isMobile ? (
+        <Box mt={2} display="flex" flexDirection="column" gap={2}>
+          {filteredRows.length > 0 ? (
+            filteredRows.map((lead) => (
+              <Paper
+                key={lead.id}
+                elevation={0}
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  border: `1px solid ${colors.gray[700]}`,
+                  bgcolor: theme.palette.background.paper,
+                }}
+              >
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={1.5}>
+                  <Box>
+                    <Typography variant="subtitle1" sx={{ color: colors.gray[100], fontWeight: 700 }}>
+                      {lead.name || "Unknown"}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: colors.gray[400] }}>
+                      ID: {lead.id}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <StatusChip status={lead.status} colors={colors} />
+                    <Checkbox
+                      checked={selectedRows.includes(lead.id)}
+                      onChange={() => toggleRowSelection(lead.id)}
+                      sx={{ color: colors.greenAccent[400] }}
+                    />
+                  </Box>
+                </Box>
 
-      <Box display="flex" justifyContent="flex-end" gap={1.5} mt={2}>
+                <Box sx={{ mt: 1, borderTop: `1px solid ${colors.gray[800]}` }} />
+
+                <Box mt={1.5} display="grid" gridTemplateColumns="1fr 1fr" gap={1.5}>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Email
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: colors.gray[100] }}>
+                      {lead.email || "—"}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Mobile
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: colors.gray[100] }}>
+                      {lead.mobile || "—"}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Ad Name
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: colors.gray[100] }}>
+                      {lead.ad_name || "—"}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Updated
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: colors.gray[100] }}>
+                      {lead.updated_at ? dayjs(lead.updated_at).fromNow() : "—"}
+                    </Typography>
+                  </Box>
+                  {lead.note && (
+                    <Box sx={{ gridColumn: "1 / -1" }}>
+                      <Typography variant="caption" color="text.secondary">
+                        Note
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: colors.gray[100] }}>
+                        {lead.note}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </Paper>
+            ))
+          ) : (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 3,
+                borderRadius: 2,
+                border: `1px solid ${colors.gray[700]}`,
+                bgcolor: theme.palette.background.paper,
+                textAlign: "center",
+              }}
+            >
+              <Typography sx={{ color: colors.gray[400] }}>No leads found.</Typography>
+            </Paper>
+          )}
+        </Box>
+      ) : (
+        <Box mt={0} height="72vh" sx={{
+          borderRadius: 2,
+          overflow: "hidden",
+          boxShadow: 2,
+          border: `1px solid ${colors.gray[700]}`,
+          "& .MuiDataGrid-root": { border: "none" },
+          "& .MuiDataGrid-columnHeaders": { bgcolor: colors.gray[900], color: colors.gray[100], fontWeight: 700, borderBottom: `1px solid ${colors.gray[700]}` },
+          "& .MuiDataGrid-cell": { borderBottom: `1px solid ${colors.gray[800]}`, color: colors.gray[100] },
+          "& .MuiDataGrid-virtualScroller": { bgcolor: theme.palette.background.paper },
+          "& .MuiDataGrid-footerContainer": { bgcolor: colors.gray[900], borderTop: `1px solid ${colors.gray[700]}`, color: colors.gray[100] },
+          "& .MuiCheckbox-root": { color: `${colors.greenAccent[400]} !important` },
+          "& .MuiDataGrid-toolbarContainer .MuiButton-text": { color: `${colors.gray[100]} !important` },
+          "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": { color: colors.gray[300] },
+        }}>
+          <DataGrid
+            rows={filteredRows}
+            columns={columns}
+            checkboxSelection
+            disableRowSelectionOnClick
+            onRowSelectionModelChange={setSelectedRows}
+            rowSelectionModel={selectedRows}
+            slots={{ Toolbar: GridToolbar }}
+            initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+          />
+        </Box>
+      )}
+
+      <Box display="flex" justifyContent="flex-end" gap={1.5} mt={2} flexWrap="wrap">
         <Button
           variant="outlined"
           startIcon={<RefreshIcon />}
           onClick={getContactList}
-          sx={{ color: colors.blueAccent[300], borderColor: colors.blueAccent[500], "&:hover": { bgcolor: colors.blueAccent[700], color: colors.primary[900] } }}
+          sx={{
+            color: colors.blueAccent[300],
+            borderColor: colors.blueAccent[500],
+            width: { xs: "100%", sm: "auto" },
+            "&:hover": { bgcolor: colors.blueAccent[700], color: colors.primary[900] },
+          }}
         >
           Refresh
         </Button>
@@ -336,7 +449,12 @@ const FacebookLeadsTable = () => {
           startIcon={<DoneAllIcon />}
           onClick={() => setConfirmOpen(true)}
           disabled={selectedRows.length === 0}
-          sx={{ bgcolor: colors.greenAccent[500], color: colors.gray[500], "&:hover": { bgcolor: colors.greenAccent[700] } }}
+          sx={{
+            bgcolor: colors.greenAccent[500],
+            color: colors.gray[500],
+            width: { xs: "100%", sm: "auto" },
+            "&:hover": { bgcolor: colors.greenAccent[700] },
+          }}
         >
           Convert Selected to Prospect ({selectedRows.length})
         </Button>

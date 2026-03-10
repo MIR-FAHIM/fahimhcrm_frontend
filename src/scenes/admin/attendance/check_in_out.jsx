@@ -17,6 +17,7 @@ import {
   IconButton,
   Button,
   useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import {
   InfoOutlined,
@@ -32,6 +33,7 @@ import { tokens } from "../../../theme";
 const Attendance = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [permissions, setPermissions] = useState({});
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [attendances, setAttendances] = useState([]);
@@ -146,6 +148,248 @@ const Attendance = () => {
             Try selecting another date or check later.
           </Typography>
         </Paper>
+      ) : isMobile ? (
+        <Box display="flex" flexDirection="column" gap={2}>
+          {attendances.map(({ employee, attendance }) => (
+            <Paper
+              key={employee.id}
+              elevation={2}
+              sx={{ p: 2, borderRadius: 2, bgcolor: theme.palette.background.paper }}
+            >
+              <Box display="flex" alignItems="center" gap={2} mb={2}>
+                <Avatar
+                  src={
+                    employee.photo
+                      ? `${image_file_url}/${employee.photo}`
+                      : ""
+                  }
+                  sx={{
+                    width: 46,
+                    height: 46,
+                    bgcolor: colors.blueAccent[500],
+                  }}
+                >
+                  {employee.name?.charAt(0) || "U"}
+                </Avatar>
+                <Box flexGrow={1}>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    sx={{ color: colors.gray[100] }}
+                  >
+                    {employee.name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Employee
+                  </Typography>
+                </Box>
+                <Chip
+                  label={attendance ? "Present" : "Absent"}
+                  size="small"
+                  sx={{
+                    borderRadius: "6px",
+                    bgcolor: attendance
+                      ? colors.blueAccent[500]
+                      : colors.redAccent[500],
+                    color: colors.gray[900],
+                  }}
+                />
+              </Box>
+
+              <Box
+                display="grid"
+                gridTemplateColumns="1fr 1fr"
+                gap={1.5}
+              >
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Check-in
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: colors.gray[100] }}>
+                    {formatTime(attendance?.check_in_time)}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Check-out
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: colors.gray[100] }}>
+                    {formatTime(attendance?.check_out_time)}
+                  </Typography>
+                </Box>
+
+                {permissions.task !== false && (
+                  <>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Check-in Location
+                      </Typography>
+                      {attendance?.check_in_location ? (
+                        <Box display="flex" alignItems="center" gap={0.5}>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              handleNavigationMap(
+                                attendance?.check_in_lat,
+                                attendance?.check_in_lon
+                              )
+                            }
+                          >
+                            <LocationOnOutlined
+                              fontSize="small"
+                              sx={{ color: colors.blueAccent[500] }}
+                            />
+                          </IconButton>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: colors.gray[100] }}
+                          >
+                            Map
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          N/A
+                        </Typography>
+                      )}
+                    </Box>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        Check-out Location
+                      </Typography>
+                      {attendance?.check_out_location ? (
+                        <Box display="flex" alignItems="center" gap={0.5}>
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              handleNavigationMap(
+                                attendance?.check_out_lat,
+                                attendance?.check_out_lon
+                              )
+                            }
+                          >
+                            <LocationOnOutlined
+                              fontSize="small"
+                              sx={{ color: colors.blueAccent[500] }}
+                            />
+                          </IconButton>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: colors.gray[100] }}
+                          >
+                            Map
+                          </Typography>
+                        </Box>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          N/A
+                        </Typography>
+                      )}
+                    </Box>
+                  </>
+                )}
+
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Punctuality
+                  </Typography>
+                  {!attendance?.check_in_time ? (
+                    <Typography variant="body2" color="text.secondary">
+                      N/A
+                    </Typography>
+                  ) : attendance?.is_late ? (
+                    <Chip
+                      label="Late"
+                      size="small"
+                      sx={{
+                        bgcolor: colors.redAccent[500],
+                        color: colors.primary[900],
+                        borderRadius: "6px",
+                      }}
+                    />
+                  ) : (
+                    <Chip
+                      label="On Time"
+                      size="small"
+                      sx={{
+                        bgcolor: colors.blueAccent[500],
+                        color: colors.primary[900],
+                        borderRadius: "6px",
+                      }}
+                    />
+                  )}
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Late Reason
+                  </Typography>
+                  {attendance?.is_late ? (
+                    <Button
+                      size="small"
+                      onClick={() =>
+                        handleLateReasonOpen(attendance?.late_reason)
+                      }
+                      startIcon={
+                        <InfoOutlined
+                          fontSize="small"
+                          sx={{ color: colors.redAccent[500] }}
+                        />
+                      }
+                      sx={{ color: colors.gray[100], textTransform: "none" }}
+                    >
+                      View
+                    </Button>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      -
+                    </Typography>
+                  )}
+                </Box>
+
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    WFH
+                  </Typography>
+                  <Chip
+                    label={attendance?.is_work_from_home ? "Yes" : "No"}
+                    size="small"
+                    sx={{
+                      bgcolor: attendance?.is_work_from_home
+                        ? colors.blueAccent[500]
+                        : colors.gray[700],
+                      color: colors.primary[900],
+                      borderRadius: "6px",
+                    }}
+                  />
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Field
+                  </Typography>
+                  <Chip
+                    label={attendance?.from_field ? "Yes" : "No"}
+                    size="small"
+                    sx={{
+                      bgcolor: attendance?.from_field
+                        ? colors.blueAccent[500]
+                        : colors.gray[700],
+                      color: colors.primary[900],
+                      borderRadius: "6px",
+                    }}
+                  />
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Duration
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: colors.gray[100] }}>
+                    {formatDuration(attendance?.total_duration)}
+                  </Typography>
+                </Box>
+              </Box>
+            </Paper>
+          ))}
+        </Box>
       ) : (
         <TableContainer
           component={Paper}
@@ -184,7 +428,7 @@ const Attendance = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {attendances.map(({ employee, attendance }, i) => (
+              {attendances.map(({ employee, attendance }) => (
                 <TableRow
                   key={employee.id}
                   hover

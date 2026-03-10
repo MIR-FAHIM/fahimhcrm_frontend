@@ -7,6 +7,9 @@ import {
   Button,
   Typography,
   useTheme,
+  useMediaQuery,
+  Paper,
+  Divider,
 } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Header } from "../../../components";
@@ -25,6 +28,7 @@ const DEFAULT_PAGE_SIZE = 25;
 const UserActivityList = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // table state
   const [rows, setRows] = useState([]);
@@ -145,8 +149,12 @@ const UserActivityList = () => {
     setReloadKey((k) => k + 1);
   };
 
+  const totalPages = Math.max(1, Math.ceil(rowCount / pageSize));
+  const canPrev = page > 0;
+  const canNext = page + 1 < totalPages;
+
   return (
-    <Box m={4}>
+    <Box m={{ xs: 2, md: 4 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Header title="User Activity Track" subtitle="Monitor logins and actions across the system" />
       </Box>
@@ -161,7 +169,11 @@ const UserActivityList = () => {
           border: `1px solid ${theme.palette.divider}`,
         }}
       >
-        <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} alignItems="center">
+        <Stack
+          direction={{ xs: "column", md: "row" }}
+          spacing={1.5}
+          alignItems={{ xs: "stretch", md: "center" }}
+        >
           <TextField
             size="small"
             label="Search (name, email, activity, details)"
@@ -170,7 +182,7 @@ const UserActivityList = () => {
               setSearchText(e.target.value);
               setPage(0);
             }}
-            sx={{ minWidth: 260 }}
+            sx={{ minWidth: { xs: "100%", md: 260 } }}
           />
           <TextField
             select
@@ -181,7 +193,7 @@ const UserActivityList = () => {
               setType(e.target.value);
               setPage(0);
             }}
-            sx={{ minWidth: 180 }}
+            sx={{ minWidth: { xs: "100%", md: 180 } }}
           >
             {TYPE_OPTIONS.map((o) => (
               <MenuItem key={o.value} value={o.value}>
@@ -212,65 +224,152 @@ const UserActivityList = () => {
             }}
           />
           <Box flex={1} />
-          <Button variant="outlined" onClick={() => setReloadKey((k) => k + 1)}>
+          <Button
+            variant="outlined"
+            onClick={() => setReloadKey((k) => k + 1)}
+            sx={{ width: { xs: "100%", md: "auto" } }}
+          >
             Refresh
           </Button>
-          <Button variant="text" onClick={clearFilters} sx={{ ml: { xs: 0, md: 1 } }}>
+          <Button
+            variant="text"
+            onClick={clearFilters}
+            sx={{ ml: { xs: 0, md: 1 }, width: { xs: "100%", md: "auto" } }}
+          >
             Clear
           </Button>
         </Stack>
       </Box>
 
-      {/* Table */}
-      <Box
-        height="75vh"
-        sx={{
-          borderRadius: 2,
-          overflow: "hidden",
-          boxShadow: 2,
-          "& .MuiDataGrid-root": { border: "none" },
-          "& .MuiDataGrid-cell": { borderBottom: `1px solid ${theme.palette.divider}` },
-          "& .MuiDataGrid-columnHeaders": {
-            backgroundColor: colors.gray[10],
-            fontSize: 14,
-            fontWeight: 800,
-            borderBottom: `1px solid ${theme.palette.divider}`,
-          },
-          "& .MuiDataGrid-virtualScroller": { backgroundColor: colors.primary[800] },
-          "& .MuiDataGrid-footerContainer": {
-            backgroundColor: colors.gray[10],
-            borderTop: `1px solid ${theme.palette.divider}`,
-          },
-          "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
-            color: `${colors.gray[100]} !important`,
-          },
-        }}
-      >
-        <DataGrid
-          rows={rows}
-          getRowId={(r) => r.id}
-          columns={columns}
-          loading={loading}
-          // built-in toolbar (export/columns/filters if you want)
-          components={{ Toolbar: GridToolbar }}
-          // server-like pagination
-          paginationMode="server"
-          rowCount={rowCount}
-          page={page}
-          pageSize={pageSize}
-          onPageChange={(p) => setPage(p)}
-          onPageSizeChange={(s) => {
-            setPageSize(s);
-            setPage(0);
+      {/* Table / Mobile cards */}
+      {isMobile ? (
+        <Box display="flex" flexDirection="column" gap={2}>
+          {loading && (
+            <Paper elevation={0} sx={{ p: 2, borderRadius: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Loading activity…
+              </Typography>
+            </Paper>
+          )}
+
+          {!loading && rows.length === 0 && (
+            <Paper elevation={0} sx={{ p: 2, borderRadius: 2, textAlign: "center" }}>
+              <Typography variant="body2" color="text.secondary">
+                No activity found.
+              </Typography>
+            </Paper>
+          )}
+
+          {!loading &&
+            rows.map((row) => (
+              <Paper
+                key={row.id}
+                elevation={0}
+                sx={{
+                  p: 2,
+                  borderRadius: 2,
+                  border: `1px solid ${theme.palette.divider}`,
+                  bgcolor: theme.palette.background.paper,
+                }}
+              >
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={1.5}>
+                  <Box>
+                    <Typography variant="subtitle2" fontWeight={700}>
+                      {row.user?.name || "—"}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Activity ID: {row.id}
+                    </Typography>
+                  </Box>
+                  <Typography variant="caption" color="text.secondary">
+                    {row.created_at ? new Date(row.created_at).toLocaleString() : "—"}
+                  </Typography>
+                </Box>
+
+                <Divider sx={{ my: 1.5 }} />
+
+                <Box display="grid" gridTemplateColumns="1fr" gap={1}>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Activity
+                    </Typography>
+                    <Typography variant="body2">{row.activity_name || "—"}</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Details
+                    </Typography>
+                    <Typography variant="body2">{row.details || "—"}</Typography>
+                  </Box>
+                </Box>
+              </Paper>
+            ))}
+
+          {!loading && rows.length > 0 && (
+            <Stack direction="row" spacing={1} justifyContent="space-between" alignItems="center">
+              <Button variant="outlined" onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={!canPrev}>
+                Prev
+              </Button>
+              <Typography variant="caption" color="text.secondary">
+                Page {page + 1} of {totalPages}
+              </Typography>
+              <Button variant="outlined" onClick={() => setPage((p) => p + 1)} disabled={!canNext}>
+                Next
+              </Button>
+            </Stack>
+          )}
+        </Box>
+      ) : (
+        <Box
+          height="75vh"
+          sx={{
+            borderRadius: 2,
+            overflow: "hidden",
+            boxShadow: 2,
+            "& .MuiDataGrid-root": { border: "none" },
+            "& .MuiDataGrid-cell": { borderBottom: `1px solid ${theme.palette.divider}` },
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: colors.gray[10],
+              fontSize: 14,
+              fontWeight: 800,
+              borderBottom: `1px solid ${theme.palette.divider}`,
+            },
+            "& .MuiDataGrid-virtualScroller": { backgroundColor: colors.primary[800] },
+            "& .MuiDataGrid-footerContainer": {
+              backgroundColor: colors.gray[10],
+              borderTop: `1px solid ${theme.palette.divider}`,
+            },
+            "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+              color: `${colors.gray[100]} !important`,
+            },
           }}
-          rowsPerPageOptions={[10, 25, 50, 100]}
-          initialState={{
-            pagination: { paginationModel: { pageSize: DEFAULT_PAGE_SIZE } },
-            columns: { columnVisibilityModel: { ip_address: true, url: true, method: true } },
-          }}
-          disableRowSelectionOnClick
-        />
-      </Box>
+        >
+          <DataGrid
+            rows={rows}
+            getRowId={(r) => r.id}
+            columns={columns}
+            loading={loading}
+            // built-in toolbar (export/columns/filters if you want)
+            components={{ Toolbar: GridToolbar }}
+            // server-like pagination
+            paginationMode="server"
+            rowCount={rowCount}
+            page={page}
+            pageSize={pageSize}
+            onPageChange={(p) => setPage(p)}
+            onPageSizeChange={(s) => {
+              setPageSize(s);
+              setPage(0);
+            }}
+            rowsPerPageOptions={[10, 25, 50, 100]}
+            initialState={{
+              pagination: { paginationModel: { pageSize: DEFAULT_PAGE_SIZE } },
+              columns: { columnVisibilityModel: { ip_address: true, url: true, method: true } },
+            }}
+            disableRowSelectionOnClick
+          />
+        </Box>
+      )}
 
       {/* Small legend */}
       <Typography variant="caption" sx={{ mt: 1.5, display: "block", color: "text.secondary" }}>

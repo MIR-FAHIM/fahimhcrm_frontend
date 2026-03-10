@@ -18,6 +18,7 @@ import {
   LinearProgress,
   useTheme,
   Skeleton,
+  useMediaQuery,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { getEffortCalculation } from "../../../../api/controller/admin_controller/prospect_controller";
@@ -27,6 +28,7 @@ export default function EffortOverview() {
   const [data, setData] = useState(null);
   const navigate = useNavigate();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   // Brand accents (from your theme)
   const brand = theme.palette.blueAccent?.main ?? theme.palette.info.main;
@@ -104,13 +106,13 @@ export default function EffortOverview() {
       <Card
         elevation={0}
         sx={{
-          mb: 4,
+          mb: { xs: 3, md: 4 },
           borderRadius: 2,
           bgcolor: paper,
           border: `1px solid ${divider}`,
         }}
       >
-        <CardContent>
+        <CardContent sx={{ p: { xs: 2, md: 3 } }}>
           <Grid container spacing={3} alignItems="stretch">
             {/* Left: KPIs + activity breakdown */}
             <Grid item xs={12} md={8}>
@@ -199,7 +201,7 @@ export default function EffortOverview() {
                 sx={{
                   bgcolor: paper,
                   borderRadius: 2,
-                  p: 2,
+                  p: { xs: 2, md: 2.5 },
                   height: "100%",
                   border: `1px solid ${divider}`,
                 }}
@@ -257,131 +259,218 @@ export default function EffortOverview() {
       <Typography variant="h6" fontWeight={800} color={textPri} gutterBottom>
         Prospect-wise Effort
       </Typography>
-
-      <TableContainer
-        component={Paper}
-        sx={{
-          borderRadius: 2,
-          border: `1px solid ${divider}`,
-          bgcolor: paper,
-          overflow: "hidden",
-        }}
-      >
-        <Table>
-          <TableHead
-            sx={{
-              backgroundColor: alpha(brand, 0.12),
-              "& th": {
-                color: textPri,
-                fontWeight: 800,
-                borderBottom: `1px solid ${divider}`,
-              },
-            }}
-          >
-            <TableRow>
-              <TableCell>Prospect Name</TableCell>
-              <TableCell>Stage</TableCell>
-              <TableCell align="right">Total Effort</TableCell>
-              <TableCell align="right">Contribution (%)</TableCell>
-              <TableCell>Activities</TableCell>
-              <TableCell align="center">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {data.prospect_efforts.map((prospect) => (
-              <TableRow
-                key={prospect.prospect_id}
-                hover
-                sx={{
-                  "& td": { borderBottom: `1px solid ${divider}` },
-                }}
-              >
-                <TableCell sx={{ maxWidth: 260 }}>
-                  <Typography variant="body2" fontWeight={800} color={textPri} noWrap>
+      {isMobile ? (
+        <Box display="flex" flexDirection="column" gap={2}>
+          {data.prospect_efforts.map((prospect) => (
+            <Paper
+              key={prospect.prospect_id}
+              elevation={0}
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                border: `1px solid ${divider}`,
+                bgcolor: paper,
+              }}
+            >
+              <Box display="flex" alignItems="center" justifyContent="space-between" gap={1.5}>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="subtitle1" fontWeight={800} color={textPri} noWrap>
                     {prospect.prospect_name}
                   </Typography>
-                </TableCell>
-
-                <TableCell>
-                  <Chip
-                    label={prospect.stage?.stage_name || "N/A"}
-                    size="small"
-                    sx={{
-                      bgcolor: alpha(brand, 0.14),
-                      color: brand,
-                      fontWeight: 700,
-                    }}
-                  />
-                </TableCell>
-
-                <TableCell align="right">
-                  <Typography variant="body2" fontWeight={700}>
-                    {prospect.effort}
+                  <Typography variant="caption" color={textSec}>
+                    {prospect.stage?.stage_name || "N/A"}
                   </Typography>
-                </TableCell>
+                </Box>
+                <Chip
+                  label={`Effort: ${prospect.effort}`}
+                  size="small"
+                  sx={{ bgcolor: alpha(brand, 0.14), color: brand, fontWeight: 700 }}
+                />
+              </Box>
 
-                <TableCell align="right" sx={{ minWidth: 140 }}>
-                  <Box>
-                    <Typography variant="body2" fontWeight={700}>
-                      {Number(prospect.percentage).toFixed(2)}%
-                    </Typography>
-                    <LinearProgress
-                      variant="determinate"
-                      value={Number(prospect.percentage)}
+              <Box sx={{ mt: 1.5 }}>
+                <Typography variant="caption" color={textSec}>
+                  Contribution
+                </Typography>
+                <Typography variant="body2" fontWeight={700} color={textPri}>
+                  {Number(prospect.percentage).toFixed(2)}%
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={Number(prospect.percentage)}
+                  sx={{
+                    mt: 0.5,
+                    height: 8,
+                    borderRadius: 999,
+                    backgroundColor: alpha(brand, 0.12),
+                    "& .MuiLinearProgress-bar": { backgroundColor: brand },
+                  }}
+                />
+              </Box>
+
+              <Box sx={{ mt: 1.5, display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+                {Object.entries(prospect.activities).map(([type, count], idx) => {
+                  const c = getTypeColor(type);
+                  return (
+                    <Chip
+                      key={`${type}-${idx}`}
+                      label={`${type.toUpperCase()}: ${count}`}
+                      size="small"
                       sx={{
-                        mt: 0.5,
-                        height: 8,
-                        borderRadius: 999,
-                        backgroundColor: alpha(brand, 0.12),
-                        "& .MuiLinearProgress-bar": { backgroundColor: brand },
+                        bgcolor: alpha(c, 0.12),
+                        color: c,
+                        fontWeight: 700,
                       }}
                     />
-                  </Box>
-                </TableCell>
+                  );
+                })}
+              </Box>
 
-                <TableCell sx={{ minWidth: 260 }}>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
-                    {Object.entries(prospect.activities).map(([type, count], idx) => {
-                      const c = getTypeColor(type);
-                      return (
-                        <Chip
-                          key={`${type}-${idx}`}
-                          label={`${type.toUpperCase()}: ${count}`}
-                          size="small"
-                          sx={{
-                            bgcolor: alpha(c, 0.12),
-                            color: c,
-                            fontWeight: 700,
-                          }}
-                        />
-                      );
-                    })}
-                  </Box>
-                </TableCell>
-
-                <TableCell align="center">
-                  <Button
-                    variant="contained"
-                    onClick={() => handleViewProspectDetails(prospect.prospect_id)}
-                    sx={{
-                      px: 2.25,
-                      borderRadius: 2,
-                      bgcolor: brand,
-                      color: brandContrast,
-                      textTransform: "none",
-                      fontWeight: 800,
-                      "&:hover": { bgcolor: brandHover },
-                    }}
-                  >
-                    View Details
-                  </Button>
-                </TableCell>
+              <Button
+                variant="contained"
+                onClick={() => handleViewProspectDetails(prospect.prospect_id)}
+                sx={{
+                  mt: 2,
+                  width: "100%",
+                  borderRadius: 2,
+                  bgcolor: brand,
+                  color: brandContrast,
+                  textTransform: "none",
+                  fontWeight: 800,
+                  "&:hover": { bgcolor: brandHover },
+                }}
+              >
+                View Details
+              </Button>
+            </Paper>
+          ))}
+        </Box>
+      ) : (
+        <TableContainer
+          component={Paper}
+          sx={{
+            borderRadius: 2,
+            border: `1px solid ${divider}`,
+            bgcolor: paper,
+            overflow: "hidden",
+          }}
+        >
+          <Table>
+            <TableHead
+              sx={{
+                backgroundColor: alpha(brand, 0.12),
+                "& th": {
+                  color: textPri,
+                  fontWeight: 800,
+                  borderBottom: `1px solid ${divider}`,
+                },
+              }}
+            >
+              <TableRow>
+                <TableCell>Prospect Name</TableCell>
+                <TableCell>Stage</TableCell>
+                <TableCell align="right">Total Effort</TableCell>
+                <TableCell align="right">Contribution (%)</TableCell>
+                <TableCell>Activities</TableCell>
+                <TableCell align="center">Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+
+            <TableBody>
+              {data.prospect_efforts.map((prospect) => (
+                <TableRow
+                  key={prospect.prospect_id}
+                  hover
+                  sx={{
+                    "& td": { borderBottom: `1px solid ${divider}` },
+                  }}
+                >
+                  <TableCell sx={{ maxWidth: 260 }}>
+                    <Typography variant="body2" fontWeight={800} color={textPri} noWrap>
+                      {prospect.prospect_name}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell>
+                    <Chip
+                      label={prospect.stage?.stage_name || "N/A"}
+                      size="small"
+                      sx={{
+                        bgcolor: alpha(brand, 0.14),
+                        color: brand,
+                        fontWeight: 700,
+                      }}
+                    />
+                  </TableCell>
+
+                  <TableCell align="right">
+                    <Typography variant="body2" fontWeight={700}>
+                      {prospect.effort}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell align="right" sx={{ minWidth: 140 }}>
+                    <Box>
+                      <Typography variant="body2" fontWeight={700}>
+                        {Number(prospect.percentage).toFixed(2)}%
+                      </Typography>
+                      <LinearProgress
+                        variant="determinate"
+                        value={Number(prospect.percentage)}
+                        sx={{
+                          mt: 0.5,
+                          height: 8,
+                          borderRadius: 999,
+                          backgroundColor: alpha(brand, 0.12),
+                          "& .MuiLinearProgress-bar": { backgroundColor: brand },
+                        }}
+                      />
+                    </Box>
+                  </TableCell>
+
+                  <TableCell sx={{ minWidth: 260 }}>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+                      {Object.entries(prospect.activities).map(([type, count], idx) => {
+                        const c = getTypeColor(type);
+                        return (
+                          <Chip
+                            key={`${type}-${idx}`}
+                            label={`${type.toUpperCase()}: ${count}`}
+                            size="small"
+                            sx={{
+                              bgcolor: alpha(c, 0.12),
+                              color: c,
+                              fontWeight: 700,
+                            }}
+                          />
+                        );
+                      })}
+                    </Box>
+                  </TableCell>
+
+                  <TableCell align="center">
+                    <Button
+                      variant="contained"
+                      onClick={() => handleViewProspectDetails(prospect.prospect_id)}
+                      sx={{
+                        px: 2.25,
+                        borderRadius: 2,
+                        bgcolor: brand,
+                        color: brandContrast,
+                        textTransform: "none",
+                        fontWeight: 800,
+                        "&:hover": { bgcolor: brandHover },
+                      }}
+                    >
+                      View Details
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </Box>
   );
 }
