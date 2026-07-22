@@ -62,12 +62,37 @@ const ReadRow = ({ label, value }) => {
   );
 };
 
+const hasTimeValue = (value) => value !== null && value !== undefined && value !== "";
+
+const normalizeTimePart = (value, max) => {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 0;
+  return Math.min(Math.max(Math.trunc(number), 0), max);
+};
+
+const buildTimeValue = (hour, minute) => {
+  if (!hasTimeValue(hour) && !hasTimeValue(minute)) return "";
+  return `${String(normalizeTimePart(hour, 23)).padStart(2, "0")}:${String(
+    normalizeTimePart(minute, 59)
+  ).padStart(2, "0")}`;
+};
+
+const splitTimeValue = (timeValue) => {
+  if (!timeValue) return { hour: null, minute: null };
+  const [hour = "0", minute = "0"] = String(timeValue).split(":");
+  return {
+    hour: normalizeTimePart(hour, 23),
+    minute: normalizeTimePart(minute, 59),
+  };
+};
+
 const ProfileComponent = ({
   handleFileChange,
   handleUpload,
   changePass,
   profileData = {},
   userID,
+  canManageProfile = false,
   handleLogout,
   handleUpdateData,
 }) => {
@@ -98,6 +123,10 @@ const ProfileComponent = ({
       bio: profileData.bio || "",
       start_hour: profileData.start_hour ?? "",
       start_min: profileData.start_min ?? "",
+      end_hour: profileData.end_hour ?? "",
+      end_min: profileData.end_min ?? "",
+      office_start_time: buildTimeValue(profileData.start_hour, profileData.start_min),
+      office_end_time: buildTimeValue(profileData.end_hour, profileData.end_min),
     });
 
     setPasswordData({
@@ -119,7 +148,17 @@ const ProfileComponent = ({
   };
 
   const handleSave = () => {
-    handleUpdateData(editData);
+    const { office_start_time, office_end_time, ...profilePayload } = editData;
+    const startTime = splitTimeValue(office_start_time);
+    const endTime = splitTimeValue(office_end_time);
+
+    handleUpdateData({
+      ...profilePayload,
+      start_hour: startTime.hour,
+      start_min: startTime.minute,
+      end_hour: endTime.hour,
+      end_min: endTime.minute,
+    });
     setIsEditing(false);
   };
 
@@ -149,13 +188,12 @@ const ProfileComponent = ({
     : `${image_file_url}/${profileData?.photo}`;
 
   const canUpload = isMyProfile;
+  const canEditWorkingHours = isMyProfile || canManageProfile || isEditable;
 
   const officeTimeLabel = useMemo(() => {
-    const hh = editData.start_hour?.toString().padStart(2, "0");
-    const mm = editData.start_min?.toString().padStart(2, "0");
-    if (!hh && !mm) return "Not set";
-    return `${hh ?? "00"}:${mm ?? "00"}`;
-  }, [editData.start_hour, editData.start_min]);
+    if (!editData.office_start_time && !editData.office_end_time) return "Not set";
+    return `${editData.office_start_time || "Not set"} - ${editData.office_end_time || "Not set"}`;
+  }, [editData.office_start_time, editData.office_end_time]);
 
   return (
     <Box
@@ -396,7 +434,7 @@ const ProfileComponent = ({
         </Grid>
 
         <Grid item xs={12} md={5}>
-          <SectionCard title="Office Entry Time">
+          <SectionCard title="Working Hours">
             <Stack direction="row" spacing={1.5} alignItems="center" mb={1.5}>
               <AccessTimeIcon fontSize="small" sx={{ color: theme.palette.text.secondary }} />
               <Typography sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
@@ -404,33 +442,37 @@ const ProfileComponent = ({
               </Typography>
             </Stack>
             <Grid container spacing={2}>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Hour (0–23)"
-                  name="start_hour"
+                  label="Office Start Time"
+                  name="office_start_time"
+                  type="time"
                   size="small"
-                  value={editData.start_hour ?? ""}
+                  value={editData.office_start_time ?? ""}
                   onChange={onEditField}
-                  disabled={!isEditable}
-                  inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+                  disabled={!canEditWorkingHours}
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ step: 300 }}
                   sx={{ "& .MuiOutlinedInput-root": { bgcolor: theme.palette.background.default } }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Minute (0–59)"
-                  name="start_min"
+                  label="Office End Time"
+                  name="office_end_time"
+                  type="time"
                   size="small"
-                  value={editData.start_min ?? ""}
+                  value={editData.office_end_time ?? ""}
                   onChange={onEditField}
-                  disabled={!isEditable}
-                  inputProps={{ inputMode: "numeric", pattern: "[0-9]*" }}
+                  disabled={!canEditWorkingHours}
+                  InputLabelProps={{ shrink: true }}
+                  inputProps={{ step: 300 }}
                   sx={{ "& .MuiOutlinedInput-root": { bgcolor: theme.palette.background.default } }}
                 />
               </Grid>
-              {isEditable && (
+              {canEditWorkingHours && (
                 <Grid item xs={12}>
                   <Button
                     onClick={handleSave}
@@ -443,7 +485,7 @@ const ProfileComponent = ({
                       "&:hover": { bgcolor: theme.palette.blueAccent.dark },
                     }}
                   >
-                    Save Entry Time
+                    Save Working Hours
                   </Button>
                 </Grid>
               )}

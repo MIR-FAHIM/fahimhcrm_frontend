@@ -65,6 +65,7 @@ const EmployeeAttendanceReport = () => {
 
   // quick filters
   const [onlyLate, setOnlyLate] = useState(false);
+  const [onlyEarlyLeave, setOnlyEarlyLeave] = useState(false);
   const [onlyWFH, setOnlyWFH] = useState(false);
   const [onlyField, setOnlyField] = useState(false);
 
@@ -125,23 +126,25 @@ const EmployeeAttendanceReport = () => {
   const filteredAttendances = useMemo(() => {
     let rows = attendances;
     if (onlyLate) rows = rows.filter(r => r.attendance?.is_late);
+    if (onlyEarlyLeave) rows = rows.filter(r => r.attendance?.is_early_leave);
     if (onlyWFH) rows = rows.filter(r => r.attendance?.is_work_from_home);
     if (onlyField) rows = rows.filter(r => r.attendance?.from_field);
     return rows;
-  }, [attendances, onlyLate, onlyWFH, onlyField]);
+  }, [attendances, onlyLate, onlyEarlyLeave, onlyWFH, onlyField]);
 
   const summary = useMemo(() => {
-    let present = 0, late = 0, wfh = 0, field = 0, totalSec = 0;
+    let present = 0, late = 0, earlyLeave = 0, wfh = 0, field = 0, totalSec = 0;
     attendances.forEach((r) => {
       if (r.attendance) {
         present += 1;
         if (r.attendance.is_late) late += 1;
+        if (r.attendance.is_early_leave) earlyLeave += 1;
         if (r.attendance.is_work_from_home) wfh += 1;
         if (r.attendance.from_field) field += 1;
         totalSec += r.attendance.total_duration || 0;
       }
     });
-    return { present, late, wfh, field, total: convertSecondsToHM(totalSec) };
+    return { present, late, earlyLeave, wfh, field, total: convertSecondsToHM(totalSec) };
   }, [attendances]);
 
   const renderStatusYesNo = (v) => (
@@ -162,6 +165,7 @@ const EmployeeAttendanceReport = () => {
 
   const resetFilters = () => {
     setOnlyLate(false);
+    setOnlyEarlyLeave(false);
     setOnlyWFH(false);
     setOnlyField(false);
   };
@@ -445,6 +449,10 @@ const EmployeeAttendanceReport = () => {
                     sx={{ bgcolor: colors.redAccent[500], color: colors.primary[900] }}
                   />
                   <Chip
+                    label={`Early Leave: ${summary.earlyLeave}`}
+                    sx={{ bgcolor: colors.redAccent[600], color: colors.primary[900] }}
+                  />
+                  <Chip
                     label={`WFH: ${summary.wfh}`}
                     sx={{ bgcolor: colors.purpleAccent[600], color: colors.primary[900] }}
                   />
@@ -474,6 +482,17 @@ const EmployeeAttendanceReport = () => {
                       borderColor: colors.redAccent[500],
                       bgcolor: onlyLate ? colors.redAccent[500] : "transparent",
                       color: onlyLate ? colors.primary[900] : colors.gray[200],
+                    }}
+                  />
+                  <Chip
+                    clickable
+                    onClick={() => setOnlyEarlyLeave((v) => !v)}
+                    label={onlyEarlyLeave ? "Early Leave: On" : "Early Leave: Off"}
+                    variant={onlyEarlyLeave ? "filled" : "outlined"}
+                    sx={{
+                      borderColor: colors.redAccent[600],
+                      bgcolor: onlyEarlyLeave ? colors.redAccent[600] : "transparent",
+                      color: onlyEarlyLeave ? colors.primary[900] : colors.gray[200],
                     }}
                   />
                   <Chip
@@ -758,6 +777,10 @@ const EmployeeAttendanceReport = () => {
                     sx={{ bgcolor: colors.redAccent[500], color: colors.primary[900] }}
                   />
                   <Chip
+                    label={`Early Leave: ${summary.earlyLeave}`}
+                    sx={{ bgcolor: colors.redAccent[600], color: colors.primary[900] }}
+                  />
+                  <Chip
                     label={`WFH: ${summary.wfh}`}
                     sx={{ bgcolor: colors.purpleAccent[600], color: colors.primary[900] }}
                   />
@@ -780,6 +803,17 @@ const EmployeeAttendanceReport = () => {
                       borderColor: colors.redAccent[500],
                       bgcolor: onlyLate ? colors.redAccent[500] : "transparent",
                       color: onlyLate ? colors.primary[900] : colors.gray[200],
+                    }}
+                  />
+                  <Chip
+                    clickable
+                    onClick={() => setOnlyEarlyLeave((v) => !v)}
+                    label={onlyEarlyLeave ? "Early Leave: On" : "Early Leave: Off"}
+                    variant={onlyEarlyLeave ? "filled" : "outlined"}
+                    sx={{
+                      borderColor: colors.redAccent[600],
+                      bgcolor: onlyEarlyLeave ? colors.redAccent[600] : "transparent",
+                      color: onlyEarlyLeave ? colors.primary[900] : colors.gray[200],
                     }}
                   />
                   <Chip

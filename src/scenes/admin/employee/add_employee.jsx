@@ -4,6 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { fetchDepartment, fetchRole, fetchDesignation } from "../../../api/controller/admin_controller/department_controller";
 import { registerEmployee } from "../../../api/controller/admin_controller/user_controller";
 
+const splitTimeToParts = (timeValue) => {
+  const [hour = "0", minute = "0"] = String(timeValue || "00:00").split(":");
+  return {
+    hour: Number(hour),
+    minute: Number(minute),
+  };
+};
+
 const AddEmployee = () => {
   const navigate = useNavigate();
   const [departments, setDepartments] = useState([]);
@@ -22,6 +30,8 @@ const AddEmployee = () => {
     isActive: "1",
     photo: null,
     bio: "",
+    office_start_time: "09:30",
+    office_end_time: "18:00",
   });
 
   useEffect(() => {
@@ -41,9 +51,17 @@ const AddEmployee = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formDataToSend = new FormData();
+    const startTime = splitTimeToParts(formData.office_start_time);
+    const endTime = splitTimeToParts(formData.office_end_time);
+
     Object.keys(formData).forEach((key) => {
+      if (key === "office_start_time" || key === "office_end_time") return;
       formDataToSend.append(key, formData[key]);
     });
+    formDataToSend.append("start_hour", startTime.hour);
+    formDataToSend.append("start_min", startTime.minute);
+    formDataToSend.append("end_hour", endTime.hour);
+    formDataToSend.append("end_min", endTime.minute);
 
     try {
       const response = await registerEmployee(formDataToSend);
@@ -83,6 +101,30 @@ const AddEmployee = () => {
             <MenuItem key={des.id} value={des.id}>{des.designation_name}</MenuItem>
           ))}
         </TextField>
+        <TextField
+          label="Office Start Time"
+          name="office_start_time"
+          type="time"
+          fullWidth
+          margin="normal"
+          value={formData.office_start_time}
+          InputLabelProps={{ shrink: true }}
+          inputProps={{ step: 300 }}
+          onChange={handleChange}
+          required
+        />
+        <TextField
+          label="Office End Time"
+          name="office_end_time"
+          type="time"
+          fullWidth
+          margin="normal"
+          value={formData.office_end_time}
+          InputLabelProps={{ shrink: true }}
+          inputProps={{ step: 300 }}
+          onChange={handleChange}
+          required
+        />
        
         <TextField label="Bio" name="bio" fullWidth margin="normal" onChange={handleChange} multiline rows={3} />
         <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>

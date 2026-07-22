@@ -123,8 +123,10 @@ const EmpProfile = () => {
       const response = await updateProfile(data);
       if (response) {
         alert("Profile updated successfully!");
-        const updatedProfile = await getProfile(userID);
+        const updatedProfile = await getProfile(id);
         setProfileData(updatedProfile.data);
+        const photoPath = updatedProfile?.data?.photo ?? "";
+        setImageUrl(photoPath ? `${image_file_url}/${photoPath}` : "https://placehold.co/200x300/CCCCCC/FFFFFF?text=No+Image");
       } else {
         alert("Update failed!");
       }
@@ -242,6 +244,7 @@ const EmpProfile = () => {
               handleUpload={handleUpload}
               profileData={profileData}
               userID={userID}
+              canManageProfile={Boolean(permissions.employee)}
               handleLogout={handleLogout}
               imageUrl={imageUrl}
             />

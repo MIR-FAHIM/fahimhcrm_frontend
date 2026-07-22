@@ -6,6 +6,7 @@ import PersonOffIcon from '@mui/icons-material/PersonOff';
 import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -66,6 +67,7 @@ const AttendanceCountReport = ({ userId, name }) => {
     { label: "Working Days", value: data.summary.working_days, icon: <EventAvailableIcon color="primary" sx={{ fontSize: 40 }} /> },
     { label: "Absent Days", value: data.summary.absent_days, icon: <PersonOffIcon color="error" sx={{ fontSize: 40 }} /> },
     { label: "Late Days", value: data.summary.late_days, icon: <AccessAlarmIcon color="warning" sx={{ fontSize: 40 }} /> },
+    { label: "Early Leave Days", value: data.summary.early_leave_days ?? 0, icon: <ExitToAppIcon color="secondary" sx={{ fontSize: 40 }} /> },
     { label: "On-Time Days", value: data.summary.on_time_days, icon: <CheckCircleOutlineIcon color="success" sx={{ fontSize: 40 }} /> },
     { label: "Work From Home Days", value: data.summary.work_from_home_days, icon: <HomeWorkIcon color="info" sx={{ fontSize: 40 }} /> },
   ] : [];
@@ -145,7 +147,7 @@ const AttendanceCountReport = ({ userId, name }) => {
 
           <Grid container spacing={3}>
             {attendanceMetrics.map((metric) => (
-              <Grid item xs={12} sm={6} md={4} lg={2.4} key={metric.label}>
+              <Grid item xs={12} sm={6} md={4} lg={2} key={metric.label}>
                 <Paper
                   elevation={2}
                   sx={{

@@ -1,7 +1,7 @@
 
 import { Box, Typography, useMediaQuery, useTheme, Card, CardContent, Stack } from "@mui/material";
 import {
-  AccessTimeOutlined, Warning, HomeWork, LocationOn, CheckBoxRounded
+  AccessTimeOutlined, Warning, HomeWork, LocationOn, CheckBoxRounded, LogoutRounded
 } from "@mui/icons-material";
 import { tokens } from "../../../theme";
 import { format } from "date-fns";
@@ -67,6 +67,12 @@ function DashboardAttendanceReport({ dashboardReport }) {
       color: { bg: colors.orangeAccent[600], fg: colors.primary[900] },
     },
     {
+      label: "Early Leave",
+      value: dashboardReport.early_leave_count,
+      icon: <LogoutRounded fontSize="small" />,
+      color: { bg: colors.redAccent[500], fg: colors.primary[900] },
+    },
+    {
       label: "WFH",
       value: dashboardReport.work_from_home_count,
       icon: <HomeWork fontSize="small" />,
@@ -88,7 +94,7 @@ function DashboardAttendanceReport({ dashboardReport }) {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: isWide ? "repeat(5, 1fr)" : "repeat(auto-fit, minmax(180px, 1fr))",
+          gridTemplateColumns: isWide ? "repeat(6, 1fr)" : "repeat(auto-fit, minmax(180px, 1fr))",
           gap: 8,
         }}
       >

@@ -1,54 +1,48 @@
-// src/scenes/global/sidebar/SideBar.jsx
 import { useContext, useEffect, useMemo, useState } from "react";
 import {
   Avatar,
   Box,
+  Chip,
   Collapse,
   IconButton,
+  InputAdornment,
+  TextField,
   Tooltip,
   Typography,
   useTheme,
-  ListItemIcon,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { Sidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { useLocation, useNavigate } from "react-router-dom";
-import { AppIcons } from "../../../service/app_icons";
 import {
-  ExpandMore,
-  ExpandLess,
-  MenuOutlined,
-  DashboardOutlined,
-  PeopleAltOutlined,
-  CalendarTodayOutlined,
-  AssignmentOutlined,
-  WorkOutlineOutlined,
-  SupervisorAccountOutlined,
-  SettingsOutlined,
-  TaskAltOutlined,
-  FolderSharedOutlined,
-  ViewListOutlined,
   AddTaskOutlined,
-  EventNoteOutlined,
-  ListAltOutlined,
-  EngineeringOutlined,
-  AccountCircleOutlined,
-  PieChartOutlined,
-  SourceOutlined,
-  FaceOutlined,
-  CalculateOutlined,
   AdminPanelSettingsOutlined,
+  CalculateOutlined,
+  ClearRounded,
+  ExpandLess,
+  ExpandMore,
+  FaceOutlined,
+  KeyboardDoubleArrowLeftRounded,
+  KeyboardDoubleArrowRightRounded,
+  MenuOutlined,
+  PieChartOutlined,
+  SearchOutlined,
+  SettingsOutlined,
+  SourceOutlined,
+  ViewListOutlined,
 } from "@mui/icons-material";
 
+import { AppIcons } from "../../../service/app_icons";
 import { tokens } from "../../../theme";
-import { base_url } from "../../../api/config";
-import { appname } from "../../../api/config";
-import { getProfile, modulePermission } from "../../../api/controller/admin_controller/user_controller";
+import { appname, base_url } from "../../../api/config";
+import {
+  getProfile,
+  modulePermission,
+} from "../../../api/controller/admin_controller/user_controller";
 import { ToggledContext } from "../../../App";
 import logo from "../../../assets/images/logo.png";
-import Item from "./Item";
 
 const SideBar = () => {
-
   const userID = localStorage.getItem("userId");
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -58,52 +52,376 @@ const SideBar = () => {
 
   const [collapsed, setCollapsed] = useState(false);
   const [expandedCategory, setExpandedCategory] = useState(null);
+  const [search, setSearch] = useState("");
   const [user, setUser] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
   const [permissions, setPermissions] = useState({});
   const [isAdmin, setIsAdmin] = useState(0);
 
   const iconColor = theme.palette.blueAccent?.main || colors.blueAccent[500];
-  const iconStyle = {
-    height: 30,
-    width: 30,
-    color: iconColor,
-    transition: "transform .2s ease, color .2s ease",
-    ":hover": { color: theme.palette.text.primary, transform: "scale(1.1)" },
-  };
-  const iconStyleSub = {
-    height: 20,
-    width: 20,
-    color: iconColor,
-    transition: "transform .2s ease, color .2s ease",
-    ":hover": { color: theme.palette.text.primary, transform: "scale(1.1)" },
-  };
-  const iconStyleMain = {
-    height: 35,
-    width: 35,
-    color: iconColor,
-    transition: "transform .2s ease, color .2s ease",
-    ":hover": { color: theme.palette.text.primary, transform: "scale(1.1)" },
-  };
-
   const surfaceBg = theme.palette.background.paper;
   const textPrimary = theme.palette.text.primary;
   const textSecondary = theme.palette.text.secondary;
   const divider = theme.palette.divider;
-  const highlight = theme.palette.blueAccent?.light || colors.blueAccent[600];
+  const isDark = theme.palette.mode === "dark";
+
+  const imageIcon = (src, size = 24, alt = "") => (
+    <Box
+      component="img"
+      src={src}
+      alt={alt}
+      sx={{
+        width: size,
+        height: size,
+        objectFit: "contain",
+        display: "block",
+      }}
+    />
+  );
+
+  const muiIconSx = {
+    color: iconColor,
+    fontSize: 21,
+  };
 
   const isActive = (path) => location.pathname === path;
 
-  const activeStyles = {
-    color: textPrimary,
-    background: theme.palette.action.selectedOpacity
-      ? `rgba(58,134,255, ${theme.palette.action.selectedOpacity})`
-      : "rgba(58,134,255,0.12)",
-    borderLeft: `3px solid ${iconColor}`,
+  const handleNavigate = (path) => {
+    navigate(path);
+    setToggled(false);
   };
 
-  const toggleCategory = (key) =>
+  const toggleCategory = (key) => {
+    if (collapsed) {
+      setCollapsed(false);
+      setExpandedCategory(key);
+      return;
+    }
     setExpandedCategory((prev) => (prev === key ? null : key));
+  };
+
+  const dashboardItem = useMemo(
+    () => ({
+      title: "Dashboard",
+      path: "/",
+      icon: imageIcon(AppIcons.DashBoard, 26, "Dashboard"),
+      show: permissions.dashboard,
+    }),
+    [permissions.dashboard]
+  );
+
+  const navGroups = useMemo(
+    () => [
+      {
+        id: "hrms",
+        label: "HRMS",
+        show: permissions.hrms,
+        icon: imageIcon(AppIcons.Employee, 26, "HRMS"),
+        items: [
+          {
+            title: "Employee",
+            path: "/employee-list-view",
+            icon: imageIcon(AppIcons.Emp1, 20, "Employee"),
+          },
+          {
+            title: "Department",
+            path: "/department-wise-emp",
+            icon: imageIcon(AppIcons.Department, 20, "Department"),
+          },
+          {
+            title: "User Tracker",
+            path: "/user-activity-track",
+            icon: imageIcon(AppIcons.Tracker, 20, "User Tracker"),
+          },
+        ],
+      },
+      {
+        id: "attendance",
+        label: "Attendance",
+        show: permissions.attendance,
+        icon: imageIcon(AppIcons.Attendance, 26, "Attendance"),
+        items: [
+          {
+            title: "Today Attendance",
+            path: "/check-in-out",
+            icon: imageIcon(AppIcons.CheckIn, 20, "Today Attendance"),
+          },
+          {
+            title: "Attendance Report",
+            path: "/employee-attendance-report",
+            icon: imageIcon(AppIcons.AttendanceReport, 20, "Attendance Report"),
+          },
+          {
+            title: "Request Leave",
+            path: "/leave-manage-form",
+            icon: imageIcon(AppIcons.Leave, 20, "Request Leave"),
+          },
+          {
+            title: "My Leave Request",
+            path: "/user-leave-request",
+            icon: imageIcon(AppIcons.LeaveReq, 20, "My Leave Request"),
+          },
+          {
+            title: "Leave Manager",
+            path: "/admin-leave-manage",
+            icon: imageIcon(AppIcons.LeaveManager, 20, "Leave Manager"),
+          },
+          {
+            title: "Attendance Adjustment",
+            path: "/attendance-adjustment",
+            icon: imageIcon(AppIcons.Adjust, 20, "Attendance Adjustment"),
+          },
+        ],
+      },
+      {
+        id: "notice",
+        label: "Notices",
+        show: permissions.attendance && (isAdmin === 1 || isAdmin === 2),
+        icon: imageIcon(AppIcons.Notice, 26, "Notices"),
+        items: [
+          {
+            title: "Add Notice",
+            path: "/add-notices",
+            icon: <SettingsOutlined sx={muiIconSx} />,
+          },
+        ],
+      },
+      {
+        id: "task",
+        label: "Task",
+        show: permissions.task,
+        icon: imageIcon(AppIcons.Task, 26, "Task"),
+        items: [
+          {
+            title: "My Tasks",
+            path: "/my-task-tab",
+            icon: imageIcon(AppIcons.MyTask, 20, "My Tasks"),
+          },
+          {
+            title: "All Tasks",
+            path: "/all-task",
+            icon: imageIcon(AppIcons.MyTask, 20, "All Tasks"),
+          },
+          {
+            title: "Task Calendar",
+            path: "/task-by-calendar",
+            icon: imageIcon(AppIcons.MyTask, 20, "Task Calendar"),
+          },
+          {
+            title: "My Work Report",
+            path: "/daily-work-report",
+            icon: imageIcon(AppIcons.MyTask, 20, "My Work Report"),
+          },
+          {
+            title: "All Work Report",
+            path: "/all-work-report",
+            icon: imageIcon(AppIcons.MyTask, 20, "All Work Report"),
+          },
+        ],
+      },
+      {
+        id: "project",
+        label: "Project",
+        show: permissions.task,
+        icon: imageIcon(AppIcons.Project, 26, "Project"),
+        items: [
+          {
+            title: "Add Project",
+            path: "/add-project",
+            icon: <AddTaskOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Projects List",
+            path: "/project-list",
+            icon: <ViewListOutlined sx={muiIconSx} />,
+          },
+        ],
+      },
+      {
+        id: "prospect",
+        label: "Leads",
+        show: permissions.prospect,
+        icon: imageIcon(AppIcons.Lead, 26, "Leads"),
+        items: [
+          {
+            title: "Sales Pipeline",
+            path: "/prospect-list-by-stage",
+            icon: <PieChartOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Facebook Leads",
+            path: "/facebook-leads",
+            icon: <FaceOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Opportunity",
+            path: "/opportunity-by-stage",
+            icon: <FaceOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Contact Form Leads",
+            path: "/contact-us",
+            icon: <FaceOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Effort Calculation",
+            path: "/effort-calculation",
+            icon: <CalculateOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Prospect Report",
+            path: "/prospect-report-monthwise",
+            icon: <PieChartOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Sourcewise Report",
+            path: "/source-wise-prospect-report",
+            icon: <SourceOutlined sx={muiIconSx} />,
+          },
+        ],
+      },
+      {
+        id: "fieldforce",
+        label: "Field Force",
+        show: permissions.prospect,
+        icon: imageIcon(AppIcons.Visit, 26, "Field Force"),
+        items: [
+          {
+            title: "Visit Planner",
+            path: "/visit-plan",
+            icon: <SourceOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Date Wise Visit",
+            path: "/datewise-visit",
+            icon: <SourceOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "My Visit",
+            path: "/my-visit",
+            icon: <SourceOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Visit Map",
+            path: "/visit-map",
+            icon: <SourceOutlined sx={muiIconSx} />,
+          },
+        ],
+      },
+      {
+        id: "warehouse",
+        label: "Warehouses",
+        show: permissions.prospect,
+        icon: imageIcon(AppIcons.Warehouse, 26, "Warehouses"),
+        items: [
+          {
+            title: "Warehouses Map",
+            path: "/map-markers",
+            icon: <SourceOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Warehouses List",
+            path: "/warehouse-list",
+            icon: <SourceOutlined sx={muiIconSx} />,
+          },
+        ],
+      },
+      {
+        id: "setting",
+        label: "Settings",
+        show: permissions.setting,
+        icon: imageIcon(AppIcons.Setting, 26, "Settings"),
+        items: [
+          {
+            title: "Add Department",
+            path: "/department-view",
+            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Add Designation",
+            path: "/designation-view",
+            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Add Role",
+            path: "/role-view",
+            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Add Task Priority",
+            path: "/task-priority",
+            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Add Task Status",
+            path: "/task-status",
+            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Add Task Type",
+            path: "/task-type",
+            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "My Permissions",
+            path: "/my-feature-permission",
+            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "User Permission",
+            path: "/user-feature-permission",
+            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
+          },
+        ],
+      },
+    ],
+    [permissions, isAdmin, iconColor]
+  );
+
+  const normalizedSearch = search.trim().toLowerCase();
+
+  const dashboardVisible =
+    dashboardItem.show &&
+    (!normalizedSearch ||
+      dashboardItem.title.toLowerCase().includes(normalizedSearch));
+
+  const visibleGroups = useMemo(
+    () =>
+      navGroups
+        .filter((group) => group.show)
+        .map((group) => {
+          const groupMatches = group.label
+            .toLowerCase()
+            .includes(normalizedSearch);
+          const items =
+            normalizedSearch && !groupMatches
+              ? group.items.filter((item) =>
+                  item.title.toLowerCase().includes(normalizedSearch)
+                )
+              : group.items;
+
+          return { ...group, items };
+        })
+        .filter((group) => group.items.length > 0),
+    [navGroups, normalizedSearch]
+  );
+
+  const activeGroupId = useMemo(() => {
+    const activeGroup = navGroups.find(
+      (group) => group.show && group.items.some((item) => isActive(item.path))
+    );
+    return activeGroup?.id || null;
+  }, [navGroups, location.pathname]);
+
+  const visibleItemCount =
+    (dashboardVisible ? 1 : 0) +
+    visibleGroups.reduce((count, group) => count + group.items.length, 0);
+
+  useEffect(() => {
+    if (!normalizedSearch && activeGroupId) {
+      setExpandedCategory(activeGroupId);
+    }
+  }, [activeGroupId, normalizedSearch]);
 
   useEffect(() => {
     (async () => {
@@ -112,13 +430,16 @@ const SideBar = () => {
         if (p?.status === "success") setPermissions(p.permissions || {});
       } catch {}
     })();
+
     (async () => {
       try {
         const res = await getProfile(userID, navigate);
         if (res?.status === "success") {
           setUser(res.data);
-          setIsAdmin(res.data.role_id);
-          setImageUrl(res.data.photo ? `${base_url}/storage/${res.data.photo}` : null);
+          setIsAdmin(Number(res.data.role_id || 0));
+          setImageUrl(
+            res.data.photo ? `${base_url}/storage/${res.data.photo}` : null
+          );
         }
       } catch (e) {
         console.error("profile error", e);
@@ -126,40 +447,153 @@ const SideBar = () => {
     })();
   }, [userID, navigate]);
 
-  // Small helper to render a group header (collapsible section)
-  const GroupHeader = ({ id, icon, label, show = true }) => {
-    if (!show) return null;
-    const expanded = expandedCategory === id;
+  const menuButtonStyles = ({ active }) => ({
+    color: active ? textPrimary : textSecondary,
+    height: 42,
+    margin: "2px 10px",
+    borderRadius: 2,
+    backgroundColor: active ? alpha(iconColor, isDark ? 0.2 : 0.14) : "transparent",
+    boxShadow: active ? `inset 3px 0 0 ${iconColor}` : "none",
+    transition: "background .18s ease, color .18s ease, transform .18s ease",
+    "&:hover": {
+      color: textPrimary,
+      backgroundColor: alpha(iconColor, isDark ? 0.16 : 0.1),
+      transform: "translateX(2px)",
+    },
+    ".ps-menu-icon": {
+      minWidth: collapsed ? 0 : 34,
+      marginRight: collapsed ? 0 : 8,
+    },
+    ".ps-menu-label": {
+      fontSize: 14,
+      fontWeight: 700,
+    },
+  });
 
-    const header = (
-      <Typography
-        variant="subtitle2"
-        sx={{
-          m: "12px 16px 6px",
-          px: 1,
-          py: 0.75,
-          borderRadius: 1,
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          color: textSecondary,
-          cursor: "pointer",
-          "&:hover": { color: textPrimary, backgroundColor: theme.palette.action.hover },
-        }}
-        onClick={() => toggleCategory(id)}
+  const renderNavItem = (item) => {
+    const itemNode = (
+      <MenuItem
+        key={item.path}
+        active={isActive(item.path)}
+        icon={item.icon}
+        onClick={() => handleNavigate(item.path)}
       >
-        {icon}
         {!collapsed && (
-          <Box display="flex" alignItems="center" justifyContent="space-between" flex={1}>
-            <span style={{ fontWeight: 700 }}>{label}</span>
-            {expanded ? <ExpandLess sx={{ color: textSecondary }} /> : <ExpandMore sx={{ color: textSecondary }} />}
-          </Box>
+          <Typography variant="body2" noWrap sx={{ fontWeight: 700 }}>
+            {item.title}
+          </Typography>
         )}
-      </Typography>
+      </MenuItem>
     );
 
     return collapsed ? (
-      <Tooltip title={label} placement="right">{header}</Tooltip>
+      <Tooltip key={item.path} title={item.title} placement="right">
+        {itemNode}
+      </Tooltip>
+    ) : (
+      itemNode
+    );
+  };
+
+  const GroupHeader = ({ group }) => {
+    const expanded = normalizedSearch || expandedCategory === group.id;
+    const active = activeGroupId === group.id;
+
+    const header = (
+      <Box
+        role="button"
+        tabIndex={0}
+        onClick={() => toggleCategory(group.id)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleCategory(group.id);
+          }
+        }}
+        sx={{
+          mx: 1.25,
+          mt: 0.75,
+          mb: 0.5,
+          px: collapsed ? 1 : 1.25,
+          py: 1,
+          minHeight: 44,
+          borderRadius: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: collapsed ? "center" : "space-between",
+          gap: 1,
+          color: active ? textPrimary : textSecondary,
+          cursor: "pointer",
+          backgroundColor: active ? alpha(iconColor, isDark ? 0.14 : 0.08) : "transparent",
+          outline: "none",
+          transition: "background .18s ease, color .18s ease",
+          "&:hover": {
+            color: textPrimary,
+            backgroundColor: alpha(iconColor, isDark ? 0.16 : 0.1),
+          },
+          "&:focus-visible": {
+            boxShadow: `0 0 0 2px ${alpha(iconColor, 0.45)}`,
+          },
+        }}
+      >
+        <Box display="flex" alignItems="center" gap={1.25} minWidth={0}>
+          <Box
+            sx={{
+              width: 30,
+              height: 30,
+              borderRadius: 1.5,
+              display: "grid",
+              placeItems: "center",
+              backgroundColor: alpha(iconColor, active ? 0.18 : 0.08),
+              flexShrink: 0,
+            }}
+          >
+            {group.icon}
+          </Box>
+
+          {!collapsed && (
+            <Box minWidth={0}>
+              <Typography variant="subtitle2" noWrap sx={{ fontWeight: 800 }}>
+                {group.label}
+              </Typography>
+              {normalizedSearch && (
+                <Typography variant="caption" color="text.secondary">
+                  {group.items.length} match{group.items.length > 1 ? "es" : ""}
+                </Typography>
+              )}
+            </Box>
+          )}
+        </Box>
+
+        {!collapsed && (
+          <Box display="flex" alignItems="center" gap={0.75}>
+            {!normalizedSearch && (
+              <Chip
+                size="small"
+                label={group.items.length}
+                sx={{
+                  height: 20,
+                  minWidth: 28,
+                  fontSize: 11,
+                  color: active ? textPrimary : textSecondary,
+                  backgroundColor: alpha(iconColor, active ? 0.2 : 0.1),
+                }}
+              />
+            )}
+            {expanded ? (
+              <ExpandLess sx={{ color: textSecondary, fontSize: 20 }} />
+            ) : (
+              <ExpandMore sx={{ color: textSecondary, fontSize: 20 }} />
+            )}
+          </Box>
+        )}
+      </Box>
+    );
+
+    return collapsed ? (
+      <Tooltip title={group.label} placement="right">
+        {header}
+      </Tooltip>
     ) : (
       header
     );
@@ -167,290 +601,339 @@ const SideBar = () => {
 
   return (
     <Sidebar
+      width="292px"
+      collapsedWidth="76px"
       backgroundColor={surfaceBg}
       rootStyles={{
         border: 0,
         height: "100%",
         boxShadow: `inset -1px 0 0 ${divider}`,
+        "& .ps-sidebar-container": {
+          background: surfaceBg,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        },
       }}
       collapsed={collapsed}
       toggled={toggled}
       onBackdropClick={() => setToggled(false)}
       breakPoint="md"
     >
-      {/* Brand / Collapse */}
-      <Menu
-        menuItemStyles={{
-          button: {
-            "&:hover": { background: "transparent" },
-            padding: "8px 12px",
-          },
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          minHeight: 0,
         }}
       >
-        <MenuItem
-          rootStyles={{ margin: "10px 0 10px", color: textPrimary }}
-        >
+        <Box sx={{ px: 1.5, pt: 1.5, pb: 1 }}>
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
               justifyContent: collapsed ? "center" : "space-between",
-              px: 1,
+              gap: 1,
+              minHeight: 42,
             }}
           >
             {!collapsed && (
-              <Box display="flex" alignItems="center" gap={1.25}>
-                <img
+              <Box display="flex" alignItems="center" gap={1.25} minWidth={0}>
+                <Box
+                  component="img"
                   src={logo}
                   alt="logo"
-                  style={{ width: 28, height: 28, borderRadius: 8 }}
-                />
-                <Typography
-                  variant="h6"
-                  fontWeight={800}
                   sx={{
-                    color: iconColor,
-                    letterSpacing: 0.2,
+                    width: 34,
+                    height: 34,
+                    borderRadius: 2,
+                    boxShadow: `0 8px 22px ${alpha(iconColor, 0.18)}`,
                   }}
-                >
-                  {appname}
-                </Typography>
+                />
+                <Box minWidth={0}>
+                  <Typography
+                    variant="h6"
+                    noWrap
+                    sx={{
+                      color: textPrimary,
+                      fontWeight: 900,
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    {appname}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" noWrap>
+                    CRM Workspace
+                  </Typography>
+                </Box>
               </Box>
             )}
-            <IconButton
+
+            <Tooltip title={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
+              <IconButton
+                size="small"
+                onClick={() => setCollapsed((current) => !current)}
+                sx={{
+                  width: 34,
+                  height: 34,
+                  border: `1px solid ${divider}`,
+                  bgcolor: alpha(iconColor, isDark ? 0.1 : 0.06),
+                  color: textPrimary,
+                  "&:hover": {
+                    bgcolor: alpha(iconColor, isDark ? 0.18 : 0.12),
+                  },
+                }}
+              >
+                {collapsed ? (
+                  <KeyboardDoubleArrowRightRounded fontSize="small" />
+                ) : (
+                  <KeyboardDoubleArrowLeftRounded fontSize="small" />
+                )}
+              </IconButton>
+            </Tooltip>
+          </Box>
+
+          {!collapsed && (
+            <TextField
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search menu"
               size="small"
-              onClick={() => setCollapsed((c) => !c)}
+              fullWidth
               sx={{
-                ml: collapsed ? 0 : 1,
+                mt: 1.5,
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                  bgcolor: alpha(iconColor, isDark ? 0.08 : 0.05),
+                  "& fieldset": { borderColor: divider },
+                  "&:hover fieldset": { borderColor: alpha(iconColor, 0.5) },
+                  "&.Mui-focused fieldset": { borderColor: iconColor },
+                },
+                "& .MuiInputBase-input": {
+                  py: 1,
+                  fontSize: 14,
+                },
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchOutlined sx={{ color: textSecondary, fontSize: 20 }} />
+                  </InputAdornment>
+                ),
+                endAdornment: search ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => setSearch("")}
+                      sx={{ color: textSecondary }}
+                    >
+                      <ClearRounded fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              }}
+            />
+          )}
+        </Box>
+
+        {user && (
+          <Tooltip
+            title={collapsed ? `${user.name} - ${user?.role?.role_name || "User"}` : ""}
+            placement="right"
+          >
+            <Box
+              onClick={() => handleNavigate(`/employee-profile/${userID}`)}
+              sx={{
+                mx: 1.5,
+                mb: 1,
+                p: collapsed ? 1 : 1.25,
+                borderRadius: 2,
                 border: `1px solid ${divider}`,
-                bgcolor: theme.palette.background.default,
+                cursor: "pointer",
+                background: `linear-gradient(135deg, ${alpha(
+                  iconColor,
+                  isDark ? 0.16 : 0.1
+                )}, ${alpha(theme.palette.success.main, isDark ? 0.1 : 0.08)})`,
+                transition: "border-color .18s ease, transform .18s ease",
+                "&:hover": {
+                  borderColor: alpha(iconColor, 0.55),
+                  transform: "translateY(-1px)",
+                },
               }}
             >
-              <MenuOutlined />
-            </IconButton>
-          </Box>
-        </MenuItem>
-      </Menu>
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent={collapsed ? "center" : "space-between"}
+                gap={1}
+              >
+                <Box display="flex" alignItems="center" gap={1.25} minWidth={0}>
+                  <Box position="relative" flexShrink={0}>
+                    <Avatar
+                      src={imageUrl || undefined}
+                      sx={{
+                        width: 36,
+                        height: 36,
+                        border: `2px solid ${alpha(iconColor, 0.35)}`,
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        right: 1,
+                        bottom: 1,
+                        width: 9,
+                        height: 9,
+                        borderRadius: "50%",
+                        bgcolor: theme.palette.success.main,
+                        border: `2px solid ${surfaceBg}`,
+                      }}
+                    />
+                  </Box>
 
-      {/* User snippet */}
-      {user && (
-        <Box
-          sx={{
-            mx: 1.5,
-            mb: 1.5,
-            p: collapsed ? 1 : 1.5,
-            borderRadius: 2,
-            border: `1px solid ${divider}`,
-            background: theme.palette.mode === "dark"
-              ? "linear-gradient(135deg, rgba(58,134,255,0.08), rgba(46,196,182,0.06))"
-              : "linear-gradient(135deg, rgba(58,134,255,0.08), rgba(46,196,182,0.06))",
-          }}
-        >
-          <Box display="flex" alignItems="center" gap={1.25}>
-            <Avatar src={imageUrl || undefined} sx={{ width: 36, height: 36 }} />
-            {!collapsed && (
-              <Box minWidth={0}>
-                <Typography
-                  variant="body2"
-                  noWrap
-                  title={user.name}
-                  sx={{ fontWeight: 700 }}
-                >
-                  {user.name}
-                </Typography>
-                <Typography variant="caption" color={textSecondary} noWrap title={user?.role?.role_name}>
-                  {user?.role?.role_name || "User"}
-                </Typography>
+                  {!collapsed && (
+                    <Box minWidth={0}>
+                      <Typography
+                        variant="body2"
+                        noWrap
+                        title={user.name}
+                        sx={{ fontWeight: 800, color: textPrimary }}
+                      >
+                        {user.name}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        noWrap
+                        title={user?.role?.role_name}
+                      >
+                        {user?.role?.role_name || "User"}
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+
+                {!collapsed && (
+                  <Chip
+                    size="small"
+                    label="Profile"
+                    sx={{
+                      height: 24,
+                      fontWeight: 800,
+                      color: textPrimary,
+                      bgcolor: alpha(iconColor, isDark ? 0.18 : 0.12),
+                    }}
+                  />
+                )}
               </Box>
-            )}
-          </Box>
-        </Box>
-      )}
-
-      {/* NAV */}
-      <Box mb={4}>
-        {/* Dashboard */}
-       {permissions.dashboard && (
-        <Menu
-          menuItemStyles={{
-            button: ({ active }) => ({
-              color: active ? textPrimary : textSecondary,
-              background: 'transparent',
-              '&:hover': { color: textPrimary, background: theme.palette.action.hover },
-              ...(active ? activeStyles : {}),
-              padding: '8px 16px',
-            }),
-          }}
-        >
-          <MenuItem
-            active={isActive('/')}
-            onClick={() => navigate('/')}
-            // Pass your custom icon image directly to the icon prop.
-            icon={<img src={AppIcons.DashBoard} alt="Dashboard Icon" style={iconStyle} />}
-          >
-            {!collapsed && <Typography>Dashboard</Typography>}
-          </MenuItem>
-        </Menu>
-      )}
-
-        {/* HRMS */}
-        <GroupHeader id="hrms" label="HRMS" icon={<img src={AppIcons.Employee} style={iconStyle} />} show={permissions.hrms} />
-        <Collapse in={expandedCategory === "hrms"} unmountOnExit>
-          <Menu
-            menuItemStyles={{
-              button: ({ active }) => ({
-                color: active ? textPrimary : textSecondary,
-                "&:hover": { background: theme.palette.action.hover, color: textPrimary },
-                ...(active ? activeStyles : {}),
-                padding: "8px 16px",
-              }),
-            }}
-          >
-            <Item title="Employee" path="/employee-list-view" colors={{}} icon={<img src={AppIcons.Emp1} style={iconStyleSub} />} />
-            <Item title="Department" path="/department-wise-emp" colors={{}} icon={<img src={AppIcons.Department} style={iconStyleSub} />} />
-            <Item title="User Tracker" path="/user-activity-track" colors={{}} icon={<img src={AppIcons.Tracker} style={iconStyleSub} />} />
-          </Menu>
-        </Collapse>
-
-        {/* Attendance */}
-        <GroupHeader id="attendance" label="Attendance" icon={<img src={AppIcons.Attendance} style={iconStyle} />} show={permissions.attendance} />
-        <Collapse in={expandedCategory === "attendance"} unmountOnExit>
-          <Menu menuItemStyles={{ button: ({ active }) => ({
-              color: active ? textPrimary : textSecondary,
-              "&:hover": { background: theme.palette.action.hover, color: textPrimary },
-              ...(active ? activeStyles : {}),
-              padding: "8px 16px",
-            }),
-          }}>
-            <Item title="Today Attendance" path="/check-in-out" icon={<img src={AppIcons.CheckIn} style={iconStyleSub} />} />
-            <Item title="Attendance Report" path="/employee-attendance-report" icon={<img src={AppIcons.AttendanceReport} style={iconStyleSub} />} />
-            <Item title="Request Leave" path="/leave-manage-form" icon={<img src={AppIcons.Leave} style={iconStyleSub} />} />
-            <Item title="My Leave Request" path="/user-leave-request" icon={<img src={AppIcons.LeaveReq} style={iconStyleSub} />} />
-            <Item title="Leave Manager" path="/admin-leave-manage" icon={<img src={AppIcons.LeaveManager} style={iconStyleSub} />} />
-            <Item title="Attendance Adjustment" path="/attendance-adjustment" icon={<img src={AppIcons.Adjust} style={iconStyleSub} />} />
-          </Menu>
-        </Collapse>
-
-        {/* Notices (admin) */}
-        {(permissions.attendance && (isAdmin === 1 || isAdmin === 2)) && (
-          <>
-            <GroupHeader id="notice" label="Add Notices" icon={<img src={AppIcons.Notice} style={iconStyle} />} show />
-            <Collapse in={expandedCategory === "notice"} unmountOnExit>
-              <Menu menuItemStyles={{ button: ({ active }) => ({
-                  color: active ? textPrimary : textSecondary,
-                  "&:hover": { background: theme.palette.action.hover, color: textPrimary },
-                  ...(active ? activeStyles : {}),
-                  padding: "8px 16px",
-                }),
-              }}>
-                <Item title="Add Notice" path="/add-notices" icon={<SettingsOutlined sx={iconStyle} />} />
-              </Menu>
-            </Collapse>
-          </>
+            </Box>
+          </Tooltip>
         )}
 
-        {/* Task */}
-        <GroupHeader id="task" label="Task" icon={<img src={AppIcons.Task} style={iconStyle} />} show={permissions.task} />
-        <Collapse in={expandedCategory === "task"} unmountOnExit>
-          <Menu menuItemStyles={{ button: ({ active }) => ({
-              color: active ? textPrimary : textSecondary,
-              "&:hover": { background: theme.palette.action.hover, color: textPrimary },
-              ...(active ? activeStyles : {}),
-              padding: "8px 16px",
-            }),
-          }}>
-            <Item title="My Tasks" path="/my-task-tab" icon={<img src={AppIcons.MyTask} style={iconStyleSub} />} />
-            <Item title="All Tasks" path="/all-task" icon={<img src={AppIcons.MyTask} style={iconStyleSub} />} />
-            <Item title="Task Calendar" path="/task-by-calendar" icon={<img src={AppIcons.MyTask} style={iconStyleSub} />} />
-            <Item title="My Work Report" path="/daily-work-report" icon={<img src={AppIcons.MyTask} style={iconStyleSub} />} />
-            <Item title="All Work Report" path="/all-work-report" icon={<img src={AppIcons.MyTask} style={iconStyleSub} />} />
-          </Menu>
-        </Collapse>
+        <Box
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            overflowY: "auto",
+            pb: 1,
+            "&::-webkit-scrollbar": { width: 6 },
+            "&::-webkit-scrollbar-thumb": {
+              borderRadius: 10,
+              backgroundColor: alpha(textSecondary, 0.28),
+            },
+            "&::-webkit-scrollbar-track": { background: "transparent" },
+          }}
+        >
+          {!collapsed && normalizedSearch && (
+            <Box
+              sx={{
+                mx: 1.5,
+                mb: 1,
+                px: 1,
+                py: 0.75,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                color: textSecondary,
+              }}
+            >
+              <Typography variant="caption" sx={{ fontWeight: 800 }}>
+                Results
+              </Typography>
+              <Chip
+                size="small"
+                label={visibleItemCount}
+                sx={{
+                  height: 20,
+                  minWidth: 28,
+                  fontSize: 11,
+                  bgcolor: alpha(iconColor, 0.12),
+                  color: textPrimary,
+                }}
+              />
+            </Box>
+          )}
 
-        {/* Projects */}
-        <GroupHeader id="project" label="Project" icon={<img src={AppIcons.Project} style={iconStyle} />} show={permissions.task} />
-        <Collapse in={expandedCategory === "project"} unmountOnExit>
-          <Menu menuItemStyles={{ button: ({ active }) => ({
-              color: active ? textPrimary : textSecondary,
-              "&:hover": { background: theme.palette.action.hover, color: textPrimary },
-              ...(active ? activeStyles : {}),
-              padding: "8px 16px",
-            }),
-          }}>
-            <Item title="Add Project" path="/add-project" icon={<AddTaskOutlined sx={iconStyleSub} />} />
-            <Item title="Projects List" path="/project-list" icon={<ViewListOutlined sx={iconStyleSub} />} />
+          <Menu
+            menuItemStyles={{
+              button: menuButtonStyles,
+            }}
+          >
+            {dashboardVisible && renderNavItem(dashboardItem)}
           </Menu>
-        </Collapse>
 
-        {/* Leads / Prospects */}
-        <GroupHeader id="prospect" label="Leads" icon={<img src={AppIcons.Lead} style={iconStyle} />} show={permissions.prospect} />
-        <Collapse in={expandedCategory === "prospect"} unmountOnExit>
-          <Menu menuItemStyles={{ button: ({ active }) => ({
-              color: active ? textPrimary : textSecondary,
-              "&:hover": { background: theme.palette.action.hover, color: textPrimary },
-              ...(active ? activeStyles : {}),
-              padding: "8px 16px",
-            }),
-          }}>
-            <Item title="Sales Pipeline" path="/prospect-list-by-stage" icon={<PieChartOutlined sx={iconStyleSub} />} />
-            <Item title="Facebook Leads" path="/facebook-leads" icon={<FaceOutlined sx={iconStyleSub} />} />
-            <Item title="Opportunity" path="/opportunity-by-stage" icon={<FaceOutlined sx={iconStyleSub} />} />
-            <Item title="Contact Form Leads" path="/contact-us" icon={<FaceOutlined sx={iconStyleSub} />} />
-            <Item title="Effort Calculation" path="/effort-calculation" icon={<CalculateOutlined sx={iconStyleSub} />} />
-            <Item title="Prospect Report" path="/prospect-report-monthwise" icon={<PieChartOutlined sx={iconStyleSub} />} />
-            <Item title="Sourcewise Report" path="/source-wise-prospect-report" icon={<SourceOutlined sx={iconStyleSub} />} />
-          </Menu>
-        </Collapse>
+          {visibleGroups.map((group) => (
+            <Box key={group.id}>
+              <GroupHeader group={group} />
+              <Collapse
+                in={!collapsed && (normalizedSearch || expandedCategory === group.id)}
+                timeout="auto"
+                unmountOnExit
+              >
+                <Menu
+                  menuItemStyles={{
+                    button: (params) => ({
+                      ...menuButtonStyles(params),
+                      height: 38,
+                      marginLeft: "18px",
+                      marginRight: "10px",
+                      ".ps-menu-icon": {
+                        minWidth: 28,
+                        marginRight: 8,
+                      },
+                      ".ps-menu-label": {
+                        fontSize: 13,
+                        fontWeight: 700,
+                      },
+                    }),
+                  }}
+                >
+                  {group.items.map(renderNavItem)}
+                </Menu>
+              </Collapse>
+            </Box>
+          ))}
 
-        {/* visit */}
-        <GroupHeader id="fieldforce" label="Field Force" icon={<img src={AppIcons.Visit} style={iconStyle} />} show={permissions.prospect} />
-        <Collapse in={expandedCategory === "fieldforce"} unmountOnExit>
-          <Menu menuItemStyles={{ button: ({ active }) => ({
-              color: active ? textPrimary : textSecondary,
-              "&:hover": { background: theme.palette.action.hover, color: textPrimary },
-              ...(active ? activeStyles : {}),
-              padding: "8px 16px",
-            }),
-          }}>
-            <Item title="Visit Planner" path="/visit-plan" icon={<SourceOutlined sx={iconStyleSub} />} />
-            <Item title="Date Wise Visit" path="/datewise-visit" icon={<SourceOutlined sx={iconStyleSub} />} />
-            <Item title="My Visit" path="/my-visit" icon={<SourceOutlined sx={iconStyleSub} />} />
-            <Item title="Visit Map" path="/visit-map" icon={<SourceOutlined sx={iconStyleSub} />} />
-          </Menu>
-        </Collapse>
-        <GroupHeader id="warehouse" label="Warehouses" icon={<img src={AppIcons.Warehouse} style={iconStyle} />} show={permissions.prospect} />
-        <Collapse in={expandedCategory === "warehouse"} unmountOnExit>
-          <Menu menuItemStyles={{ button: ({ active }) => ({
-              color: active ? textPrimary : textSecondary,
-              "&:hover": { background: theme.palette.action.hover, color: textPrimary },
-              ...(active ? activeStyles : {}),
-              padding: "8px 16px",
-            }),
-          }}>
-            <Item title="Warehouses Map" path="/map-markers" icon={<SourceOutlined sx={iconStyleSub} />} />
-            <Item title="Warehouses List" path="/warehouse-list" icon={<SourceOutlined sx={iconStyleSub} />} />
-          </Menu>
-        </Collapse>
-
-        {/* Settings */}
-        <GroupHeader id="setting" label="Settings" icon={<img src={AppIcons.Setting} style={iconStyle} />} show={permissions.setting} />
-        <Collapse in={expandedCategory === "setting"} unmountOnExit>
-          <Menu menuItemStyles={{ button: ({ active }) => ({
-              color: active ? textPrimary : textSecondary,
-              "&:hover": { background: theme.palette.action.hover, color: textPrimary },
-              ...(active ? activeStyles : {}),
-              padding: "8px 16px",
-            }),
-          }}>
-            <Item title="Add Department" path="/department-view" icon={<AdminPanelSettingsOutlined sx={iconStyleSub} />} />
-            <Item title="Add Designation" path="/designation-view" icon={<AdminPanelSettingsOutlined sx={iconStyleSub} />} />
-            <Item title="Add Role" path="/role-view" icon={<AdminPanelSettingsOutlined sx={iconStyleSub} />} />
-            <Item title="Add Task Priority" path="/task-priority" icon={<AdminPanelSettingsOutlined sx={iconStyleSub} />} />
-            <Item title="Add Task Status" path="/task-status" icon={<AdminPanelSettingsOutlined sx={iconStyleSub} />} />
-            <Item title="Add Task Type" path="/task-type" icon={<AdminPanelSettingsOutlined sx={iconStyleSub} />} />
-            <Item title="Feature Permission" path="/user-feature-permission" icon={<AdminPanelSettingsOutlined sx={iconStyleSub} />} />
-          </Menu>
-        </Collapse>
+          {!visibleItemCount && !collapsed && (
+            <Box
+              sx={{
+                mx: 1.5,
+                mt: 2,
+                p: 2,
+                borderRadius: 2,
+                textAlign: "center",
+                border: `1px dashed ${divider}`,
+                color: textSecondary,
+              }}
+            >
+              <MenuOutlined sx={{ mb: 0.5, color: alpha(textSecondary, 0.8) }} />
+              <Typography variant="body2" sx={{ fontWeight: 800 }}>
+                No menu items found
+              </Typography>
+            </Box>
+          )}
+        </Box>
       </Box>
     </Sidebar>
   );

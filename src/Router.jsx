@@ -90,6 +90,7 @@ import {
  MapWithMarkers,
  AttendanceAdjustments,
  WarehouseForm,
+ MyFeaturePermission,
  UserFeaturePermission,
  NotificationPage,
  WarehouseList,
@@ -219,6 +220,7 @@ const AppRouter = () => {
           <Route path="/map-markers" element={<MapWithMarkers />} />
           <Route path="/attendance-adjustment" element={<AttendanceAdjustments />} />
           <Route path="/add-warehouse" element={<WarehouseForm />} />
+          <Route path="/my-feature-permission" element={<MyFeaturePermission />} />
           <Route path="/user-feature-permission" element={<UserFeaturePermission />} />
           <Route path="/notification-page" element={<NotificationPage />} />
           <Route path="/warehouse-list" element={<WarehouseList />} />
