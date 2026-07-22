@@ -13,7 +13,6 @@ import {
   getFeaturePermissionByUser,
   updateFeaturePermission,
 } from "../../../api/controller/admin_controller/feature_permission_controller";
-import { useParams } from "react-router-dom";
 
 const UserFeaturePermission = () => {
   const theme = useTheme();
@@ -29,8 +28,13 @@ const UserFeaturePermission = () => {
     try {
       const res = await getFeaturePermissionByUser(userID);
       if (res.status === "success") {
+        const groupedData = res.data || {};
+        const flatData = Array.isArray(groupedData)
+          ? groupedData
+          : Object.values(groupedData).flat();
+
         // Assign unique row id
-        const featureRows = res.data.map((item, index) => ({
+        const featureRows = flatData.map((item) => ({
           id: item.feature_id,
           ...item,
         }));
@@ -69,6 +73,11 @@ const UserFeaturePermission = () => {
   }, []);
 
   const columns = [
+    {
+      field: "module",
+      headerName: "Module",
+      flex: 1,
+    },
     {
       field: "feature_name",
       headerName: "Feature Name",
@@ -124,7 +133,7 @@ const UserFeaturePermission = () => {
           "& .MuiDataGrid-root": { border: "none" },
           "& .MuiDataGrid-cell": { borderBottom: "1px solid rgba(224, 224, 224, 1)" },
           "& .MuiDataGrid-columnHeaders": { backgroundColor: colors.gray[10], fontSize: "16px", fontWeight: "bold" },
-          "& .MuiDataGrid-virtualScroller": { backgroundColor: colors.primary[400] },
+          "& .MuiDataGrid-virtualScroller": { backgroundColor: colors.primary[900] },
           "& .MuiDataGrid-footerContainer": { backgroundColor: colors.gray[10], borderTop: "1px solid rgba(224, 224, 224, 1)" },
           "& .MuiCheckbox-root": { color: `${colors.greenAccent[200]} !important` },
           "& .MuiDataGrid-toolbarContainer .MuiButton-text": { color: `${colors.gray[100]} !important` },

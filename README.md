@@ -1,51 +1,187 @@
-# Argon Admin Dashboard: React.js, Vite, Material UI - Dark & Light Mode
+# BrainWork CRM Frontend
 
-Welcome to Argon Admin Dashboard, a sleek and feature-rich solution built with React.js, Vite, and Material UI, offering both dark and light mode themes. Empower your project with 11 meticulously crafted pages, including data management, user interaction, and insightful chart displays.
+Frontend for the BrainWork / Fahim HCRM application. The app is a Vite React dashboard that connects directly to backend API routes through controller files, then renders feature views under `src/scenes`.
 
-## Features
+## Tech Stack
 
-- **Dashboard Page:** An overview of key metrics and insights.
-- **Manage Team Page:** Efficiently handle team members with MUI DataGrid.
-- **Contacts Information:** Keep track of contacts effortlessly with a DataGrid.
-- **Invoices Balances Page:** Manage invoice balances conveniently using MUI DataGrid.
-- **Profile Form Page:** Create new user profiles seamlessly with Formik and Yup integration.
-- **Calendar Page:** Interactive calendar functionality powered by FullCalendar.
-- **FAQ Page:** Provide answers to common queries using MUI Accordion.
-- **Charts Pages:** Visualize data effectively with various chart types including Bar, Pie, Line, Geography, and Stream.
+- React 18 with Vite
+- React Router DOM v6
+- Material UI and MUI DataGrid
+- Axios for API calls
+- Formik, Yup, React Hook Form for forms
+- FullCalendar, Nivo, Recharts, Google Maps, Quill, Pusher
 
-## Demo
+## Project Structure
 
-Explore the live demo of Argon Admin Dashboard [here](https://argon-admin-dashboard.web.app/).
+```text
+src/
+  api/
+    axiosInstance.jsx              Shared Axios instance using base_url
+    config/index.jsx               Base URL, app name, image URL, company ID, map key
+    controller/                    API controller functions grouped by feature
+      admin_controller/
+        attendance_controller.jsx
+        client_controller.jsx
+        department_controller.jsx
+        feature_permission_controller.jsx
+        notification_controller.jsx
+        opportunity_controller.jsx
+        product_controller.jsx
+        prospect_controller.jsx
+        user_controller.jsx
+        visit_controller.jsx
+        leave_manage/
+        project/
+        report/
+        task_controller/
+      api_controller.jsx
+      dashboard_controller.jsx
+      order_controller/
+      social_media_controller/
+      setting_controller.jsx
+      withdraw_controller.jsx
 
-## Get Started
+  assets/                          Images, icons, marketing screenshots
+  components/                      Shared UI/chart/header components
+  context/
+    DataContext.jsx                Shared category/brand preload context
+  scenes/
+    index.js                       Barrel exports used by Router.jsx
+    layout/
+      sidebar/                     Sidebar navigation and route links
+      navbar/                      Top navbar, task search, profile links
+    provider/
+      profile_context.jsx          Profile data context
+    dashboard/
+    admin/                         Main CRM/HRMS/admin feature pages
+    a_product/                     Older product management pages
+    order/
+    contacts/
+    setting/
+  App.jsx                          Authenticated layout shell with Outlet
+  Router.jsx                       Central route table
+  main.jsx                         React mount and providers
+  theme.js                         MUI theme tokens and color mode
+```
 
-1. Clone the repository: `git clone https://github.com/ayoubhayda/react-admin-dashboard.git`
-2. Install dependencies: `npm install` or `yarn install`
-3. Start the development server: `npm run dev` or `yarn dev`
+## App Wiring
 
-## Screenshots
+- `src/main.jsx` mounts `AppRouter` and wraps it with `ProfileProvider`.
+- `src/Router.jsx` defines all application routes.
+- The `/login`, `/privacy-policy`, and `/what-next` routes render outside the main dashboard shell.
+- Most app pages are nested under `<Route path="/" element={<App />}>`.
+- `src/App.jsx` provides the main dashboard layout: `SideBar`, `Navbar`, theme providers, `DataProvider`, and `<Outlet />`.
+- `src/scenes/index.js` exports scene components so `Router.jsx` can import all pages from one place.
+- `src/scenes/layout/sidebar/index.jsx` controls menu visibility using `modulePermission()` and navigates with `Item` links.
 
-### Dark Mode
+## API Integration Pattern
 
-![Dark Mode](https://res.cloudinary.com/duxego3ja/image/upload/v1709215626/argon-admin-dashboard/b6jztniqlakkglakrp4e.png)
+The current project uses direct controller functions, not Redux or RTK Query.
 
-### Light Mode
+Typical controller pattern:
 
-![Light Mode](https://res.cloudinary.com/duxego3ja/image/upload/v1709215626/argon-admin-dashboard/qf006k0kwkhrgmefengy.png)
+```jsx
+import axiosInstance from "../../axiosInstance.jsx";
 
+export const fetchSomething = async () => {
+  try {
+    const response = await axiosInstance.get("/api/some-route", {
+      headers: {
+        token: localStorage.getItem("authToken"),
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching something:", error);
+    return [];
+  }
+};
+```
 
-## Contributions and Feedback
+For POST requests:
 
-We welcome contributions and feedback from the community to enhance and improve Argon Admin Dashboard further. Feel free to submit pull requests or open issues for any suggestions or bug reports.
+```jsx
+export const addSomething = async (data) => {
+  try {
+    const response = await axiosInstance.post("/api/some-route", data, {
+      headers: {
+        token: localStorage.getItem("authToken"),
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding something:", error);
+    throw error;
+  }
+};
+```
 
-## Free to Use
+Notes:
 
-Argon Admin Dashboard is open-source and completely free to use. Download it, customize it, and streamline your operations with ease.
+- `base_url` comes from `src/api/config/index.jsx`.
+- Most secured API calls send a custom `token` header from `localStorage.authToken`.
+- Login stores `authToken` and `userId`.
+- Many list controllers return `[]` on failure.
+- Many create/update controllers throw errors so the page can handle form errors.
+- API responses are commonly checked with `res.status === "success"` and data is read from `res.data`.
 
-**Keywords:** React.js, Vite, Material UI, Admin Dashboard, Dark Mode, Light Mode, Data Management, Team Management, Calendar, Charts, Formik, Yup, Open Source.
+## View Pattern
 
-**Enjoy building awesome projects with Argon Admin Dashboard!**
+Feature pages usually:
 
-******* facebook *********
-** for facebook lead generation you have to connect pabbly and facebook lead form
-** just client should have a pabbly account.
+- Import one or more controller functions directly.
+- Load initial data in `useEffect`.
+- Store API data in local `useState`.
+- Show loading and error states.
+- Render with MUI cards, tables, forms, chips, dialogs, or DataGrid.
+- Refresh list data after create/update/delete actions.
+
+Examples:
+
+- Employee list: `src/scenes/admin/employee/employee_list.jsx`
+- Task create form: `src/scenes/admin/task/add_task.jsx`
+- Visit planner: `src/scenes/admin/fieldforce/visit_plan.jsx`
+- Feature permission grid: `src/scenes/admin/permission/show_user_feature_list_permisision.jsx`
+
+## Adding A New API And View
+
+When a new backend route and response are provided, follow this workflow:
+
+1. Add or update a controller function in the matching file under `src/api/controller`.
+2. If needed, create a new scene under the correct feature folder in `src/scenes/admin` or another existing scene group.
+3. Import controller functions into the scene and connect them with `useEffect` or event handlers.
+4. Match the API response shape exactly, usually `status`, `message`, `data`, and `errors`.
+5. Export the new scene from `src/scenes/index.js`.
+6. Register the page in `src/Router.jsx`.
+7. Add a sidebar or navbar link only if users should navigate to it directly.
+8. Keep UI consistent with existing MUI patterns and local theme tokens.
+9. Run a build or focused manual check after changes.
+
+## Common Feature Areas
+
+- HRMS: employees, departments, roles, designations, user activity
+- Attendance: check-in/out, reports, leave requests, adjustments
+- Tasks: task lists, add task, details, calendar, work reports
+- Projects: project list, phases, team, tasks, workshop
+- Leads/CRM: prospects, opportunities, Facebook leads, contact form leads, reports
+- Field Force: visit planner, date-wise visits, my visits, visit map
+- Warehouses: warehouse list, details, map
+- Sales Product/POS: products, variants, stock, cart/order flow
+- Settings: departments, roles, task priority/status/type, feature permissions
+
+## Local Commands
+
+```bash
+npm install
+npm run dev
+npm run build
+npm run lint
+```
+
+## Development Notes
+
+- The app currently uses direct API controllers instead of a centralized query/mutation store.
+- Keep new code close to the existing feature folder that owns the workflow.
+- Use the existing `axiosInstance` and token-header convention unless the backend route is public.
+- Avoid changing unrelated `dist` files during source work.
+- If route visibility depends on permissions, update sidebar permission checks carefully.
