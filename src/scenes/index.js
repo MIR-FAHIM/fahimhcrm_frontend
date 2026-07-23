@@ -107,6 +107,7 @@ import AttendanceAdjustments from "./admin/attendance/attendance_adjustment";
 import WarehouseForm from "./admin/prospect/warehouse/add_warehouse";
 import MyFeaturePermission from "./admin/permission/MyFeaturePermission";
 import UserFeaturePermission from "./admin/permission/UserFeaturePermission";
+import RoleFeaturePermission from "./admin/permission/RoleFeaturePermission";
 import NotificationPage from "./admin/notification/notification_list";
 import WarehouseList from "./admin/prospect/warehouse/warehouse_list";
 import AddNotice from "./admin/notices/add_notice";
@@ -239,6 +240,7 @@ export {
   WarehouseForm,
   MyFeaturePermission,
   UserFeaturePermission,
+  RoleFeaturePermission,
   NotificationPage,
   WarehouseList,
   AddNotice,

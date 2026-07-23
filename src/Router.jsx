@@ -92,6 +92,7 @@ import {
  WarehouseForm,
  MyFeaturePermission,
  UserFeaturePermission,
+ RoleFeaturePermission,
  NotificationPage,
  WarehouseList,
  AddNotice,
@@ -222,6 +223,7 @@ const AppRouter = () => {
           <Route path="/add-warehouse" element={<WarehouseForm />} />
           <Route path="/my-feature-permission" element={<MyFeaturePermission />} />
           <Route path="/user-feature-permission" element={<UserFeaturePermission />} />
+          <Route path="/role-feature-permission" element={<RoleFeaturePermission />} />
           <Route path="/notification-page" element={<NotificationPage />} />
           <Route path="/warehouse-list" element={<WarehouseList />} />
           <Route path="/add-notices" element={<AddNotice />} />

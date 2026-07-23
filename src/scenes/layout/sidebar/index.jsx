@@ -348,6 +348,11 @@ const SideBar = () => {
             icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
           },
           {
+            title: "Role Permission",
+            path: "/role-feature-permission",
+            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
+          },
+          {
             title: "Add Task Priority",
             path: "/task-priority",
             icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
