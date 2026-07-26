@@ -1,56 +1,15 @@
-import React from 'react';
 import {
   Box,
-  Typography,
-  Slider,
   Button,
   FormControlLabel,
-  Checkbox,
-  Paper,
-  useTheme
-} from '@mui/material';
-import { styled } from '@mui/material/styles';
-import { tokens } from '../../../../theme'; // Assuming you have this for consistent theming
-
-// Styled Paper for the component's container
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  borderRadius: theme.shape.borderRadius * 2,
-  boxShadow: theme.shadows[5], // A bit more pronounced shadow
-  backgroundColor: theme.palette.mode === 'dark' ? '#2c3e50' : '#ffffff', // Darker background for dark mode, subtle white for light
-  transition: 'all 0.3s ease-in-out',
-  border: `1px solid ${theme.palette.divider}`, // Subtle border
-}));
-
-// Styled Slider for custom thumb and track appearance
-const StyledSlider = styled(Slider)(({ theme }) => ({
-  height: 8, // Thicker slider track
-  '& .MuiSlider-track': {
-    border: 'none',
-    backgroundColor: theme.palette.success.main, // Green for completion
-  },
-  '& .MuiSlider-thumb': {
-    height: 24,
-    width: 24,
-    backgroundColor: theme.palette.success.light, // Brighter green thumb
-    border: '2px solid currentColor',
-    '&:focus, &:hover, &.Mui-active, &.Mui-focusVisible': {
-      boxShadow: `inherit`, // Removes default shadow, will add custom one below
-    },
-    '&:before': {
-      display: 'none', // Remove the default before pseudo-element
-    },
-    boxShadow: `0px 2px 8px rgba(0,0,0,0.2)`, // Custom subtle shadow for thumb
-  },
-  '& .MuiSlider-rail': {
-    opacity: 0.5,
-    backgroundColor: theme.palette.grey[400], // Lighter grey for remaining part
-  },
-  '& .MuiSlider-valueLabel': {
-    backgroundColor: theme.palette.primary.main, // Match primary color for label background
-    color: theme.palette.primary.contrastText,
-  },
-}));
+  Slider,
+  Stack,
+  Switch,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import { SaveRounded, VisibilityRounded } from "@mui/icons-material";
 
 const TaskCompletionSlider = ({
   completionPercentage,
@@ -60,62 +19,91 @@ const TaskCompletionSlider = ({
   handleShowCompletionChange,
 }) => {
   const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
+  const value = Number(completionPercentage || 0);
 
   return (
-    <StyledPaper>
-      <Typography variant="h5" gutterBottom sx={{ color: colors.gray[100], fontWeight: 600 }}>
-        Task Progress
-      </Typography>
+    <Box
+      sx={{
+        p: 2,
+        borderRadius: 2,
+        bgcolor: theme.palette.background.default,
+        border: `1px solid ${theme.palette.divider}`,
+      }}
+    >
+      <Stack direction={{ xs: "column", sm: "row" }} alignItems={{ xs: "stretch", sm: "center" }} justifyContent="space-between" spacing={2}>
+        <Box>
+          <Typography variant="subtitle1" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+            Task Progress
+          </Typography>
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+            Save the current completion percentage and choose whether it appears to viewers.
+          </Typography>
+        </Box>
+        <Typography
+          variant="h4"
+          sx={{
+            color: theme.palette.success.main,
+            fontWeight: 900,
+            minWidth: 88,
+            textAlign: { xs: "left", sm: "right" },
+          }}
+        >
+          {value}%
+        </Typography>
+      </Stack>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', mt: 3, mb: 3, gap: 2 }}>
-        <StyledSlider
-          value={completionPercentage}
+      <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ xs: "stretch", md: "center" }} sx={{ mt: 3 }}>
+        <Slider
+          value={value}
           onChange={handleCompletionChange}
-          aria-labelledby="completion-percentage-slider"
-          valueLabelDisplay="on" // Always display the value label
+          valueLabelDisplay="auto"
           min={0}
           max={100}
-          sx={{ flexGrow: 1 }} // Allows the slider to take available space
+          marks={[0, 25, 50, 75, 100].map((mark) => ({ value: mark, label: `${mark}%` }))}
+          sx={{
+            flex: 1,
+            color: theme.palette.success.main,
+            "& .MuiSlider-thumb": {
+              width: 22,
+              height: 22,
+              boxShadow: `0 0 0 6px ${alpha(theme.palette.success.main, 0.14)}`,
+            },
+            "& .MuiSlider-rail": { opacity: 0.32 },
+          }}
         />
         <Button
           variant="contained"
+          startIcon={<SaveRounded />}
           onClick={handleSaveCompletion}
-          sx={{
-            minWidth: '80px', // Ensure consistent button width
-            bgcolor: colors.greenAccent[600],
-            '&:hover': {
-              bgcolor: colors.greenAccent[700],
-            },
-            color: 'white', // Ensure text color is readable
-            boxShadow: `0px 2px 8px ${colors.greenAccent[900]}`, // Subtle shadow for button
-          }}
+          sx={{ borderRadius: 2, fontWeight: 900, whiteSpace: "nowrap" }}
         >
-          Save
+          Save Progress
         </Button>
-      </Box>
+      </Stack>
 
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={showCompletionPercentage}
-            onChange={handleShowCompletionChange}
-            sx={{
-              color: colors.greenAccent[300], // Checkbox color
-              '&.Mui-checked': {
-                color: colors.greenAccent[500],
-              },
-            }}
-          />
-        }
-        label={
-          <Typography variant="body1" sx={{ color: colors.gray[200] }}>
-            Display Completion Progress
-          </Typography>
-        }
-        sx={{ mt: 1 }} // Margin top for spacing
-      />
-    </StyledPaper>
+      <Box
+        sx={{
+          mt: 2,
+          px: 1.5,
+          py: 1,
+          borderRadius: 2,
+          bgcolor: alpha(theme.palette.success.main, 0.07),
+          border: `1px solid ${alpha(theme.palette.success.main, 0.18)}`,
+        }}
+      >
+        <FormControlLabel
+          control={<Switch checked={showCompletionPercentage} onChange={handleShowCompletionChange} color="success" />}
+          label={
+            <Stack direction="row" spacing={1} alignItems="center">
+              <VisibilityRounded fontSize="small" color="success" />
+              <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 800 }}>
+                Display completion progress
+              </Typography>
+            </Stack>
+          }
+        />
+      </Box>
+    </Box>
   );
 };
 

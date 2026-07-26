@@ -464,7 +464,7 @@ const ContactPersonsProspect = ({
             onClick={handleSubmit}
             disabled={!canSubmit || saving}
           >
-            {saving ? "Saving…" : "Save Contact"}
+            {saving ? "Saving..." : "Save Contact"}
           </Button>
         </DialogActions>
       </Dialog>

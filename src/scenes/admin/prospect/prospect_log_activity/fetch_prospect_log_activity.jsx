@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useMemo, useState } from "react";
 import dayjs from "dayjs";
 import {
-  Box,
-  Typography,
-  Button,
   Avatar,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Tabs,
+  Box,
+  Chip,
+  Divider,
+  Paper,
+  Stack,
   Tab,
+  Tabs,
+  Typography,
   useTheme,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import CallIcon from "@mui/icons-material/Call";
 import EmailIcon from "@mui/icons-material/Email";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
@@ -21,7 +21,7 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import QuestionAnswerIcon from "@mui/icons-material/QuestionAnswer";
 import MessageIcon from "@mui/icons-material/Message";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
-import { tokens } from "../../../../theme";
+import HistoryRounded from "@mui/icons-material/HistoryRounded";
 
 const LOG_TYPES = [
   { label: "All", value: "all" },
@@ -35,42 +35,44 @@ const LOG_TYPES = [
   { label: "Meeting", value: "meeting" },
 ];
 
-export default function LogActivityList({ id, logActivityListData = [] }) {
+const getIcon = (type) => {
+  switch (type) {
+    case "call": return <CallIcon fontSize="small" />;
+    case "email": return <EmailIcon fontSize="small" />;
+    case "whatsapp": return <WhatsAppIcon fontSize="small" />;
+    case "visit": return <PlaceIcon fontSize="small" />;
+    case "task": return <AssignmentIcon fontSize="small" />;
+    case "message": return <MessageIcon fontSize="small" />;
+    case "meeting": return <MeetingRoomIcon fontSize="small" />;
+    default: return <QuestionAnswerIcon fontSize="small" />;
+  }
+};
+
+const getTypeColor = (theme, type) => {
+  const map = {
+    call: theme.palette.success.main,
+    email: theme.palette.info.main,
+    whatsapp: theme.palette.success.dark || theme.palette.success.main,
+    visit: theme.palette.error.main,
+    task: theme.palette.primary.main,
+    general: theme.palette.text.secondary,
+    message: theme.palette.info.dark || theme.palette.info.main,
+    meeting: theme.palette.warning.main,
+  };
+  return map[type] || theme.palette.primary.main;
+};
+
+export default function LogActivityList({ logActivityListData = [] }) {
   const [filterType, setFilterType] = useState("all");
   const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
 
-  useEffect(() => {}, [id]);
-
-  const getIcon = (type) => {
-    switch (type) {
-      case "call": return <CallIcon />;
-      case "email": return <EmailIcon />;
-      case "whatsapp": return <WhatsAppIcon />;
-      case "visit": return <PlaceIcon />;
-      case "task": return <AssignmentIcon />;
-      case "general": return <QuestionAnswerIcon />;
-      case "message": return <MessageIcon />;
-      case "meeting": return <MeetingRoomIcon />;
-      default: return <QuestionAnswerIcon />;
-    }
-  };
-
-  // Dark/light friendly colors driven by your tokens
-  const typeColors = useMemo(() => ({
-    call:      { bg: colors.redAccent[700],     text: colors.redAccent[200] },
-    email:     { bg: colors.purpleAccent[700],  text: colors.purpleAccent[200] },
-    whatsapp:  { bg: colors.greenAccent[700],   text: colors.greenAccent[200] },
-    visit:     { bg: colors.orangeAccent[700],  text: colors.orangeAccent[200] },
-    task:      { bg: colors.blueAccent[700],    text: colors.blueAccent[200] },
-    general:   { bg: colors.gray[800],          text: colors.gray[200] },
-    message:   { bg: colors.gray[700],          text: colors.gray[100] },
-    meeting:   { bg: colors.orangeAccent[600],  text: colors.orangeAccent[100] },
-    _default:  { bg: colors.gray[800],          text: colors.gray[100] },
-  }), [theme.palette.mode]); // re-compute when mode flips
-
-  const getTypeBG = (t) => (typeColors[t]?.bg ?? typeColors._default.bg);
-  const getTypeText = (t) => (typeColors[t]?.text ?? typeColors._default.text);
+  const counts = useMemo(
+    () => logActivityListData.reduce((acc, log) => {
+      acc[log.activity_type] = (acc[log.activity_type] || 0) + 1;
+      return acc;
+    }, {}),
+    [logActivityListData]
+  );
 
   const filteredLogs =
     filterType === "all"
@@ -78,117 +80,108 @@ export default function LogActivityList({ id, logActivityListData = [] }) {
       : logActivityListData.filter((log) => log.activity_type === filterType);
 
   return (
-    <Box sx={{ p: 3, bgcolor: theme.palette.background.default, borderRadius: 2 }}>
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 800, color: colors.gray[100] }}>
-        Log Activities
-      </Typography>
+    <Paper
+      elevation={0}
+      sx={{
+        p: { xs: 2, md: 2.5 },
+        bgcolor: theme.palette.background.paper,
+        borderRadius: 2,
+        border: `1px solid ${theme.palette.divider}`,
+      }}
+    >
+      <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems={{ xs: "stretch", md: "center" }} spacing={2} sx={{ mb: 2 }}>
+        <Stack direction="row" spacing={1.25} alignItems="center">
+          <Avatar variant="rounded" sx={{ bgcolor: alpha(theme.palette.primary.main, 0.12), color: theme.palette.primary.main }}>
+            <HistoryRounded />
+          </Avatar>
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 900, color: theme.palette.text.primary }}>
+              Activity Timeline
+            </Typography>
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+              {filteredLogs.length} visible of {logActivityListData.length} total interactions
+            </Typography>
+          </Box>
+        </Stack>
+      </Stack>
 
-      {/* Tabs */}
       <Tabs
         value={filterType}
-        onChange={(_, v) => setFilterType(v)}
+        onChange={(_, value) => setFilterType(value)}
         variant="scrollable"
         scrollButtons="auto"
         sx={{
-          mb: 3,
-          minHeight: "unset",
-          ".MuiTabs-indicator": { display: "none" },
-          gap: 1,
+          mb: 2,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          "& .MuiTabs-indicator": { display: "none" },
+          "& .MuiTab-root": { minHeight: 38, textTransform: "none", fontWeight: 900 },
         }}
       >
         {LOG_TYPES.map((type) => {
+          const color = getTypeColor(theme, type.value);
           const active = filterType === type.value;
+          const count = type.value === "all" ? logActivityListData.length : counts[type.value] || 0;
           return (
             <Tab
               key={type.value}
-              label={type.label}
+              label={`${type.label} (${count})`}
               value={type.value}
               sx={{
-                textTransform: "capitalize",
-                fontWeight: 600,
                 borderRadius: 2,
-                px: 2.5,
-                py: 1,
-                minHeight: "unset",
-                minWidth: 100,
-                border: `1px solid ${colors.gray[700]}`,
-                backgroundColor: active ? getTypeBG(type.value) : colors.gray[900],
-                color: active ? getTypeText(type.value) : colors.gray[200],
-                transition: "0.2s",
-                "&:hover": {
-                  backgroundColor: active ? getTypeBG(type.value) : colors.gray[800],
-                },
+                mx: 0.35,
+                color: active ? color : theme.palette.text.secondary,
+                bgcolor: active ? alpha(color, 0.12) : "transparent",
+                border: `1px solid ${active ? alpha(color, 0.25) : "transparent"}`,
               }}
             />
           );
         })}
       </Tabs>
 
-      <List>
-        {filteredLogs.map((activity) => (
-          <ListItem
-            key={activity.id}
-            sx={{
-              bgcolor: theme.palette.background.paper,
-              borderRadius: 2,
-              boxShadow: 1,
-              mb: 2,
-              p: 2,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              border: `1px solid ${colors.gray[700]}`,
-            }}
-          >
-            <ListItemAvatar>
-              <Avatar
-                sx={{
-                  bgcolor: getTypeBG(activity.activity_type),
-                  color: getTypeText(activity.activity_type),
-                }}
-              >
-                {getIcon(activity.activity_type)}
-              </Avatar>
-            </ListItemAvatar>
+      {filteredLogs.length ? (
+        <Stack spacing={0}>
+          {filteredLogs.map((activity, index) => {
+            const color = getTypeColor(theme, activity.activity_type);
+            return (
+              <Box key={activity.id || index} sx={{ display: "grid", gridTemplateColumns: "42px minmax(0, 1fr)", gap: 1.5 }}>
+                <Stack alignItems="center" sx={{ pt: 0.5 }}>
+                  <Avatar sx={{ width: 36, height: 36, bgcolor: alpha(color, 0.14), color }}>
+                    {getIcon(activity.activity_type)}
+                  </Avatar>
+                  {index < filteredLogs.length - 1 && <Box sx={{ width: 2, flex: 1, minHeight: 30, bgcolor: theme.palette.divider, mt: 1 }} />}
+                </Stack>
 
-            <ListItemText
-              primary={
-                <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 800, color: colors.gray[100] }}>
-                    {activity.title}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: colors.gray[300] }}>
-                    {activity.notes}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ mt: 0.5, display: "block", color: colors.gray[400] }}
-                  >
-                    By {activity.created_by?.name || "Unknown"} ·{" "}
-                    {dayjs(activity.created_at).format("MMM D, YYYY · h:mm A")}
-                  </Typography>
+                <Box sx={{ pb: index < filteredLogs.length - 1 ? 2 : 0 }}>
+                  <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: theme.palette.background.default, border: `1px solid ${theme.palette.divider}` }}>
+                    <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", md: "center" }} spacing={1}>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 900, color: theme.palette.text.primary }}>
+                          {activity.title || "Prospect activity"}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 0.5, whiteSpace: "pre-line" }}>
+                          {activity.notes || "No notes recorded."}
+                        </Typography>
+                      </Box>
+                      <Chip size="small" label={activity.activity_type || "general"} sx={{ textTransform: "capitalize", bgcolor: alpha(color, 0.12), color, fontWeight: 900 }} />
+                    </Stack>
+                    <Divider sx={{ my: 1.25 }} />
+                    <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                      By {activity.created_by?.name || "Unknown"} on {activity.created_at ? dayjs(activity.created_at).format("MMM D, YYYY h:mm A") : "-"}
+                    </Typography>
+                  </Paper>
                 </Box>
-              }
-              sx={{ flex: 1, ml: 2 }}
-            />
-
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{
-                color: colors.blueAccent[300],
-                borderColor: colors.blueAccent[500],
-                "&:hover": {
-                  bgcolor: colors.blueAccent[700],
-                  color: colors.primary[900],
-                },
-              }}
-            >
-              View Details
-            </Button>
-          </ListItem>
-        ))}
-      </List>
-    </Box>
+              </Box>
+            );
+          })}
+        </Stack>
+      ) : (
+        <Box sx={{ p: 4, borderRadius: 2, textAlign: "center", bgcolor: theme.palette.background.default, border: `1px dashed ${theme.palette.divider}` }}>
+          <HistoryRounded color="disabled" />
+          <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 1 }}>
+            No activities found for this filter.
+          </Typography>
+        </Box>
+      )}
+    </Paper>
   );
 }

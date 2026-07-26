@@ -327,6 +327,29 @@ const SideBar = () => {
         ],
       },
       {
+        id: "permissions",
+        label: "Permissions",
+        show: permissions.setting || isAdmin === 1 || isAdmin === 2,
+        icon: <AdminPanelSettingsOutlined sx={{ ...muiIconSx, fontSize: 26 }} />,
+        items: [
+          {
+            title: "Role Permission",
+            path: "/role-feature-permission",
+            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "User Permission",
+            path: "/user-feature-permission",
+            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "My Permissions",
+            path: "/my-feature-permission",
+            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
+          },
+        ],
+      },
+      {
         id: "setting",
         label: "Settings",
         show: permissions.setting,
@@ -348,11 +371,6 @@ const SideBar = () => {
             icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
           },
           {
-            title: "Role Permission",
-            path: "/role-feature-permission",
-            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
-          },
-          {
             title: "Add Task Priority",
             path: "/task-priority",
             icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
@@ -365,16 +383,6 @@ const SideBar = () => {
           {
             title: "Add Task Type",
             path: "/task-type",
-            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
-          },
-          {
-            title: "My Permissions",
-            path: "/my-feature-permission",
-            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
-          },
-          {
-            title: "User Permission",
-            path: "/user-feature-permission",
             icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
           },
         ],

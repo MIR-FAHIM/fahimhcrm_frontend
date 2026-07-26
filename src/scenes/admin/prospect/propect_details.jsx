@@ -1,76 +1,337 @@
-import React, { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
-import dayjs from "dayjs";
-import { useParams } from "react-router-dom";
-import LogActivityList from "./prospect_log_activity/fetch_prospect_log_activity";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
-  getAllLogActivityOfProspect,
-  addConcernPersonsMultiple,
-} from "../../../api/controller/admin_controller/prospect_controller";
-import { addOpportunity } from "../../../api/controller/admin_controller/opportunity_controller";
-import OpportunityComponent from "./components/opportunity_components";
-import ProspectSidebar from "./components/detail_prospect_side_panel";
-import NoteComponent from "./components/top_note";
-import {
-  Box,
-  Typography,
-  Paper,
-  Divider,
-  FormControl,
-  Grid,
-  InputLabel,
-  Accordion,
-  AccordionSummary,
-  Select,
-  AccordionDetails,
-  Chip,
-  IconButton,
-  Stack,
-  TextField,
-  Checkbox,
-  Tooltip,
-  Button,
-  Tabs,
-  ListItemText,
-  MenuItem,
-  Tab,
-  Snackbar,
   Alert,
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Divider,
+  Grid,
+  MenuItem,
+  Paper,
+  Skeleton,
+  Snackbar,
+  Stack,
+  Tab,
+  Tabs,
+  TextField,
+  Tooltip,
+  Typography,
   useTheme,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import EditIcon from "@mui/icons-material/Edit";
-import SaveIcon from "@mui/icons-material/Save";
+import { alpha } from "@mui/material/styles";
 import {
-  changeProspectStatus,
-  getProspectAllStatus,
-  getProspectStagesByLog,
-  getProspectDetails,
+  AddCommentRounded,
+  ArrowBackRounded,
+  BusinessRounded,
+  CalendarMonthRounded,
+  CheckCircleRounded,
+  EmailRounded,
+  EventRounded,
+  FlagRounded,
+  HistoryRounded,
+  MapRounded,
+  PersonRounded,
+  RefreshRounded,
+  StarRounded,
+  TaskAltRounded,
+  TimelineRounded,
+  WhatsApp,
+  PhoneInTalkRounded,
+} from "@mui/icons-material";
+import dayjs from "dayjs";
+
+import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
+import {
+  addConcernPersonsMultiple,
   addLogActivityProspect,
-  getContactPersonProspect,
+  changeProspectStatus,
+  getAllLogActivityOfProspect,
   getAssignedPersonsProspect,
+  getContactPersonProspect,
+  getProspectAllStatus,
+  getProspectDetails,
+  getProspectStagesByLog,
   removeAssignPerson,
   updateProspect,
 } from "../../../api/controller/admin_controller/prospect_controller";
-import EmailForm from "./form/email_form";
-import AdressProspect from "./components/address_prospect_update";
-import MeetingForm from "./form/meeting_form";
+import { addOpportunity } from "../../../api/controller/admin_controller/opportunity_controller";
 import AddTaskFormProspect from "./form/task_prospect";
-import ContactPersonsProspect from "./components/contact_person_of_prospect";
-import DetailsProspectInfo from "./components/details_info_component";
-import { tokens } from "../../../theme";
+import EmailForm from "./form/email_form";
+import LogActivityList from "./prospect_log_activity/fetch_prospect_log_activity";
+import MeetingForm from "./form/meeting_form";
+import NoteComponent from "./components/top_note";
+import ProspectSidebar from "./components/detail_prospect_side_panel";
+
+const ACTIVITY_TEMPLATES = [
+  "Called the client - no answer.",
+  "Spoke over WhatsApp - client asked for brochure.",
+  "Sent follow-up email regarding product demo.",
+  "Visited office - client was not available.",
+  "Client requested a call back with pricing details.",
+  "Emailed updated proposal.",
+  "Visited client - gave live demo.",
+  "Shared product catalog on WhatsApp.",
+  "Follow-up call made - spoke with assistant.",
+  "Client responded by email and requested more information.",
+  "Left voicemail - awaiting response.",
+  "Sent reminder email for scheduled meeting.",
+];
+
+const ACTIVITY_ACTIONS = [
+  { type: "call", label: "Log Call", icon: <PhoneInTalkRounded fontSize="small" />, tone: "success" },
+  { type: "email", label: "Log Email", icon: <EmailRounded fontSize="small" />, tone: "info" },
+  { type: "meeting", label: "Log Meeting", icon: <EventRounded fontSize="small" />, tone: "warning" },
+  { type: "visit", label: "Visit Log", icon: <MapRounded fontSize="small" />, tone: "error" },
+  { type: "whatsapp", label: "WhatsApp", icon: <WhatsApp fontSize="small" />, tone: "success" },
+];
+
+const TABS = [
+  { label: "Log Activity", icon: <AddCommentRounded fontSize="small" /> },
+  { label: "Email", icon: <EmailRounded fontSize="small" /> },
+  { label: "Meeting", icon: <EventRounded fontSize="small" /> },
+  { label: "Task", icon: <TaskAltRounded fontSize="small" /> },
+];
+
+const isTrue = (value) => value === true || value === 1 || value === "1";
+
+const formatDate = (value) => {
+  if (!value) return "-";
+  const date = dayjs(value);
+  return date.isValid() ? date.format("MMM D, YYYY") : "-";
+};
+
+const getDaysSince = (dateValue) => {
+  if (!dateValue) return "-";
+  const date = dayjs(dateValue);
+  if (!date.isValid()) return "-";
+  return Math.max(0, dayjs().diff(date, "day"));
+};
+
+const getStageName = (details, stages) => {
+  const current = stages.find((stage) => Number(stage.id) === Number(details.stage_id));
+  return details.stage?.stage_name || current?.stage_name || "No stage";
+};
+
+const getActivityColor = (theme, type) => {
+  const map = {
+    call: theme.palette.success.main,
+    email: theme.palette.info.main,
+    whatsapp: theme.palette.success.dark || theme.palette.success.main,
+    visit: theme.palette.error.main,
+    task: theme.palette.primary.main,
+    general: theme.palette.text.secondary,
+    message: theme.palette.info.dark || theme.palette.info.main,
+    meeting: theme.palette.warning.main,
+  };
+  return map[type] || theme.palette.primary.main;
+};
+
+const StatTile = ({ icon, label, value, tone = "primary" }) => {
+  const theme = useTheme();
+  const color = theme.palette[tone]?.main || theme.palette.primary.main;
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        p: 2,
+        borderRadius: 2,
+        bgcolor: theme.palette.background.paper,
+        border: `1px solid ${theme.palette.divider}`,
+        flex: "1 1 150px",
+        minWidth: { xs: 145, sm: 160 },
+      }}
+    >
+      <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1.5}>
+        <Box>
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+            {label}
+          </Typography>
+          <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+            {value}
+          </Typography>
+        </Box>
+        <Avatar variant="rounded" sx={{ bgcolor: alpha(color, 0.12), color, width: 40, height: 40 }}>
+          {icon}
+        </Avatar>
+      </Stack>
+    </Paper>
+  );
+};
+
+const Section = ({ title, subtitle, icon, action, children }) => {
+  const theme = useTheme();
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        p: { xs: 2, md: 2.5 },
+        borderRadius: 2,
+        bgcolor: theme.palette.background.paper,
+        border: `1px solid ${theme.palette.divider}`,
+      }}
+    >
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        alignItems={{ xs: "stretch", sm: "center" }}
+        justifyContent="space-between"
+        spacing={1.5}
+        sx={{ mb: 2 }}
+      >
+        <Stack direction="row" spacing={1.25} alignItems="center">
+          {icon && (
+            <Avatar variant="rounded" sx={{ bgcolor: alpha(theme.palette.primary.main, 0.12), color: theme.palette.primary.main }}>
+              {icon}
+            </Avatar>
+          )}
+          <Box>
+            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1.1 }}>
+              {title}
+            </Typography>
+            {subtitle && (
+              <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                {subtitle}
+              </Typography>
+            )}
+          </Box>
+        </Stack>
+        {action}
+      </Stack>
+      {children}
+    </Paper>
+  );
+};
+
+const StageJourney = ({ stages = [], currentStageId, onChangeStage }) => {
+  const theme = useTheme();
+  const currentIndex = stages.findIndex((stage) => Number(stage.id) === Number(currentStageId));
+
+  if (!stages.length) {
+    return (
+      <Alert severity="info" sx={{ borderRadius: 2 }}>
+        No stage history is available for this prospect.
+      </Alert>
+    );
+  }
+
+  return (
+    <Box sx={{ overflowX: "auto", pb: 1 }}>
+      <Stack direction="row" alignItems="stretch" spacing={1.25} sx={{ minWidth: 680 }}>
+        {stages.map((stage, index) => {
+          const isCurrent = Number(stage.id) === Number(currentStageId);
+          const isCompleted = currentIndex >= 0 ? index < currentIndex : Number(stage.id) < Number(currentStageId);
+          const active = isCurrent || isCompleted;
+          const color = active ? theme.palette.success.main : theme.palette.text.secondary;
+          const tooltipTitle = stage.last_updated_at
+            ? `Last updated: ${stage.last_updated_at} by ${stage.changed_by_name || "Unknown"}`
+            : "Not visited yet";
+
+          return (
+            <Stack key={stage.id} direction="row" alignItems="center" spacing={1.25} sx={{ flex: 1 }}>
+              <Tooltip title={tooltipTitle} arrow>
+                <Paper
+                  elevation={0}
+                  onClick={() => onChangeStage(stage.id)}
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    cursor: "pointer",
+                    minWidth: 150,
+                    bgcolor: isCurrent ? alpha(theme.palette.success.main, 0.12) : theme.palette.background.default,
+                    border: `1px solid ${isCurrent ? alpha(theme.palette.success.main, 0.45) : theme.palette.divider}`,
+                  }}
+                >
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Avatar
+                      sx={{
+                        width: 28,
+                        height: 28,
+                        bgcolor: alpha(color, 0.14),
+                        color,
+                      }}
+                    >
+                      {active ? <CheckCircleRounded fontSize="small" /> : index + 1}
+                    </Avatar>
+                    <Box sx={{ minWidth: 0 }}>
+                      <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                        {stage.stage_name}
+                      </Typography>
+                      <Typography variant="caption" noWrap sx={{ color: theme.palette.text.secondary }}>
+                        {stage.last_updated_at ? formatDate(stage.last_updated_at) : "Pending"}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                </Paper>
+              </Tooltip>
+              {index < stages.length - 1 && (
+                <Box sx={{ width: 26, height: 2, bgcolor: active ? alpha(theme.palette.success.main, 0.6) : theme.palette.divider }} />
+              )}
+            </Stack>
+          );
+        })}
+      </Stack>
+    </Box>
+  );
+};
+
+const ActivitySummary = ({ summary = {} }) => {
+  const theme = useTheme();
+  const entries = Object.entries(summary || {});
+
+  if (!entries.length) {
+    return (
+      <Alert severity="info" sx={{ borderRadius: 2 }}>
+        No activity summary has been recorded yet.
+      </Alert>
+    );
+  }
+
+  return (
+    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+      {entries.map(([type, count]) => {
+        const color = getActivityColor(theme, type);
+        return (
+          <Chip
+            key={type}
+            label={`${type.replace(/_/g, " ")} ${count}`}
+            sx={{
+              textTransform: "capitalize",
+              fontWeight: 900,
+              bgcolor: alpha(color, 0.12),
+              color,
+              border: `1px solid ${alpha(color, 0.22)}`,
+            }}
+          />
+        );
+      })}
+    </Stack>
+  );
+};
+
+const ProspectDetailsSkeleton = () => (
+  <Box sx={{ p: { xs: 2, md: 4 } }}>
+    <Skeleton variant="rounded" height={118} sx={{ mb: 2 }} />
+    <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "380px minmax(0, 1fr)" }, gap: 2.5 }}>
+      <Skeleton variant="rounded" height={620} />
+      <Stack spacing={2}>
+        <Skeleton variant="rounded" height={220} />
+        <Skeleton variant="rounded" height={360} />
+      </Stack>
+    </Box>
+  </Box>
+);
 
 export default function ProspectDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
+  const userID = localStorage.getItem("userId");
 
   const [logActivityList, setLogActivityList] = useState([]);
-  const { control, handleSubmit, setValue, watch } = useForm();
   const [tabValue, setTabValue] = useState(0);
   const [employees, setEmployees] = useState([]);
   const [prospectStageId, setProspectStage] = useState(0);
@@ -79,22 +340,14 @@ export default function ProspectDetailsPage() {
   const [assignedPersons, setAssignedPersons] = useState([]);
   const [contactPersonList, setContactPersonList] = useState([]);
   const [details, setProspectDetail] = useState({});
-  const [form, setForm] = useState({ prospect_id: "", stage_id: "" });
-  const [concernPersons, setConcernPersons] = useState({
-    prospect_id: 1,
-    assign_to_ids: [],
-  });
-  const [isEditing, setIsEditing] = useState(false);
-  const [text, setText] = useState("");
-  const handleSave = () => {
-    setIsEditing(false);
-    onSave(text);
-  };
+  const [form, setForm] = useState({ prospect_id: id, stage_id: "" });
+  const [concernPersons, setConcernPersons] = useState({ prospect_id: id, assign_to_ids: [] });
   const [logNote, setLogNote] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState("success");
-  const userID = localStorage.getItem("userId");
 
   const handleAlert = (message, type = "success") => {
     setAlertMessage(message);
@@ -102,435 +355,414 @@ export default function ProspectDetailsPage() {
     setAlertOpen(true);
   };
 
+  const isIndividual = isTrue(details.is_individual);
+  const isOpportunity = isTrue(details.is_opportunity);
+  const stageName = getStageName(details, stages);
+  const daysSince = getDaysSince(details.created_at);
+
+  const loadWorkspace = async ({ silent = false } = {}) => {
+    if (silent) setRefreshing(true);
+    else setLoading(true);
+
+    try {
+      const [detailsRes, stagesRes, stageLogRes, assignedRes, contactRes, logRes, employeeRes] = await Promise.all([
+        getProspectDetails(id),
+        getProspectAllStatus(),
+        getProspectStagesByLog({ prospect_id: id }),
+        getAssignedPersonsProspect(id),
+        getContactPersonProspect(id),
+        getAllLogActivityOfProspect(id),
+        fetchEmployees(),
+      ]);
+
+      if (detailsRes?.status === "success") {
+        setProspectDetail(detailsRes.data || {});
+        setProspectStage(detailsRes.data?.stage_id || 0);
+        setForm({ prospect_id: id, stage_id: detailsRes.data?.stage_id || "" });
+      }
+      if (stagesRes?.status === "success") setStages(stagesRes.data || []);
+      if (stageLogRes?.status === "success") setStagesByLog(stageLogRes.data || []);
+      if (assignedRes?.status === "success") setAssignedPersons(assignedRes.data || []);
+      if (contactRes?.status === "success") setContactPersonList(contactRes.data || []);
+      if (logRes?.status === true || logRes?.status === "success") setLogActivityList(logRes.data || []);
+      setEmployees(employeeRes?.data || []);
+    } catch (error) {
+      console.error("Prospect workspace fetch error", error);
+      handleAlert("Prospect details could not be loaded.", "error");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    setConcernPersons({ prospect_id: id, assign_to_ids: [] });
+    loadWorkspace();
+  }, [id]);
+
+  const handleGetContactPersons = async () => {
+    const contactPersonRes = await getContactPersonProspect(id);
+    if (contactPersonRes.status === "success") setContactPersonList(contactPersonRes.data || []);
+  };
+
+  const handleGetDetails = async () => {
+    const detailsRes = await getProspectDetails(id);
+    if (detailsRes.status === "success") {
+      setProspectDetail(detailsRes.data || {});
+      setProspectStage(detailsRes.data?.stage_id || 0);
+      setForm({ prospect_id: id, stage_id: detailsRes.data?.stage_id || "" });
+    }
+  };
+
+  const refreshAssignedPersons = async () => {
+    const assignedPersonsRes = await getAssignedPersonsProspect(id);
+    if (assignedPersonsRes.status === "success") setAssignedPersons(assignedPersonsRes.data || []);
+  };
+
   const handleConcernsChange = (event) => {
     const { name, value } = event.target;
-    setConcernPersons((prevForm) => ({
-      ...prevForm,
-      [name]: value,
-    }));
+    setConcernPersons((prevForm) => ({ ...prevForm, [name]: value }));
   };
 
   const removeAssignedPerson = async (empId) => {
-    await removeAssignPerson({
-      prospect_id: id,
-      employee_id: empId,
-    });
-    const assignedPersonsRes = await getAssignedPersonsProspect(id);
-    if (assignedPersonsRes.status === "success") {
-      setAssignedPersons(assignedPersonsRes.data);
-    }
+    await removeAssignPerson({ prospect_id: id, employee_id: empId });
+    await refreshAssignedPersons();
+    handleAlert("Assigned person removed.");
   };
 
   const updateProspectInfo = async (data) => {
     const updateRes = await updateProspect(data);
     if (updateRes.status === "success") {
-   handleGetDetails();
-      setIsEditing(false);
+      await handleGetDetails();
+      handleAlert("Prospect information updated.");
     }
   };
+
   const handleSaveNote = async (data) => {
     const updateRes = await updateProspect(data);
     if (updateRes.status === "success") {
-   handleGetDetails();
-      setIsEditing(false);
+      await handleGetDetails();
+      handleAlert("Prospect note updated.");
     }
   };
 
-  const addMultipleConernPersons = async () => {
+  const addMultipleConcernPersons = async () => {
+    const employeeIds = concernPersons.assign_to_ids || [];
+    if (!employeeIds.length) {
+      handleAlert("Select at least one employee to assign.", "warning");
+      return;
+    }
+
     const payload = {
       prospect_id: id,
-      employees: concernPersons.assign_to_ids.map((id) => ({
-        employee_id: id,
-        is_active: 0,
-        notify: 0,
-      })),
+      employees: employeeIds.map((employeeId) => ({ employee_id: employeeId, is_active: 0, notify: 0 })),
     };
     await addConcernPersonsMultiple(payload);
-    const assignedPersonsRes = await getAssignedPersonsProspect(id);
-    if (assignedPersonsRes.status === "success") {
-      setAssignedPersons(assignedPersonsRes.data);
-    }
+    setConcernPersons({ prospect_id: id, assign_to_ids: [] });
+    await refreshAssignedPersons();
+    handleAlert("Concerned person added.");
   };
 
-  const activityColors = {
-    general: colors.orangeAccent[900],
-    task: colors.blueAccent[500],
-    call: colors.redAccent[900],
-    email: colors.purpleAccent[900],
-    whatsapp: colors.greenAccent[900],
-    visit: colors.redAccent[900],
-    message: colors.gray[900],
-    meeting: colors.orangeAccent[900],
-  };
-
-  const handleChange = async (stageID) => {
+  const handleStageChange = async (stageID) => {
     setForm((prev) => ({ ...prev, stage_id: stageID }));
     try {
-      await changeProspectStatus({
-        prospect_id: id,
-        stage_id: stageID,
-        user_id: userID,
-      });
-      const response = await getProspectDetails(id);
-      if (response.status === "success") {
-        setProspectDetail(response.data);
-        setProspectStage(response.data.stage_id);
-        const stagesResByLog = await getProspectStagesByLog({
-          prospect_id: id,
-        });
-        if (stagesResByLog.status === "success") {
-          setStagesByLog(stagesResByLog.data);
-        }
-      }
+      await changeProspectStatus({ prospect_id: id, stage_id: stageID, user_id: userID });
+      await handleGetDetails();
+      const stagesResByLog = await getProspectStagesByLog({ prospect_id: id });
+      if (stagesResByLog.status === "success") setStagesByLog(stagesResByLog.data || []);
+      handleAlert("Prospect stage updated.");
     } catch (error) {
       console.error("Error changing status:", error);
-      handleAlert("Failed to change status", "error");
+      handleAlert("Failed to change status.", "error");
     }
   };
 
-  const addLogActivity = async (activity_type) => {
+  const addLogActivity = async (activityType) => {
+    if (!logNote.trim()) {
+      handleAlert("Write a short log note first.", "warning");
+      return;
+    }
+
     try {
       const response = await addLogActivityProspect({
         prospect_id: id,
-        activity_type: activity_type,
-        title: `${activity_type} a prospect`,
-        notes: logNote,
+        activity_type: activityType,
+        title: `${activityType} prospect activity`,
+        notes: logNote.trim(),
         activity_time: "",
         related_id: "",
-        created_by: 1,
+        created_by: userID,
       });
-      if (response.status === true) {
+
+      if (response.status === true || response.status === "success") {
         const logActivityRes = await getAllLogActivityOfProspect(id);
-        if (logActivityRes.status === true) {
-          setLogActivityList(logActivityRes.data);
+        if (logActivityRes.status === true || logActivityRes.status === "success") {
+          setLogActivityList(logActivityRes.data || []);
         }
-        handleAlert(`${activity_type} logged successfully`);
+        handleAlert(`${activityType} logged successfully.`);
         setLogNote("");
       } else {
-        handleAlert("Failed to log activity", "error");
+        handleAlert("Failed to log activity.", "error");
       }
-    } catch (err) {
-      console.error(err);
-      handleAlert("Error logging activity", "error");
+    } catch (error) {
+      console.error(error);
+      handleAlert("Error logging activity.", "error");
     }
   };
 
   const onToggleOpportunityController = async (data) => {
     const updateRes = await updateProspect(data);
     if (updateRes.status === "success") {
-      const detailsRes = await getProspectDetails(id);
-      if (detailsRes.status === "success") {
-        setProspectDetail(detailsRes.data);
-        setProspectStage(detailsRes.data.stage_id);
-      }
+      await handleGetDetails();
+      handleAlert("Opportunity status updated.");
     }
   };
 
-  const goToMap = async () => {
-    navigate(`/googlemap-set/${id}/${details.latitude}/${details.longitude}`);
-  };
+  const goToMap = () => navigate(`/googlemap-set/${id}/${details.latitude}/${details.longitude}`);
 
   const onSubmitOpportunity = async (data) => {
     const addRes = await addOpportunity(data);
+    handleAlert(addRes?.message || "Opportunity details submitted.");
   };
-const handleGetContactPersons = async () => {
-    const contactPersonRes = await getContactPersonProspect(id);
-    if (contactPersonRes.status === "success") {
-      setContactPersonList(contactPersonRes.data);
-    }
-  }
 
-  const handleGetDetails = async () => {
-    const detailsRes = await getProspectDetails(id);
-    if (detailsRes.status === "success") {
-      setProspectDetail(detailsRes.data);
-      setProspectStage(detailsRes.data.stage_id);
-    }
-  } 
-  useEffect(() => {
-    (async () => {
-      try {
-        handleGetDetails();
-        const stagesRes = await getProspectAllStatus();
-        if (stagesRes.status === "success") {
-          setStages(stagesRes.data);
-        }
-        const stagesResByLog = await getProspectStagesByLog({
-          prospect_id: id,
-        });
-        if (stagesResByLog.status === "success") {
-          setStagesByLog(stagesResByLog.data);
-        }
-        const assignedPersonsRes = await getAssignedPersonsProspect(id);
-        if (assignedPersonsRes.status === "success") {
-          setAssignedPersons(assignedPersonsRes.data);
-        }
-   handleGetContactPersons();
-        const logActivityRes = await getAllLogActivityOfProspect(id);
-        if (logActivityRes.status === true) {
-          setLogActivityList(logActivityRes.data);
-        }
-        fetchEmployees()
-          .then((res) => setEmployees(res.data || []))
-          .catch(console.error);
-      } catch (err) {
-        console.error("Fetch error", err);
-      }
-    })();
-  }, [id]);
+  const logCount = logActivityList.length;
+  const contactCount = contactPersonList.length;
+  const assignedCount = assignedPersons.length;
+  const meetingTitle = `We have a meeting with ${details?.prospect_name || "this prospect"}`;
 
-  const handleTabChange = (event, newValue) => setTabValue(newValue);
+  if (loading) return <ProspectDetailsSkeleton />;
 
   return (
-    <Box sx={{ p: 3, backgroundColor: theme.palette.background.default, minHeight: "100vh" }}>
-<Box sx={{ display: 'flex', alignItems: 'center' }}>
-     <NoteComponent
-      details={details} // Replace with your actual details object
-      onSaveNote={handleSaveNote}
-    />
-</Box>
-      <Box
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: theme.palette.background.default, minHeight: "100vh" }}>
+      <Stack
+        direction={{ xs: "column", xl: "row" }}
+        justifyContent="space-between"
+        alignItems={{ xs: "stretch", xl: "center" }}
+        spacing={2}
+        sx={{ mb: 2.5 }}
+      >
+        <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
+          <Button variant="outlined" startIcon={<ArrowBackRounded />} onClick={() => navigate(-1)} sx={{ borderRadius: 2, flexShrink: 0 }}>
+            Back
+          </Button>
+          <Box sx={{ minWidth: 0 }}>
+            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+              <Chip icon={isIndividual ? <PersonRounded /> : <BusinessRounded />} label={isIndividual ? "Individual" : "Organization"} sx={{ fontWeight: 900 }} />
+              <Chip icon={<FlagRounded />} label={stageName} color="primary" variant="outlined" sx={{ fontWeight: 900 }} />
+              {isOpportunity && <Chip icon={<StarRounded />} label="Opportunity" color="success" sx={{ fontWeight: 900 }} />}
+            </Stack>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 0.5 }}>
+              Prospect workspace with relationship, stage, activity, meetings, emails, and task actions.
+            </Typography>
+          </Box>
+        </Stack>
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ xs: "stretch", sm: "center" }}>
+          <TextField
+            select
+            size="small"
+            label="Change Stage"
+            value={form.stage_id || prospectStageId || ""}
+            onChange={(event) => handleStageChange(event.target.value)}
+            sx={{ minWidth: { xs: "100%", sm: 240 } }}
+          >
+            {stages.map((option) => (
+              <MenuItem key={option.id} value={option.id}>
+                {option.stage_name}
+              </MenuItem>
+            ))}
+          </TextField>
+          <Button
+            variant="contained"
+            startIcon={refreshing ? <CircularProgress size={16} color="inherit" /> : <RefreshRounded />}
+            disabled={refreshing}
+            onClick={() => loadWorkspace({ silent: true })}
+            sx={{ borderRadius: 2, fontWeight: 900 }}
+          >
+            Refresh
+          </Button>
+        </Stack>
+      </Stack>
+
+      <Paper
+        elevation={0}
         sx={{
-          display: "flex",
-          flexDirection: { xs: "column", md: "row" },
-          gap: 3,
+          p: { xs: 2, md: 3 },
+          mb: 2.5,
+          borderRadius: 2,
+          bgcolor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+          overflow: "hidden",
+          position: "relative",
         }}
       >
-        {/* Left Section */}
-<ProspectSidebar
-  theme={theme}
-  details={details}
-  onAdded = {handleGetContactPersons}
-  contactPersonList={contactPersonList}
-  employees={employees}
-  assignedPersons={assignedPersons}
-  concernPersons={concernPersons}
-  updateProspectInfo={updateProspectInfo}
-  onToggleOpportunityController={onToggleOpportunityController}
-  onSubmitOpportunity={onSubmitOpportunity}
-  goToMap={goToMap}
-  handleConcernsChange={handleConcernsChange}
-  addMultipleConernPersons={addMultipleConernPersons}
-  removeAssignedPerson={removeAssignedPerson}
-/>
-
-        {/* Right Section */}
-        <Box sx={{ width: { xs: "100%", md: "75%" } }}>
-          <Paper sx={{ p: 3, mb: 3, backgroundColor: theme.palette.background.paper, borderRadius: 3, boxShadow: 3 }}>
-            <Box
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            pointerEvents: "none",
+            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, transparent 42%)`,
+          }}
+        />
+        <Stack direction={{ xs: "column", lg: "row" }} justifyContent="space-between" spacing={2.5} sx={{ position: "relative" }}>
+          <Stack direction="row" spacing={2} sx={{ minWidth: 0 }}>
+            <Avatar
+              variant="rounded"
               sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 3,
-                flexWrap: "wrap",
-                mb: 2,
-                justifyContent: "space-between",
+                width: 64,
+                height: 64,
+                bgcolor: alpha(theme.palette.primary.main, 0.14),
+                color: theme.palette.primary.main,
+                fontWeight: 900,
               }}
             >
-              {details.created_at && (
-                <Typography variant="body2" sx={{ color: colors.gray[400] }}>
-                  {`Since ${Math.floor((new Date() - new Date(details.created_at)) / (1000 * 60 * 60 * 24))} days`}
-                </Typography>
-              )}
-              <Box sx={{ minWidth: 250 }}>
-                <TextField
-                  select
-                  fullWidth
-                  name="stage_id"
-                  label="Change Stage"
-                  value={form.stage_id}
-                  onChange={(e) => handleChange(e.target.value)}
-                  sx={{ color: colors.gray[100] }}
-                >
-                  {stages.map((option) => (
-                    <MenuItem key={option.id} value={option.id}>
-                      {option.stage_name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 1.5,
-                  p: 1,
-                  backgroundColor: colors.gray[900],
-                  borderRadius: 2,
-                  boxShadow: 1,
-                }}
-              >
-                {details.activity_summary &&
-                  Object.entries(details.activity_summary).map(([type, count]) => (
-                    <Box
-                      key={type}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                        px: 1.5,
-                        py: 0.5,
-                        backgroundColor: activityColors[type] || colors.primary[800],
-                        borderRadius: 1,
-                      }}
-                    >
-                      <Typography variant="caption" sx={{ fontWeight: "bold", textTransform: "capitalize", color: colors.gray[100] }}>
-                        {type}
-                      </Typography>
-                      <Typography variant="caption" sx={{ color: colors.gray[100] }}>{count}</Typography>
-                    </Box>
-                  ))}
-              </Box>
+              {isIndividual ? <PersonRounded /> : <BusinessRounded />}
+            </Avatar>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1.1, wordBreak: "break-word" }}>
+                {details.prospect_name || "Untitled prospect"}
+              </Typography>
+              <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 0.75 }}>
+                {details.industry_type?.industry_type_name || "No industry"} | {details.information_source?.information_source_name || "No source"}
+              </Typography>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 1.25 }}>
+                <Chip size="small" icon={<CalendarMonthRounded />} label={`Created ${formatDate(details.created_at)}`} />
+                <Chip size="small" label={`${daysSince} days in pipeline`} />
+                {details.last_activity && <Chip size="small" icon={<HistoryRounded />} label={`Last activity ${formatDate(details.last_activity)}`} />}
+              </Stack>
             </Box>
-            <Box sx={{ overflowX: "auto", py: 2 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  minWidth: "600px",
-                }}
-              >
-                {stagesByLog.map((stage, index) => {
-                  const isCompleted = stage.id < prospectStageId;
-                  const isCurrent = stage.id === prospectStageId;
-                  const tooltipTitle = stage.last_updated_at
-                    ? `Last Updated: ${stage.last_updated_at}\nBy ${stage.changed_by_name}`
-                    : "Not yet visited";
-                  return (
-                    <Box key={stage.id} sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-                      <Tooltip title={<Typography sx={{ whiteSpace: 'pre-line' }}>{tooltipTitle}</Typography>} arrow>
-                        <Chip
-                          label={stage.stage_name}
-                          color={isCurrent || isCompleted ? "success" : "default"}
-                          variant={isCurrent ? "filled" : "outlined"}
-                          sx={{ cursor: "pointer" }}
-                        />
-                      </Tooltip>
-                      {stage.last_updated_at && (
-                        <Typography variant="caption" sx={{ color: colors.gray[400], mt: 0.5 }}>
-                          {new Date(stage.last_updated_at).toLocaleDateString()}
-                        </Typography>
-                      )}
-                      {index !== stagesByLog.length - 1 && (
-                        <Box sx={{ width: 20, height: 2, backgroundColor: colors.gray[600], mx: 1 }} />
-                      )}
-                    </Box>
-                  );
-                })}
-              </Box>
-            </Box>
-            <Tabs value={tabValue} onChange={handleTabChange} sx={{ borderBottom: 1, borderColor: colors.gray[700], mb: 2 }}>
-              {["Log Activity", "Email", "Meeting", "Task"].map((label, index) => (
-                <Tab key={index} label={label} sx={{ color: colors.gray[100] }} />
+          </Stack>
+          <Box sx={{ minWidth: { xs: "100%", lg: 360 } }}>
+            <NoteComponent details={details} onSaveNote={handleSaveNote} />
+          </Box>
+        </Stack>
+      </Paper>
+
+      <Stack direction="row" gap={2} flexWrap="wrap" sx={{ mb: 2.5 }}>
+        <StatTile icon={<TimelineRounded />} label="Stage" value={stageName} />
+        <StatTile icon={<PersonRounded />} label="Contacts" value={contactCount} tone="info" />
+        <StatTile icon={<BusinessRounded />} label="Assigned" value={assignedCount} tone="success" />
+        <StatTile icon={<HistoryRounded />} label="Activities" value={logCount} tone="warning" />
+      </Stack>
+
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", lg: "380px minmax(0, 1fr)" },
+          gap: 2.5,
+          alignItems: "start",
+        }}
+      >
+        <ProspectSidebar
+          details={details}
+          onAdded={handleGetContactPersons}
+          contactPersonList={contactPersonList}
+          employees={employees}
+          assignedPersons={assignedPersons}
+          concernPersons={concernPersons}
+          updateProspectInfo={updateProspectInfo}
+          onToggleOpportunityController={onToggleOpportunityController}
+          onSubmitOpportunity={onSubmitOpportunity}
+          goToMap={goToMap}
+          handleConcernsChange={handleConcernsChange}
+          addMultipleConernPersons={addMultipleConcernPersons}
+          removeAssignedPerson={removeAssignedPerson}
+        />
+
+        <Stack spacing={2.5} sx={{ minWidth: 0 }}>
+          <Section icon={<TimelineRounded />} title="Stage Journey" subtitle="Click a stage to move the prospect through the pipeline">
+            <StageJourney stages={stagesByLog.length ? stagesByLog : stages} currentStageId={prospectStageId} onChangeStage={handleStageChange} />
+          </Section>
+
+          <Section icon={<HistoryRounded />} title="Activity Summary" subtitle="A quick read of all interactions captured for this prospect">
+            <ActivitySummary summary={details.activity_summary} />
+          </Section>
+
+          <Section icon={<AddCommentRounded />} title="Engagement Center" subtitle="Log activity, send email, schedule meetings, or create a task">
+            <Tabs
+              value={tabValue}
+              onChange={(_, newValue) => setTabValue(newValue)}
+              variant="scrollable"
+              scrollButtons="auto"
+              sx={{
+                mb: 2,
+                borderBottom: `1px solid ${theme.palette.divider}`,
+                "& .MuiTab-root": { fontWeight: 900, minHeight: 44 },
+              }}
+            >
+              {TABS.map((tab, index) => (
+                <Tab key={tab.label} icon={tab.icon} iconPosition="start" label={tab.label} value={index} />
               ))}
             </Tabs>
-            {tabValue === 0 ? (
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+
+            {tabValue === 0 && (
+              <Stack spacing={2}>
                 <TextField
                   multiline
-                  rows={3}
+                  minRows={4}
                   label="Log Description"
-                  variant="outlined"
+                  placeholder="Write what happened, what the client asked for, and the next step."
                   fullWidth
                   value={logNote}
-                  onChange={(e) => setLogNote(e.target.value)}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      color: colors.gray[100],
-                      "& fieldset": { borderColor: colors.gray[700] },
-                      "&:hover fieldset": { borderColor: colors.gray[500] },
-                      "&.Mui-focused fieldset": { borderColor: colors.blueAccent[500] },
-                    },
-                    "& .MuiInputLabel-root": { color: colors.gray[400] },
-                  }}
+                  onChange={(event) => setLogNote(event.target.value)}
                 />
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={2} flexWrap="wrap">
-                  <Button variant="outlined" onClick={() => addLogActivity("call")} sx={{ color: colors.greenAccent[500], borderColor: colors.greenAccent[500] }}>Log a Call</Button>
-                  <Button variant="outlined" onClick={() => addLogActivity("email")} sx={{ color: colors.greenAccent[500], borderColor: colors.greenAccent[500] }}>Log an E-mail</Button>
-                  <Button variant="outlined" onClick={() => addLogActivity("meeting")} sx={{ color: colors.greenAccent[500], borderColor: colors.greenAccent[500] }}>Log a Meeting</Button>
-                  <Button variant="outlined" onClick={() => addLogActivity("visit")} sx={{ color: colors.greenAccent[500], borderColor: colors.greenAccent[500] }}>Visit Log</Button>
-                  <Button variant="outlined" onClick={() => addLogActivity("whatsapp")} sx={{ color: colors.greenAccent[500], borderColor: colors.greenAccent[500] }}>Whatsapp</Button>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  {ACTIVITY_ACTIONS.map((action) => (
+                    <Button
+                      key={action.type}
+                      variant="outlined"
+                      startIcon={action.icon}
+                      onClick={() => addLogActivity(action.type)}
+                      sx={{
+                        borderRadius: 2,
+                        fontWeight: 900,
+                        color: theme.palette[action.tone]?.main || theme.palette.primary.main,
+                        borderColor: alpha(theme.palette[action.tone]?.main || theme.palette.primary.main, 0.45),
+                      }}
+                    >
+                      {action.label}
+                    </Button>
+                  ))}
                 </Stack>
-                <Box sx={{ mt: 3 }}>
-                  <Typography variant="subtitle1" sx={{ color: colors.gray[100], mb: 2 }}>
-                    Templates
-                  </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="subtitle2" sx={{ color: colors.gray[100], mb: 1 }}>
-                        Favorite Templates
-                      </Typography>
-                      <Box sx={{ height: 175, overflow: 'auto', pr: 1 }}>
-                        {[
-                          "Called the client – no answer", "Spoke over WhatsApp – client asked for brochure",
-                          "Sent follow-up email regarding product demo", "Visited office – client was not available",
-                          "Client requested a call back via WhatsApp", "Had a brief call – client asked for pricing details",
-                          "Emailed updated proposal", "Visited client – gave live demo",
-                          "Shared product catalog on WhatsApp", "Follow-up call made – spoke with assistant",
-                          "Client responded on email, requested more info", "Left voicemail – awaiting response",
-                          "Client said they will confirm demo date via WhatsApp", "Sent reminder email for scheduled meeting",
-                          "Dropped by client’s office – they were in a meeting"
-                        ].map((text, i) => (
-                          <Paper key={i}
-                            onClick={() => setLogNote(text)}
-                            sx={{ p: 2, mt: 1, backgroundColor: colors.primary[700], color: colors.gray[100], cursor: 'pointer' }}>
-                            {text}
-                          </Paper>
-                        ))}
-                      </Box>
+                <Grid container spacing={1.5}>
+                  {ACTIVITY_TEMPLATES.map((template, index) => (
+                    <Grid item xs={12} md={6} key={template}>
+                      <Paper
+                        elevation={0}
+                        onClick={() => setLogNote(template)}
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 2,
+                          cursor: "pointer",
+                          bgcolor: theme.palette.background.default,
+                          border: `1px solid ${theme.palette.divider}`,
+                          "&:hover": { borderColor: alpha(theme.palette.primary.main, 0.55) },
+                        }}
+                      >
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                          Template {index + 1}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
+                          {template}
+                        </Typography>
+                      </Paper>
                     </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="subtitle2" sx={{ color: colors.gray[100], mb: 1 }}>
-                        All Templates
-                      </Typography>
-                      <Box sx={{ height: 175, overflow: 'auto', pr: 1 }}>
-                        {[
-                          "Called the client – no answer", "Spoke over WhatsApp – client asked for brochure",
-                          "Sent follow-up email regarding product demo", "Visited office – client was not available",
-                          "Client requested a call back via WhatsApp", "Had a brief call – client asked for pricing details",
-                          "Emailed updated proposal", "Visited client – gave live demo",
-                          "Shared product catalog on WhatsApp", "Follow-up call made – spoke with assistant",
-                          "Client responded on email, requested more info", "Left voicemail – awaiting response",
-                          "Client said they will confirm demo date via WhatsApp", "Sent reminder email for scheduled meeting",
-                          "Dropped by client’s office – they were in a meeting"
-                        ].map((text, i) => (
-                          <Paper key={i}
-                            onClick={() => setLogNote(text)}
-                            sx={{ p: 2, mt: 1, backgroundColor: colors.primary[700], color: colors.gray[100], cursor: 'pointer' }}>
-                            {text}
-                          </Paper>
-                        ))}
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </Box>
-              </Box>
-            ) : tabValue === 1 ? (
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <EmailForm emailList={contactPersonList} />
-              </Box>
-            ) : tabValue === 2 ? (
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <MeetingForm meetingTitlee={`We have a meeting with ${details?.prospect_name}`} prospectId={details?.id} />
-              </Box>
-            ) : tabValue === 3 ? (
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <AddTaskFormProspect prospect_id={details?.id} />
-              </Box>
-            ) : (
-              <Box sx={{ p: 2 }}>
-                <Typography variant="body2" sx={{ color: colors.gray[400] }}>
-                  This is a simple component for the "{["Log Activity", "Email", "Call", "Meeting", "Other"][tabValue]}" tab.
-                </Typography>
-              </Box>
+                  ))}
+                </Grid>
+              </Stack>
             )}
-          </Paper>
-        </Box>
+            {tabValue === 1 && <EmailForm emailList={contactPersonList} />}
+            {tabValue === 2 && <MeetingForm meetingTitlee={meetingTitle} prospectId={details?.id} />}
+            {tabValue === 3 && <AddTaskFormProspect prospect_id={details?.id} />}
+          </Section>
+        </Stack>
       </Box>
-      <LogActivityList id={id} logActivityListData={logActivityList} />
-      <Snackbar open={alertOpen} autoHideDuration={3000} onClose={() => setAlertOpen(false)}>
-        <Alert onClose={() => setAlertOpen(false)} severity={alertType} sx={{ width: "100%" }}>
+
+      <Box sx={{ mt: 2.5 }}>
+        <LogActivityList id={id} logActivityListData={logActivityList} />
+      </Box>
+
+      <Snackbar open={alertOpen} autoHideDuration={3000} onClose={() => setAlertOpen(false)} anchorOrigin={{ vertical: "bottom", horizontal: "right" }}>
+        <Alert onClose={() => setAlertOpen(false)} severity={alertType} sx={{ width: "100%", borderRadius: 2 }}>
           {alertMessage}
         </Alert>
       </Snackbar>

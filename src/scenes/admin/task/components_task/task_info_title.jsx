@@ -1,180 +1,215 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Grid,
   Box,
-  Typography,
-  TextField,
+  Button,
+  Chip,
   IconButton,
+  InputAdornment,
   Paper,
-  Divider,
+  Stack,
+  TextField,
   Tooltip,
-  Fade
+  Typography,
+  useTheme,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import SaveIcon from "@mui/icons-material/Save";
-import { styled } from "@mui/material/styles";
+import { alpha } from "@mui/material/styles";
+import {
+  CloseRounded,
+  EditRounded,
+  NotesRounded,
+  SaveRounded,
+  TaskAltRounded,
+} from "@mui/icons-material";
 
 const TaskTitleInfo = ({ task, handleTaskInfoUpdate }) => {
+  const theme = useTheme();
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
-  const [editedTitle, setEditedTitle] = useState(task.task_title);
-  const [editedDetails, setEditedDetails] = useState(task.task_details);
+  const [editedTitle, setEditedTitle] = useState(task.task_title || "");
+  const [editedDetails, setEditedDetails] = useState(task.task_details || "");
 
-  // Styled container card
-  const StyledPaper = styled(Paper)(({ theme }) => ({
-    padding: theme.spacing(3),
-    borderRadius: theme.shape.borderRadius * 2,
-    boxShadow: theme.shadows[2],
-    backgroundColor: theme.palette.background.paper,
-    transition: "all 0.25s ease",
-    "&:hover": { boxShadow: theme.shadows[5] }
-  }));
+  useEffect(() => {
+    setEditedTitle(task.task_title || "");
+    setEditedDetails(task.task_details || "");
+    setIsEditingTitle(false);
+    setIsEditingDetails(false);
+  }, [task.id, task.task_title, task.task_details]);
 
-  // Styled ID Circle
-  const IdCircle = styled(Box)(({ theme }) => ({
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 44,
-    height: 44,
-    borderRadius: "50%",
-    fontWeight: 700,
-    fontSize: "0.9rem",
-    backgroundColor: theme.palette.primary.main,
-    color: theme.palette.primary.contrastText,
-    flexShrink: 0
-  }));
-
-  // Reusable save handler
   const handleSave = (field) => {
     if (field === "task_title") {
-      handleTaskInfoUpdate(field, editedTitle);
+      handleTaskInfoUpdate(field, editedTitle.trim());
       setIsEditingTitle(false);
-    } else if (field === "task_details") {
-      handleTaskInfoUpdate(field, editedDetails);
-      setIsEditingDetails(false);
+      return;
     }
+
+    handleTaskInfoUpdate(field, editedDetails.trim());
+    setIsEditingDetails(false);
+  };
+
+  const handleCancelTitle = () => {
+    setEditedTitle(task.task_title || "");
+    setIsEditingTitle(false);
+  };
+
+  const handleCancelDetails = () => {
+    setEditedDetails(task.task_details || "");
+    setIsEditingDetails(false);
   };
 
   return (
-    <Grid item xs={12}>
-      <StyledPaper>
-        {/* Header Row with ID + Title */}
-        <Box display="flex" alignItems="center" gap={2} mb={2}>
-          <IdCircle>{task.id}</IdCircle>
-          <Box flexGrow={1}>
+    <Paper
+      elevation={0}
+      sx={{
+        p: { xs: 2, md: 3 },
+        borderRadius: 2,
+        bgcolor: theme.palette.background.paper,
+        border: `1px solid ${theme.palette.divider}`,
+        overflow: "hidden",
+        position: "relative",
+      }}
+    >
+      <Box
+        sx={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.09)}, transparent 44%)`,
+        }}
+      />
+
+      <Stack spacing={2.5} sx={{ position: "relative" }}>
+        <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ xs: "stretch", md: "flex-start" }}>
+          <Box
+            sx={{
+              width: 58,
+              height: 58,
+              borderRadius: 2,
+              bgcolor: alpha(theme.palette.primary.main, 0.12),
+              color: theme.palette.primary.main,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <TaskAltRounded />
+          </Box>
+
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 1 }}>
+              <Chip size="small" label={`Task #${task.id}`} sx={{ fontWeight: 800 }} />
+              {task.is_waiting ? <Chip size="small" color="warning" label="Waiting" sx={{ fontWeight: 800 }} /> : null}
+            </Stack>
+
             {isEditingTitle ? (
-              <Box display="flex" alignItems="center" gap={1}>
+              <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ xs: "stretch", sm: "center" }}>
                 <TextField
                   fullWidth
-                  variant="standard"
                   value={editedTitle}
-                  onChange={(e) => setEditedTitle(e.target.value)}
+                  onChange={(event) => setEditedTitle(event.target.value)}
                   autoFocus
+                  label="Task title"
                   InputProps={{
-                    style: { fontSize: "1.5rem", fontWeight: 600 }
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <TaskAltRounded fontSize="small" />
+                      </InputAdornment>
+                    ),
                   }}
                 />
-                <Tooltip title="Save Title">
-                  <IconButton
-                    onClick={() => handleSave("task_title")}
-                    size="small"
-                    sx={{
-                      bgcolor: "primary.main",
-                      color: "white",
-                      "&:hover": { bgcolor: "primary.dark" }
-                    }}
-                  >
-                    <SaveIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
+                <Stack direction="row" spacing={1} justifyContent="flex-end">
+                  <Tooltip title="Save title">
+                    <IconButton color="primary" onClick={() => handleSave("task_title")}>
+                      <SaveRounded />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Cancel">
+                    <IconButton onClick={handleCancelTitle}>
+                      <CloseRounded />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+              </Stack>
             ) : (
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Stack direction="row" spacing={1} alignItems="flex-start" justifyContent="space-between">
                 <Typography
-                  variant="h5"
-                  sx={{ fontWeight: 700, color: "text.primary" }}
+                  variant="h4"
+                  sx={{
+                    color: theme.palette.text.primary,
+                    fontWeight: 900,
+                    lineHeight: 1.12,
+                    wordBreak: "break-word",
+                  }}
                 >
-                  {task.task_title}
+                  {task.task_title || "Untitled task"}
                 </Typography>
-                <Tooltip title="Edit Title">
-                  <IconButton
-                    onClick={() => setIsEditingTitle(true)}
-                    size="small"
-                    sx={{ color: "text.secondary", "&:hover": { color: "primary.main" } }}
-                  >
-                    <EditIcon fontSize="small" />
+                <Tooltip title="Edit title">
+                  <IconButton onClick={() => setIsEditingTitle(true)} sx={{ flexShrink: 0 }}>
+                    <EditRounded />
                   </IconButton>
                 </Tooltip>
-              </Box>
+              </Stack>
             )}
           </Box>
-        </Box>
+        </Stack>
 
-        <Divider sx={{ my: 2 }} />
-
-        {/* Details Section */}
-        <Box>
-          <Typography variant="subtitle2" color="text.secondary" mb={1}>
-            Details
-          </Typography>
+        <Box
+          sx={{
+            p: 2,
+            borderRadius: 2,
+            bgcolor: theme.palette.background.default,
+            border: `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1.5} sx={{ mb: 1 }}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <NotesRounded fontSize="small" color="primary" />
+              <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                Details
+              </Typography>
+            </Stack>
+            {!isEditingDetails && (
+              <Button size="small" startIcon={<EditRounded />} onClick={() => setIsEditingDetails(true)} sx={{ borderRadius: 2 }}>
+                Edit
+              </Button>
+            )}
+          </Stack>
 
           {isEditingDetails ? (
-            <Fade in>
-              <Box display="flex" alignItems="center" gap={1}>
-                <TextField
-                  fullWidth
-                  variant="standard"
-                  value={editedDetails}
-                  onChange={(e) => setEditedDetails(e.target.value)}
-                  autoFocus
-                  InputProps={{
-                    style: { fontSize: "1.5rem", fontWeight: 600 }
-                  }}
-                />
-                <Tooltip title="Save Title">
-                  <IconButton
-                    onClick={() => handleSave("task_details")}
-                    size="small"
-                    sx={{
-                      bgcolor: "primary.main",
-                      color: "white",
-                      "&:hover": { bgcolor: "primary.dark" }
-                    }}
-                  >
-                    <SaveIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Fade>
+            <Stack spacing={1.5}>
+              <TextField
+                fullWidth
+                multiline
+                minRows={4}
+                value={editedDetails}
+                onChange={(event) => setEditedDetails(event.target.value)}
+                autoFocus
+                placeholder="Write task details, notes, acceptance criteria, or context"
+              />
+              <Stack direction="row" spacing={1} justifyContent="flex-end">
+                <Button variant="outlined" onClick={handleCancelDetails} sx={{ borderRadius: 2 }}>
+                  Cancel
+                </Button>
+                <Button variant="contained" startIcon={<SaveRounded />} onClick={() => handleSave("task_details")} sx={{ borderRadius: 2, fontWeight: 900 }}>
+                  Save Details
+                </Button>
+              </Stack>
+            </Stack>
           ) : (
-            <Box>
-              <Typography
-                variant="body1"
-                sx={{
-                  color: task.task_details ? "text.primary" : "text.disabled",
-                  whiteSpace: "pre-line",
-                  lineHeight: 1.6
-                }}
-              >
-                {task.task_details || "No details provided."}
-              </Typography>
-              <Box display="flex" justifyContent="flex-end" mt={1}>
-                <Tooltip title="Edit Details">
-                  <IconButton
-                    onClick={() => setIsEditingDetails(true)}
-                    size="small"
-                    sx={{ color: "text.secondary", "&:hover": { color: "primary.main" } }}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
+            <Typography
+              variant="body1"
+              sx={{
+                color: task.task_details ? theme.palette.text.primary : theme.palette.text.secondary,
+                whiteSpace: "pre-line",
+                lineHeight: 1.7,
+              }}
+            >
+              {task.task_details || "No details provided."}
+            </Typography>
           )}
         </Box>
-      </StyledPaper>
-    </Grid>
+      </Stack>
+    </Paper>
   );
 };
 

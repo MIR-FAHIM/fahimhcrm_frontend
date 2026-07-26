@@ -1,44 +1,80 @@
 // src/components/prospect/ProspectSidebar.jsx
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import {
+  Avatar,
   Box,
-  Typography,
-  Paper,
-  IconButton,
-  TextField,
   Button,
-  Divider,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Checkbox,
+  Chip,
+  Divider,
+  FormControl,
+  IconButton,
+  InputLabel,
   ListItemText,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  TextField,
+  Tooltip,
+  Typography,
   useTheme,
 } from "@mui/material";
-import SaveIcon from "@mui/icons-material/Save";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { alpha } from "@mui/material/styles";
+import {
+  AssignmentIndRounded,
+  BusinessRounded,
+  DeleteRounded,
+  EditRounded,
+  EmailRounded,
+  FolderRounded,
+  LocationOnRounded,
+  MapRounded,
+  PersonRounded,
+  PhoneRounded,
+  SaveRounded,
+  StarRounded,
+} from "@mui/icons-material";
 
-import OpportunityComponent from "./opportunity_components";
 import AdressProspect from "./address_prospect_update";
 import ContactPersonsProspect from "./contact_person_of_prospect";
 import DetailsProspectInfo from "./details_info_component";
+import OpportunityComponent from "./opportunity_components";
 
-// colors should come from your theme tokens
-import { tokens } from "../../../../theme";
+const isTrue = (value) => value === true || value === 1 || value === "1";
+
+const SectionCard = ({ icon, title, subtitle, children }) => {
+  const theme = useTheme();
+
+  return (
+    <Box sx={{ mt: 2 }}>
+      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.25 }}>
+        <Avatar variant="rounded" sx={{ width: 32, height: 32, bgcolor: alpha(theme.palette.primary.main, 0.12), color: theme.palette.primary.main }}>
+          {icon}
+        </Avatar>
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+            {title}
+          </Typography>
+          {subtitle && (
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+              {subtitle}
+            </Typography>
+          )}
+        </Box>
+      </Stack>
+      {children}
+    </Box>
+  );
+};
 
 const ProspectSidebar = ({
   onAdded,
-  details,
-  contactPersonList,
-  employees,
-  assignedPersons,
+  details = {},
+  contactPersonList = [],
+  employees = [],
+  assignedPersons = [],
   concernPersons,
   updateProspectInfo,
   onToggleOpportunityController,
@@ -49,256 +85,224 @@ const ProspectSidebar = ({
   removeAssignedPerson,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [text, setText] = useState(details.prospect_name);
+  const [text, setText] = useState(details.prospect_name || "");
   const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
+  const isIndividual = isTrue(details.is_individual);
+  const canShowMap = !isIndividual && details.latitude != null && details.longitude != null;
 
+  useEffect(() => {
+    setText(details.prospect_name || "");
+    setIsEditing(false);
+  }, [details.id, details.prospect_name]);
+
+  const assignedIds = assignedPersons.map((person) => person.employee?.id).filter(Boolean);
+  const selectedAssignees = concernPersons?.assign_to_ids || [];
 
   return (
-    <Box sx={{ width: { xs: "100%", md: "25%" } }}>
+    <Stack spacing={2.5} sx={{ minWidth: 0, position: { lg: "sticky" }, top: { lg: 24 } }}>
       <Paper
+        elevation={0}
         sx={{
-          p: 3,
-          backgroundColor: theme.palette.background.paper,
-          borderRadius: 3,
-          boxShadow: 3,
+          p: 2.5,
+          borderRadius: 2,
+          bgcolor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
         }}
       >
-        {/* Title + Edit */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, py: 1 }}>
-          {isEditing ? (
-            <>
-              <TextField
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                variant="standard"
-                size="small"
-                sx={{
-                  minWidth: 200,
-                  "& input": {
-                    fontSize: "1rem",
-                    color: colors.blueAccent[500],
-                  },
-                }}
-              />
-              <IconButton
-                onClick={() => {
-                  updateProspectInfo({ prospect_id: details.id, prospect_name: text });
-                  setIsEditing(false);
-                }}
-                size="small"
-                sx={{ ml: 0.5, color: colors.blueAccent[500] }}
-              >
-                <SaveIcon fontSize="small" />
-              </IconButton>
-            </>
-          ) : (
-            <>
-              <Typography
-                variant="h6"
-                sx={{ color: colors.blueAccent[500], fontWeight: 500 }}
-              >
-                {details.prospect_name}
-              </Typography>
-              <IconButton
-                size="small"
-                onClick={() => {
-                  setText(details.prospect_name);
-                  setIsEditing(true);
-                }}
-                sx={{
-                  ml: 0.5,
-                  p: 0.5,
-                  color: colors.gray[400],
-                  "&:hover": { color: colors.gray[100] },
-                }}
-              >
-                <EditIcon fontSize="small" />
-              </IconButton>
-            </>
-          )}
-        </Box>
-
-        {/* Opportunity */}
-        <OpportunityComponent
-          details={details}
-          onToggleOpportunity={onToggleOpportunityController}
-          onSubmitOpportunity={onSubmitOpportunity}
-        />
-
-        {/* Created info */}
-        <Typography
-          variant="caption"
-          display="block"
-          gutterBottom
-          sx={{ color: colors.gray[400] }}
-        >
-          Created: Mehrun Nesa on{" "}
-          {dayjs(details.created_at).format("MMMM D, YYYY")}
-        </Typography>
-
-        {/* Address */}
-        <AdressProspect details={details} onAddressUpdate={updateProspectInfo} />
-
-        {/* Map Button */}
-
-        {details.is_individual === false && (
-              <Button
-          variant="outlined"
-          onClick={goToMap}
-          sx={{
-            mt: 1,
-            backgroundColor: theme.palette.background.paper,
-            borderColor: colors.blueAccent[500],
-            borderWidth: 2,
-            borderRadius: 1,
-            whiteSpace: "nowrap",
-            color: colors.blueAccent[500],
-            "&:hover": {
-              backgroundColor: colors.blueAccent[900],
-              borderColor: colors.blueAccent[700],
-              color: colors.blueAccent[100],
-            },
-          }}
-        >
-          View Map
-        </Button>
-        )}
-      
-
-        <Divider sx={{ my: 2, backgroundColor: colors.gray[700] }} />
-
-        {/* Contact Persons */}
-        <ContactPersonsProspect contactPersonList={contactPersonList} prospectId={details.id} onAdded={onAdded}/>
-
-        {/* Accordions */}
-        {(details.is_opportunity === 0
-          ? ["Assigned To", "Details", "Attached Files"]
-          : ["Assigned To", "Details", "Attached Files", "Leads", "Quotations", "Orders"]
-        ).map((label, i) => (
-          <Accordion
-            key={i}
-            sx={{
-              mt: 2,
-              backgroundColor: theme.palette.background.paper,
-              color: colors.gray[100],
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon sx={{ color: colors.gray[100] }} />}
+        <Stack spacing={2}>
+          <Stack direction="row" spacing={1.5} alignItems="flex-start">
+            <Avatar
+              variant="rounded"
+              sx={{
+                width: 54,
+                height: 54,
+                bgcolor: alpha(theme.palette.primary.main, 0.14),
+                color: theme.palette.primary.main,
+              }}
             >
-              {label}
-            </AccordionSummary>
-            <AccordionDetails>
-              {label === "Details" ? (
-                <DetailsProspectInfo
-                  details={details}
-                  onAddressUpdate={updateProspectInfo}
-                />
-              ) : label === "Assigned To" ? (
-                <Box>
-                  {/* Assign To Selector */}
-                  <Box sx={{ mb: 2 }}>
-                    <FormControl fullWidth sx={{ flex: 1, minWidth: 250 }}>
-                      <InputLabel id="assign-to-label" sx={{ color: colors.gray[400] }}>
-                        Assign To
-                      </InputLabel>
-                      <Select
-                        labelId="assign-to-label"
-                        multiple
-                        name="assign_to_ids"
-                        value={concernPersons.assign_to_ids}
-                        onChange={handleConcernsChange}
-                        renderValue={(selected) =>
-                          employees
-                            .filter((e) => selected.includes(e.id))
-                            .map((e) => e.name)
-                            .join(", ")
-                        }
-                        sx={{ color: colors.gray[100] }}
-                      >
-                        {employees.map((option) => (
-                          <MenuItem key={option.id} value={option.id}>
-                            <Checkbox
-                              checked={concernPersons.assign_to_ids.includes(option.id)}
-                              sx={{ color: colors.greenAccent[500] }}
-                            />
-                            <ListItemText primary={option.name} />
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    <Button
-                      variant="contained"
-                      onClick={addMultipleConernPersons}
-                      sx={{
-                        mt: 1,
-                        backgroundColor: colors.greenAccent[500],
-                        color: colors.gray[500],
-                        "&:hover": { backgroundColor: colors.greenAccent[700] },
+              {isIndividual ? <PersonRounded /> : <BusinessRounded />}
+            </Avatar>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              {isEditing ? (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <TextField size="small" value={text} onChange={(event) => setText(event.target.value)} fullWidth autoFocus />
+                  <Tooltip title="Save name">
+                    <IconButton
+                      color="primary"
+                      onClick={() => {
+                        updateProspectInfo({ prospect_id: details.id, prospect_name: text.trim() });
+                        setIsEditing(false);
                       }}
                     >
-                      Add
-                    </Button>
-                  </Box>
-
-                  {/* Assigned persons list */}
-                  <Box sx={{ maxHeight: 250, overflowY: "auto", mt: 1, pr: 1 }}>
-                    {assignedPersons?.length > 0 ? (
-                      assignedPersons.map((person) => (
-                        <Box
-                          key={person.id}
-                          sx={{
-                            mb: 1.5,
-                            p: 1.5,
-                            backgroundColor: colors.primary[700],
-                            borderRadius: 2,
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Box>
-                            <Typography
-                              variant="body1"
-                              fontWeight="bold"
-                              sx={{ color: colors.gray[100] }}
-                            >
-                              {person.employee.name}
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: colors.gray[400] }}>
-                              📱 {person.employee.phone}
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: colors.blueAccent[300] }}>
-                              ✉️ {person.employee.email}
-                            </Typography>
-                          </Box>
-                          <IconButton
-                            onClick={() => removeAssignedPerson(person.employee.id)}
-                            sx={{ color: colors.redAccent[500] }}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Box>
-                      ))
-                    ) : (
-                      <Typography
-                        variant="body2"
-                        sx={{ color: colors.gray[400], mt: 1 }}
-                      >
-                        No concerned persons assigned.
-                      </Typography>
-                    )}
-                  </Box>
-                </Box>
+                      <SaveRounded />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
               ) : (
-                <Box />
+                <Stack direction="row" alignItems="flex-start" spacing={1}>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1.15 }}>
+                      {details.prospect_name || "Untitled prospect"}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                      Created {details.created_at ? dayjs(details.created_at).format("MMM D, YYYY") : "-"}
+                    </Typography>
+                  </Box>
+                  <Tooltip title="Edit prospect name">
+                    <IconButton size="small" onClick={() => setIsEditing(true)}>
+                      <EditRounded fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
               )}
-            </AccordionDetails>
-          </Accordion>
-        ))}
+            </Box>
+          </Stack>
+
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+            <Chip label={isIndividual ? "Individual" : "Organization"} icon={isIndividual ? <PersonRounded /> : <BusinessRounded />} sx={{ fontWeight: 800 }} />
+            {isTrue(details.is_opportunity) && <Chip color="success" icon={<StarRounded />} label="Opportunity" sx={{ fontWeight: 800 }} />}
+          </Stack>
+
+          <OpportunityComponent details={details} onToggleOpportunity={onToggleOpportunityController} onSubmitOpportunity={onSubmitOpportunity} />
+        </Stack>
+
+        <Divider sx={{ my: 2 }} />
+
+        <SectionCard icon={<LocationOnRounded fontSize="small" />} title="Location" subtitle="Address and map context">
+          <AdressProspect details={details} onAddressUpdate={updateProspectInfo} />
+          {canShowMap && (
+            <Button fullWidth variant="outlined" startIcon={<MapRounded />} onClick={goToMap} sx={{ mt: 1.25, borderRadius: 2, fontWeight: 900 }}>
+              View Map
+            </Button>
+          )}
+        </SectionCard>
       </Paper>
-    </Box>
+
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2.5,
+          borderRadius: 2,
+          bgcolor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <ContactPersonsProspect contactPersonList={contactPersonList} prospectId={details.id} onAdded={onAdded} />
+      </Paper>
+
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2.5,
+          borderRadius: 2,
+          bgcolor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <SectionCard icon={<AssignmentIndRounded fontSize="small" />} title="Assigned Team" subtitle="People responsible for this prospect">
+          <FormControl fullWidth size="small" sx={{ mb: 1.25 }}>
+            <InputLabel id="assign-to-label">Assign To</InputLabel>
+            <Select
+              labelId="assign-to-label"
+              multiple
+              name="assign_to_ids"
+              value={selectedAssignees}
+              label="Assign To"
+              onChange={handleConcernsChange}
+              renderValue={(selected) =>
+                employees
+                  .filter((employee) => selected.includes(employee.id))
+                  .map((employee) => employee.name)
+                  .join(", ")
+              }
+            >
+              {employees.map((option) => {
+                const alreadyAssigned = assignedIds.includes(option.id);
+                return (
+                  <MenuItem key={option.id} value={option.id} disabled={alreadyAssigned}>
+                    <Checkbox checked={selectedAssignees.includes(option.id)} />
+                    <ListItemText primary={option.name} secondary={alreadyAssigned ? "Already assigned" : option.email} />
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
+          <Button fullWidth variant="contained" onClick={addMultipleConernPersons} sx={{ borderRadius: 2, fontWeight: 900 }}>
+            Add Assigned Person
+          </Button>
+
+          <Stack spacing={1.25} sx={{ mt: 2 }}>
+            {assignedPersons.length ? (
+              assignedPersons.map((person) => (
+                <Paper
+                  key={person.id}
+                  elevation={0}
+                  sx={{
+                    p: 1.5,
+                    borderRadius: 2,
+                    bgcolor: theme.palette.background.default,
+                    border: `1px solid ${theme.palette.divider}`,
+                  }}
+                >
+                  <Stack direction="row" spacing={1.25} alignItems="center">
+                    <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.14), color: theme.palette.primary.main }}>
+                      {person.employee?.name?.charAt(0) || "U"}
+                    </Avatar>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                        {person.employee?.name || "Unknown employee"}
+                      </Typography>
+                      <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap sx={{ mt: 0.5 }}>
+                        {person.employee?.phone && <Chip size="small" icon={<PhoneRounded />} label={person.employee.phone} />}
+                        {person.employee?.email && <Chip size="small" icon={<EmailRounded />} label={person.employee.email} variant="outlined" />}
+                      </Stack>
+                    </Box>
+                    <Tooltip title="Remove assigned person">
+                      <IconButton color="error" size="small" onClick={() => removeAssignedPerson(person.employee.id)}>
+                        <DeleteRounded fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                </Paper>
+              ))
+            ) : (
+              <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                No concerned persons assigned.
+              </Typography>
+            )}
+          </Stack>
+        </SectionCard>
+      </Paper>
+
+      <DetailsProspectInfo details={details} onAddressUpdate={updateProspectInfo} />
+
+      {isTrue(details.is_opportunity) && (
+        <Paper
+          elevation={0}
+          sx={{
+            p: 2.5,
+            borderRadius: 2,
+            bgcolor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          <SectionCard icon={<FolderRounded fontSize="small" />} title="Opportunity Modules" subtitle="Related business records">
+            <Stack spacing={1}>
+              {[
+                "Attached Files",
+                "Leads",
+                "Quotations",
+                "Orders",
+              ].map((label) => (
+                <Button key={label} variant="outlined" disabled sx={{ justifyContent: "flex-start", borderRadius: 2 }}>
+                  {label}
+                </Button>
+              ))}
+            </Stack>
+          </SectionCard>
+        </Paper>
+      )}
+    </Stack>
   );
 };
 

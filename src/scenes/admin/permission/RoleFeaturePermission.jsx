@@ -163,10 +163,12 @@ const updateModuleFeatures = (groups, moduleName, featureIds, patch) => ({
 
 const buildSavePayload = (roleId, groups) => ({
   role_id: Number(roleId),
-  permissions: flattenFeatures(groups).map((feature) => ({
-    feature_id: feature.feature_id,
-    has_permission: Boolean(feature.has_permission),
-  })),
+  permissions: flattenFeatures(groups)
+    .filter((feature) => Number.isFinite(Number(feature.feature_id)))
+    .map((feature) => ({
+      feature_id: Number(feature.feature_id),
+      has_permission: Boolean(feature.has_permission),
+    })),
 });
 
 const SummaryTile = ({ icon, label, value, tone = "primary" }) => {
@@ -403,6 +405,15 @@ const RoleFeaturePermission = () => {
     setError(null);
     try {
       const payload = buildSavePayload(selectedRoleId, groupedPermissions);
+      if (!payload.permissions.length) {
+        setSnack({
+          open: true,
+          message: "No valid role permissions found to save.",
+          severity: "warning",
+        });
+        return;
+      }
+
       const res = await updateRoleFeaturePermissions(payload);
       if (res?.status && res.status !== "success") {
         throw new Error(res.message || "Role permissions could not be saved.");
