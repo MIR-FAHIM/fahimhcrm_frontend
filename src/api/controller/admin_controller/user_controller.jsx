@@ -325,3 +325,34 @@ export const changePassController = async (data) => {
   }
 
 };
+export const getUserModePreference = async (userId) => {
+  try {
+    const response = await axiosInstance.get(`/api/get-user-mode-preference?user_id=${encodeURIComponent(userId)}`,
+      {
+        headers: {
+          'token': localStorage.getItem("authToken"),
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user mode preference:", error);
+    throw error;
+  }
+};
+
+export const updateUserModePreference = async (data) => {
+  try {
+    const response = await axiosInstance.post(`/api/update-user-mode-preference`, data,
+      {
+        headers: {
+          'token': localStorage.getItem("authToken"),
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating user mode preference:", error);
+    throw error;
+  }
+};

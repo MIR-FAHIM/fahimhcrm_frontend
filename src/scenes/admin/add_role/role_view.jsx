@@ -1,147 +1,215 @@
-import { useState, useEffect } from "react";
-import { 
-  Box, Button, TextField, Checkbox, FormControlLabel, useMediaQuery, 
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper 
+import { useEffect, useMemo, useState } from "react";
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  InputAdornment,
+  Paper,
+  Snackbar,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+  useTheme,
 } from "@mui/material";
-import { Header } from "../../../components";
+import { alpha } from "@mui/material/styles";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import AdminPanelSettingsRoundedIcon from "@mui/icons-material/AdminPanelSettingsRounded";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import { Formik } from "formik";
 import * as yup from "yup";
 
 import { fetchRole, addRole } from "../../../api/controller/admin_controller/department_controller";
 
 const initialValues = {
-  department_name: "", // Department Name
-  isActive: true, // Active status (default: true)
+  role_name: "",
 };
 
-const checkoutSchema = yup.object().shape({
-  department_name: yup.string().required("Department Name is required"),
-  isActive: yup.boolean().required("Active status is required"),
+const validationSchema = yup.object().shape({
+  role_name: yup.string().trim().required("Role name is required"),
 });
 
 const RoleView = () => {
-  const isNonMobile = useMediaQuery("(min-width:600px)");
-  const [departments, setDepartments] = useState([]);
+  const theme = useTheme();
+  const brand = theme.palette.blueAccent?.main ?? theme.palette.primary.main;
 
-  // Fetch departments on component mount
-  useEffect(() => {
-    loadDepartments();
-  }, []);
+  const [roles, setRoles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [query, setQuery] = useState("");
+  const [snack, setSnack] = useState({ open: false, msg: "", sev: "success" });
 
-  // Function to fetch department list
-  const loadDepartments = async () => {
+  const loadRoles = async () => {
+    setLoading(true);
     try {
       const response = await fetchRole();
-      setDepartments(response.data || []);
+      setRoles(response?.data || []);
     } catch (error) {
-      console.error("Error fetching departments:", error);
+      console.error("Error fetching roles:", error);
+      setSnack({ open: true, msg: "Failed to load roles.", sev: "error" });
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    loadRoles();
+  }, []);
+
+  const filteredRoles = useMemo(() => {
+    const search = query.trim().toLowerCase();
+    if (!search) return roles;
+
+    return roles.filter((role) =>
+      [role.id, role.role_name]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(search)
+    );
+  }, [query, roles]);
+
   const handleFormSubmit = async (values, actions) => {
+    setSaving(true);
     try {
       await addRole({
-        role_name: values.department_name,
-        isActive: values.isActive ? "1" : "0",
+        role_name: values.role_name.trim(),
+        isActive: "1",
       });
 
       actions.resetForm({ values: initialValues });
-      loadDepartments(); // Refresh list after adding department
+      setSnack({ open: true, msg: "Role created successfully.", sev: "success" });
+      await loadRoles();
     } catch (error) {
-      console.error("Error adding department:", error);
+      console.error("Error adding role:", error);
+      setSnack({ open: true, msg: "Failed to create role.", sev: "error" });
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <Box m="20px">
-      <Header title="CREATE Role" subtitle="Add a New Role" />
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: theme.palette.background.default, minHeight: "100vh" }}>
+      <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ xs: "stretch", md: "center" }} justifyContent="space-between" sx={{ mb: 2.5 }}>
+        <Stack direction="row" spacing={1.25} alignItems="center">
+          <Avatar variant="rounded" sx={{ bgcolor: alpha(brand, 0.12), color: brand }}>
+            <AdminPanelSettingsRoundedIcon />
+          </Avatar>
+          <Box>
+            <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1 }}>
+              Roles
+            </Typography>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+              Create application roles for users and permission assignment.
+            </Typography>
+          </Box>
+        </Stack>
 
-      {/* Form for Adding Department */}
-      <Formik
-        onSubmit={handleFormSubmit}
-        initialValues={initialValues}
-        validationSchema={checkoutSchema}
-      >
-        {({
-          values,
-          errors,
-          touched,
-          handleBlur,
-          handleChange,
-          handleSubmit,
-        }) => (
-          <form onSubmit={handleSubmit}>
-            <Box
-              display="grid"
-              gap="30px"
-              gridTemplateColumns="repeat(4, minmax(0, 1fr))"
-              sx={{
-                "& > div": {
-                  gridColumn: isNonMobile ? undefined : "span 4",
-                },
-              }}
-            >
-              <TextField
-                fullWidth
-                variant="filled"
-                type="text"
-                label="Department Name"
-                onBlur={handleBlur}
-                onChange={handleChange}
-                value={values.department_name}
-                name="department_name"
-                error={touched.department_name && errors.department_name}
-                helperText={touched.department_name && errors.department_name}
-                sx={{ gridColumn: "span 4" }}
-              />
+        <Chip icon={<AdminPanelSettingsRoundedIcon />} label={`${roles.length} roles`} sx={{ fontWeight: 900, bgcolor: alpha(brand, 0.1), color: brand }} />
+      </Stack>
 
-              <Box sx={{ gridColumn: "span 4" }}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={values.isActive}
-                      onChange={handleChange}
-                      name="isActive"
-                      color="primary"
-                    />
-                  }
-                  label="Active Status"
+      <Paper elevation={0} sx={{ p: 2, mb: 2.5, borderRadius: 2, bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}` }}>
+        <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleFormSubmit}>
+          {({ values, errors, touched, handleBlur, handleChange, handleSubmit }) => (
+            <Box component="form" onSubmit={handleSubmit}>
+              <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} alignItems={{ xs: "stretch", md: "flex-start" }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Role Name"
+                  placeholder="Example: Admin, Manager, Employee"
+                  name="role_name"
+                  value={values.role_name}
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                  error={Boolean(touched.role_name && errors.role_name)}
+                  helperText={touched.role_name && errors.role_name}
                 />
-              </Box>
+                <Button type="submit" variant="contained" startIcon={saving ? <CircularProgress size={16} /> : <AddRoundedIcon />} disabled={saving} sx={{ borderRadius: 2, fontWeight: 900, minWidth: 135 }}>
+                  Add Role
+                </Button>
+              </Stack>
             </Box>
-            <Box display="flex" justifyContent="end" mt="20px">
-              <Button type="submit" color="secondary" variant="contained">
-                Create Role
-              </Button>
-            </Box>
-          </form>
-        )}
-      </Formik>
+          )}
+        </Formik>
+      </Paper>
 
-      {/* Department List Table */}
-      <Box mt="40px">
-        <Header title="Role List" subtitle="Manage Roles" />
-        <TableContainer component={Paper}>
-          <Table>
+      <Paper elevation={0} sx={{ borderRadius: 2, bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, overflow: "hidden" }}>
+        <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} alignItems={{ xs: "stretch", md: "center" }} justifyContent="space-between" sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+          <Box>
+            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+              Role List
+            </Typography>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+              Clean role names only, ready for permission management.
+            </Typography>
+          </Box>
+          <TextField
+            size="small"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search role"
+            sx={{ minWidth: { xs: "100%", md: 300 } }}
+            InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon fontSize="small" /></InputAdornment> }}
+          />
+        </Stack>
+
+        <TableContainer>
+          <Table size="small">
             <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Role Name</TableCell>
-                <TableCell>Status</TableCell>
+              <TableRow sx={{ bgcolor: alpha(brand, 0.08) }}>
+                <TableCell sx={{ fontWeight: 900, width: 90 }}>ID</TableCell>
+                <TableCell sx={{ fontWeight: 900 }}>Role Name</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {departments.map((dept, index) => (
-                <TableRow key={index}>
-                  <TableCell>{dept.id}</TableCell>
-                  <TableCell>{dept.role_name}</TableCell>
-                  <TableCell>{dept.isActive === "1" ? "Active" : "Inactive"}</TableCell>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={2} align="center" sx={{ py: 5 }}>
+                    <CircularProgress size={24} />
+                  </TableCell>
                 </TableRow>
-              ))}
+              ) : filteredRoles.length ? (
+                filteredRoles.map((role) => (
+                  <TableRow key={role.id} hover>
+                    <TableCell sx={{ color: theme.palette.text.secondary, fontWeight: 800 }}>#{role.id}</TableCell>
+                    <TableCell>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Avatar variant="rounded" sx={{ width: 30, height: 30, bgcolor: alpha(brand, 0.1), color: brand }}>
+                          <AdminPanelSettingsRoundedIcon sx={{ fontSize: 18 }} />
+                        </Avatar>
+                        <Typography sx={{ color: theme.palette.text.primary, fontWeight: 850 }}>
+                          {role.role_name || "Untitled role"}
+                        </Typography>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={2} align="center" sx={{ py: 5, color: theme.palette.text.secondary }}>
+                    No roles found.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
-      </Box>
+      </Paper>
+
+      <Snackbar open={snack.open} autoHideDuration={2600} onClose={() => setSnack((state) => ({ ...state, open: false }))} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
+        <Alert severity={snack.sev} sx={{ width: "100%" }}>
+          {snack.msg}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

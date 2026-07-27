@@ -20,7 +20,7 @@ import {
 import { alpha } from "@mui/material/styles";
 import { AddPhotoAlternateRounded, CloseRounded, DeleteRounded, ImageRounded, UploadRounded } from "@mui/icons-material";
 import { addTaskImages, deleteTaskImage, getTaskImages } from "../../../../api/controller/admin_controller/task_controller/task_controller";
-import { image_file_url } from "../../../../api/config/index";
+import { base_url, image_file_url } from "../../../../api/config/index";
 
 const TaskImageGallery = ({ taskId }) => {
   const theme = useTheme();
@@ -34,12 +34,55 @@ const TaskImageGallery = ({ taskId }) => {
   const fileInputRef = useRef(null);
 
   const notify = (message, severity = "success") => setSnack({ open: true, message, severity });
+  const resolveTaskImageSrc = (image) => {
+    const rawValue = typeof image === "string"
+      ? image
+      : image?.image_url || image?.url || image?.image_file || image?.file_path || image?.path || image?.image || image?.file;
+
+    if (!rawValue) return "";
+
+    const value = String(rawValue).trim();
+    if (!value) return "";
+    if (/^(https?:|data:|blob:)/i.test(value)) return value;
+
+    const cleanedPath = value
+      .replace(/^\/+/, "")
+      .replace(/^public\//, "")
+      .replace(/^storage\/app\/public\//, "")
+      .replace(/^app\/public\//, "");
+
+    const appBaseUrl = base_url.replace(/\/+$/, "");
+    const storageBaseUrl = image_file_url.replace(/\/+$/, "");
+
+    if (cleanedPath.startsWith("storage/")) {
+      return `${appBaseUrl}/${cleanedPath}`;
+    }
+
+    return `${storageBaseUrl}/${cleanedPath}`;
+  };
+
+  const resolveTaskImageFallbackSrc = (image, currentSrc) => {
+    if (!image || typeof image === "string" || !image.image_file) return "";
+
+    const fallbackSrc = resolveTaskImageSrc({ image_url: null, image_file: image.image_file });
+    if (!fallbackSrc || fallbackSrc === currentSrc) return "";
+
+    return fallbackSrc;
+  };
+
+  const normalizeTaskImages = (responseData) => {
+    const list = Array.isArray(responseData)
+      ? responseData
+      : responseData?.images || responseData?.task_images || responseData?.data || [];
+
+    return Array.isArray(list) ? list.filter((image) => resolveTaskImageSrc(image)) : [];
+  };
 
   const fetchTaskImages = async () => {
     setLoading(true);
     try {
       const response = await getTaskImages(taskId);
-      if (response?.status === "success") setImages(response.data || []);
+      if (response?.status === "success") setImages(normalizeTaskImages(response.data));
     } catch (error) {
       console.error("Error fetching images:", error);
       notify("Task images could not be loaded.", "error");
@@ -93,8 +136,8 @@ const TaskImageGallery = ({ taskId }) => {
     }
   };
 
-  const handleImageClick = (imageFile) => {
-    setSelectedImage(`${image_file_url}/${imageFile}`);
+  const handleImageClick = (imageSrc) => {
+    setSelectedImage(imageSrc);
     setOpen(true);
   };
 
@@ -193,9 +236,12 @@ const TaskImageGallery = ({ taskId }) => {
         </Box>
       ) : (
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)", xl: "repeat(4, 1fr)" }, gap: 1.5 }}>
-          {images.map((img) => (
+          {images.map((img, index) => {
+            const imageSrc = resolveTaskImageSrc(img);
+
+            return (
             <Box
-              key={img.id}
+              key={img.id || imageSrc || index}
               sx={{
                 position: "relative",
                 borderRadius: 2,
@@ -207,9 +253,19 @@ const TaskImageGallery = ({ taskId }) => {
             >
               <Box
                 component="img"
-                src={`${image_file_url}/${img.image_file}`}
-                alt="Task attachment"
-                onClick={() => handleImageClick(img.image_file)}
+                src={imageSrc}
+                alt={img?.original_name || img?.name || "Task attachment"}
+                onClick={() => handleImageClick(imageSrc)}
+                onError={(event) => {
+                  const fallbackSrc = resolveTaskImageFallbackSrc(img, event.currentTarget.src);
+                  if (fallbackSrc) {
+                    event.currentTarget.src = fallbackSrc;
+                    return;
+                  }
+
+                  event.currentTarget.style.objectFit = "contain";
+                  event.currentTarget.style.padding = "16px";
+                }}
                 sx={{ width: "100%", height: "100%", objectFit: "cover", cursor: "pointer", display: "block" }}
               />
               <Tooltip title="Delete image">
@@ -229,7 +285,8 @@ const TaskImageGallery = ({ taskId }) => {
                 </IconButton>
               </Tooltip>
             </Box>
-          ))}
+            );
+          })}
         </Box>
       )}
 

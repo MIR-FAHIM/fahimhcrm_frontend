@@ -29,3 +29,30 @@ body,
 ::-webkit-scrollbar-track:hover {
   background: #555;
 }
+html {
+  color-scheme: light;
+  background: #ffffff;
+}
+
+html.dark {
+  color-scheme: dark;
+  background: #1e1f25;
+}
+
+html.dark body,
+html.dark #root {
+  background: #1e1f25;
+  color: #f5f6fa;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #2b2d38;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #4a5160;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #666f80;
+}

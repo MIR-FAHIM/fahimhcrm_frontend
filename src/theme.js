@@ -1,6 +1,6 @@
 // theme/index.js
 import { createTheme } from "@mui/material";
-import { useMemo, useState, createContext } from "react";
+import { useCallback, useEffect, useMemo, useState, createContext } from "react";
 
 /** Color tokens */
 export const tokens = (mode) => ({
@@ -167,6 +167,76 @@ export const themeSettings = (mode) => {
       button: { textTransform: "none", fontWeight: 700 },
     },
     components: {
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: {
+            backgroundColor: isDark ? colors.gray[900] : colors.gray[900],
+            color: isDark ? colors.gray[100] : colors.gray[100],
+          },
+          "#root": {
+            backgroundColor: isDark ? colors.gray[900] : colors.gray[900],
+          },
+          ".dark": {
+            colorScheme: "dark",
+          },
+        },
+      },
+      MuiTableCell: {
+        styleOverrides: {
+          root: {
+            borderColor: isDark ? colors.gray[700] : colors.gray[700],
+          },
+          head: {
+            color: isDark ? colors.gray[100] : colors.gray[100],
+            backgroundColor: isDark ? colors.gray[800] : colors.gray[800],
+            fontWeight: 800,
+          },
+        },
+      },
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            backgroundImage: "none",
+            backgroundColor: isDark ? colors.gray[800] : colors.gray[900],
+          },
+        },
+      },
+      MuiMenu: {
+        styleOverrides: {
+          paper: {
+            backgroundImage: "none",
+            backgroundColor: isDark ? colors.gray[800] : colors.gray[900],
+          },
+        },
+      },
+      MuiPopover: {
+        styleOverrides: {
+          paper: {
+            backgroundImage: "none",
+            backgroundColor: isDark ? colors.gray[800] : colors.gray[900],
+          },
+        },
+      },
+      MuiOutlinedInput: {
+        styleOverrides: {
+          root: {
+            backgroundColor: isDark ? colors.gray[800] : colors.gray[900],
+          },
+        },
+      },
+      MuiFilledInput: {
+        styleOverrides: {
+          root: {
+            backgroundColor: isDark ? colors.gray[800] : colors.gray[800],
+            "&:hover": {
+              backgroundColor: isDark ? colors.gray[700] : colors.gray[700],
+            },
+            "&.Mui-focused": {
+              backgroundColor: isDark ? colors.gray[800] : colors.gray[800],
+            },
+          },
+        },
+      },
       MuiButton: {
         styleOverrides: {
           root: { borderRadius: 10 },
@@ -186,14 +256,43 @@ export const themeSettings = (mode) => {
 };
 
 /** color mode context & hook */
-export const ColorModeContext = createContext({ toggleColorMode: () => {} });
+export const ColorModeContext = createContext({
+  mode: "light",
+  setColorMode: () => {},
+  toggleColorMode: () => {},
+  preferenceLoading: false,
+  setPreferenceLoading: () => {},
+});
 
 export const useMode = () => {
-  const [mode, setMode] = useState("light");
+  const [mode, setMode] = useState(() => {
+    const savedMode = localStorage.getItem("themeMode");
+    return savedMode === "dark" || savedMode === "light" ? savedMode : "light";
+  });
+  const [preferenceLoading, setPreferenceLoading] = useState(false);
+
+  const setColorMode = useCallback((nextMode) => {
+    const normalizedMode = nextMode === "dark" ? "dark" : "light";
+    setMode(normalizedMode);
+    localStorage.setItem("themeMode", normalizedMode);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", mode === "dark");
+    document.documentElement.setAttribute("data-theme", mode);
+  }, [mode]);
+
   const colorMode = useMemo(
-    () => ({ toggleColorMode: () => setMode((p) => (p === "light" ? "dark" : "light")) }),
-    []
+    () => ({
+      mode,
+      preferenceLoading,
+      setPreferenceLoading,
+      setColorMode,
+      toggleColorMode: () => setColorMode(mode === "light" ? "dark" : "light"),
+    }),
+    [mode, preferenceLoading, setColorMode]
   );
+
   const theme = useMemo(() => createTheme(themeSettings(mode)), [mode]);
   return [theme, colorMode];
 };

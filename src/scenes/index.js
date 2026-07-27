@@ -128,6 +128,7 @@ import MyVisits from "./admin/fieldforce/my_visit_list";// Import the WorkShop c
 import VisitMap from "./admin/fieldforce/visit_map";// Import the WorkShop component
 import DateWiseVisit from "./admin/fieldforce/date_wise_visit";// Import the WorkShop component
 import PrivacyPolicy from "./admin/setting/privacy_policy";// Import the WorkShop component
+import NewSystemUpdate from "./admin/setting/new_system_update";
 
 
 
@@ -261,4 +262,5 @@ export {
   VisitMap,
   DateWiseVisit,
   PrivacyPolicy,
+  NewSystemUpdate,
 };

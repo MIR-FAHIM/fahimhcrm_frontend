@@ -25,6 +25,7 @@ import {
   KeyboardDoubleArrowLeftRounded,
   KeyboardDoubleArrowRightRounded,
   MenuOutlined,
+  NewReleasesOutlined,
   PieChartOutlined,
   SearchOutlined,
   SettingsOutlined,
@@ -309,23 +310,19 @@ const SideBar = () => {
         ],
       },
       {
-        id: "warehouse",
-        label: "Warehouses",
-        show: permissions.prospect,
-        icon: imageIcon(AppIcons.Warehouse, 26, "Warehouses"),
+        id: "system_updates",
+        label: "System Updates",
+        show: true,
+        icon: <NewReleasesOutlined sx={{ ...muiIconSx, fontSize: 26 }} />,
         items: [
           {
-            title: "Warehouses Map",
-            path: "/map-markers",
-            icon: <SourceOutlined sx={muiIconSx} />,
-          },
-          {
-            title: "Warehouses List",
-            path: "/warehouse-list",
-            icon: <SourceOutlined sx={muiIconSx} />,
+            title: "New Updates",
+            path: "/new-system-update",
+            icon: <NewReleasesOutlined sx={muiIconSx} />,
           },
         ],
       },
+
       {
         id: "permissions",
         label: "Permissions",

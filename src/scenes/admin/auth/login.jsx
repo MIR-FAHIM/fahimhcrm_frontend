@@ -28,7 +28,7 @@ import { loginController } from "../../../api/controller/admin_controller/user_c
 /** ---------------------------------------------
  *  Toggle & configure your demo credentials here
  *  --------------------------------------------- */
-const SHOW_DEMO_CREDENTIALS = true; // <- set to false to hide demo panel
+const SHOW_DEMO_CREDENTIALS = false; // <- set to false to hide demo panel
 
 const DEMO_CREDENTIALS = [
   { label: "Admin (Full Access)", email: "testuser@gmail.com", password: "12345678" },

@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "title": "Prospect Pipeline Board",
+    "feature": "Leads",
+    "details": "The stage-wise prospect board now shows smarter columns, counts, progress, richer prospect cards, activity chips, source filters, and a real API refresh action.",
+    "published_date": "2026-07-26"
+  },
+  {
+    "id": 2,
+    "title": "Prospect List Workspace",
+    "feature": "Leads",
+    "details": "The prospect list now includes KPI tiles, source and type filters, stage chips, better row content, contact previews, activity counts, website links, and double-click detail navigation.",
+    "published_date": "2026-07-26"
+  },
+  {
+    "id": 3,
+    "title": "Date-wise Visit Planner View",
+    "feature": "Field Force",
+    "details": "Date-wise visits now include summary tiles, date range search, status, type, employee filters, expandable day groups, visit cards, map actions, prospect links, and task links.",
+    "published_date": "2026-07-27"
+  },
+  {
+    "id": 4,
+    "title": "Role Permission Management",
+    "feature": "Permissions",
+    "details": "Admins can select a role, review module-wise feature permissions, toggle permissions locally, and save all changes in one bulk API request.",
+    "published_date": "2026-07-25"
+  },
+  {
+    "id": 5,
+    "title": "User Permission Management",
+    "feature": "Permissions",
+    "details": "The permission area now separates My Permissions and User Permission views, with grouped feature cards and update support for selected users.",
+    "published_date": "2026-07-25"
+  },
+  {
+    "id": 6,
+    "title": "Task Details Experience",
+    "feature": "Tasks",
+    "details": "Task details now present priority, type, status, progress, visit relation, files, activity, and controls in a more structured task workspace layout.",
+    "published_date": "2026-07-24"
+  },
+  {
+    "id": 7,
+    "title": "Task Calendar Upgrade",
+    "feature": "Tasks",
+    "details": "The calendar was improved to handle multiple tasks per day with clearer daily indicators, useful summaries, and better task visibility inside each date.",
+    "published_date": "2026-07-24"
+  },
+  {
+    "id": 8,
+    "title": "Prospect Detail Workspace",
+    "feature": "Leads",
+    "details": "Prospect details now show relationship data, stage journey, contact people, notes, activity, meetings, email, tasks, and key profile information in a smarter layout.",
+    "published_date": "2026-07-24"
+  },
+  {
+    "id": 9,
+    "title": "Department View Refresh",
+    "feature": "HRMS",
+    "details": "The department page was redesigned with clearer department metrics, smarter cards, stronger scanning behavior, and cleaner actions for department-level work.",
+    "published_date": "2026-07-23"
+  },
+  {
+    "id": 10,
+    "title": "Advanced Sidebar Navigation",
+    "feature": "Navigation",
+    "details": "The sidebar now supports a cleaner grouped menu, active states, search, collapsible sections, profile summary, and smoother navigation interactions.",
+    "published_date": "2026-07-23"
+  }
+]

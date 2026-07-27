@@ -113,6 +113,7 @@ import {
  VisitMap,
  DateWiseVisit,
  PrivacyPolicy,
+ NewSystemUpdate,
 } from "./scenes";
 
 const AppRouter = () => {
@@ -242,6 +243,7 @@ const AppRouter = () => {
           <Route path="/datewise-visit" element={<DateWiseVisit />} />
 
         
+          <Route path="/new-system-update" element={<NewSystemUpdate />} />
         </Route>
       </Routes>
     </Router>
