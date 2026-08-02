@@ -1,3 +1,4 @@
+import API_URL from '../../api_url';
 // src/api/apiController.js
 import axiosInstance from '../../axiosInstance.jsx'
 
@@ -6,7 +7,7 @@ import axiosInstance from '../../axiosInstance.jsx'
 // Fetch posts from API
 export const fetchAllOrders = async () => {
   try {
-    const response = await axiosInstance.get(`/api/getAllOrders`);
+    const response = await axiosInstance.get(API_URL.getAllOrders);
     return response.data;
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -16,7 +17,7 @@ export const fetchAllOrders = async () => {
 };
 export const getOrderDetail = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-order-details/${id}`);
+    const response = await axiosInstance.get(API_URL.getOrderDetailsById(id));
   
     return response;
   } catch (error) {
@@ -28,7 +29,7 @@ export const getOrderDetail = async (id) => {
 
 export const changeOrderStatus = async (data) => {
     try {
-      const response = await axiosInstance.post(`/api/change-order-status`, data);
+      const response = await axiosInstance.post(API_URL.changeOrderStatus, data);
       return response; // Return the response from the API
     } catch (error) {
       console.error("Error changing order status data:", error);

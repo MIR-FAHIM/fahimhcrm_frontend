@@ -1,4 +1,5 @@
 import axiosInstance from '../../axiosInstance.jsx'
+import API_URL from '../../api_url';
 
 // Fetch posts from API
 
@@ -10,7 +11,7 @@ export const fetchConversationRoom = async () => {
       return []; // Return an empty array or handle as necessary
     }
     try {
-      const response = await axiosInstance.get(`/api/conversation-room`,
+      const response = await axiosInstance.get(API_URL.conversationRoom,
           {
               headers: {
                 'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -30,7 +31,7 @@ export const getChatMessageByConID = async (data) => {
       return []; // Return an empty array or handle as necessary
     }
     try {
-      const response = await axiosInstance.post(`/api/get-chat-by-conversationid`, data ,
+      const response = await axiosInstance.post(API_URL.getChatByConversationid, data ,
           {
               headers: {
                 'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -50,7 +51,7 @@ export const getChatMessageByProject = async (data) => {
       return []; // Return an empty array or handle as necessary
     }
     try {
-      const response = await axiosInstance.post(`/api/get-chat-by-projectId`, data ,
+      const response = await axiosInstance.post(API_URL.getChatByProjectId, data ,
           {
               headers: {
                 'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -70,7 +71,7 @@ export const addNewConversation = async (data) => {
       return []; // Return an empty array or handle as necessary
     }
     try {
-      const response = await axiosInstance.post(`/api/conversation-room/add`, data ,
+      const response = await axiosInstance.post(API_URL.conversationRoomAdd, data ,
           {
               headers: {
                 'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -90,7 +91,7 @@ export const addChat = async (data) => {
       return []; // Return an empty array or handle as necessary
     }
     try {
-      const response = await axiosInstance.post(`/api/add-chat`, data ,
+      const response = await axiosInstance.post(API_URL.addChat, data ,
           {
               headers: {
                 'token': localStorage.getItem("authToken"),// Add the token in Authorization header

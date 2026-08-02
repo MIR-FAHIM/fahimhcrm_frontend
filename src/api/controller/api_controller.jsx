@@ -1,10 +1,11 @@
+import API_URL from '../api_url';
 // src/api/apiController.js
 import axiosInstance from '../axiosInstance.jsx'
 
 // Fetch posts from API
 export const fetchCategory = async () => {
   try {
-    const response = await axiosInstance.get(`/api/getProductCategories`);
+    const response = await axiosInstance.get(API_URL.getProductCategories);
     return response.data.data;
   } catch (error) {
     console.error("Error fetching category:", error);
@@ -14,7 +15,7 @@ export const fetchCategory = async () => {
 };
 export const fetchWarehouse = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-warehouses`);
+    const response = await axiosInstance.get(API_URL.getWarehouses);
     return response.data.warehouses;
   } catch (error) {
     console.error("Error fetching category:", error);
@@ -24,7 +25,7 @@ export const fetchWarehouse = async () => {
 };
 export const fetchBrands = async () => {
   try {
-    const response = await axiosInstance.get(`/api/getBrands`);
+    const response = await axiosInstance.get(API_URL.getBrands2);
     return response.data.data;
   } catch (error) {
     console.error("Error fetching brand:", error);
@@ -34,7 +35,7 @@ export const fetchBrands = async () => {
 };
 export const productDetail = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/getProductDetails/${id}/0`);
+    const response = await axiosInstance.get(API_URL.getProductDetailsById(id));
     return response.data.product;
   } catch (error) {
     console.error("Error fetching product detail:", error);
@@ -44,7 +45,7 @@ export const productDetail = async (id) => {
 };
 export const getProductsImages = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/getProductImagesByProductId/${id}`);
+    const response = await axiosInstance.get(API_URL.getProductImagesByProductIdById(id));
     return response;
   } catch (error) {
     console.error("Error fetching product images:", error);
@@ -54,7 +55,7 @@ export const getProductsImages = async (id) => {
 };
 export const deleteProductById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/delete-product/${id}`);
+    const response = await axiosInstance.get(API_URL.deleteProductById(id));
     return response;
   } catch (error) {
     console.error("Error delete product:", error);
@@ -64,7 +65,7 @@ export const deleteProductById = async (id) => {
 };
 export const deleteImageById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/delete-prodduct-image/${id}`);
+    const response = await axiosInstance.get(API_URL.deleteProdductImageById(id));
     return response;
   } catch (error) {
     console.error("Error delete Image:", error);
@@ -74,7 +75,7 @@ export const deleteImageById = async (id) => {
 };
 export const deleteVideoById = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/delete-video-link/${id}`);
+    const response = await axiosInstance.get(API_URL.deleteVideoLinkById(id));
     return response;
   } catch (error) {
     console.error("Error delete Video:", error);
@@ -85,7 +86,7 @@ export const deleteVideoById = async (id) => {
 
 export const postProduct = async (productData) => {
   try {
-    const response = await axiosInstance.post(`/api/createProduct`, productData);
+    const response = await axiosInstance.post(API_URL.createProduct, productData);
     return response; // Return the response from the API
   } catch (error) {
     console.error("Error posting product data:", error);
@@ -95,7 +96,7 @@ export const postProduct = async (productData) => {
 }
 export const updateProductInfo = async (productData, id) => {
   try {
-    const response = await axiosInstance.post(`/api/update-product/${id}`, productData);
+    const response = await axiosInstance.post(API_URL.updateProductById(id), productData);
     return response; // Return the response from the API
   } catch (error) {
     console.error("Error updating product data:", error);

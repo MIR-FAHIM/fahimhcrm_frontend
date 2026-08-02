@@ -22,6 +22,7 @@ import {
   ExpandLess,
   ExpandMore,
   FaceOutlined,
+  Inventory2Rounded,
   KeyboardDoubleArrowLeftRounded,
   KeyboardDoubleArrowRightRounded,
   MenuOutlined,
@@ -306,6 +307,19 @@ const SideBar = () => {
             title: "Visit Map",
             path: "/visit-map",
             icon: <SourceOutlined sx={muiIconSx} />,
+          },
+        ],
+      },
+      {
+        id: "products",
+        label: "Products",
+        show: permissions.setting || isAdmin === 1 || isAdmin === 2,
+        icon: <Inventory2Rounded sx={{ ...muiIconSx, fontSize: 26 }} />,
+        items: [
+          {
+            title: "Product Management",
+            path: "/product-management",
+            icon: <Inventory2Rounded sx={muiIconSx} />,
           },
         ],
       },

@@ -1,9 +1,10 @@
 import axiosInstance from '../../axiosInstance.jsx'
+import API_URL from '../../api_url';
 
 // Fetch posts from API
 export const getOrder = async () => {
   try {
-    const response = await axiosInstance.get(`/api/product-orders/get-order`,
+    const response = await axiosInstance.get(API_URL.productOrdersGetOrder,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -18,7 +19,7 @@ export const getOrder = async () => {
 }
 export const getCartsByOrder = async (orderId) => {
   try {
-    const response = await axiosInstance.get(`/api/cart/order/${orderId}`,
+    const response = await axiosInstance.get(API_URL.cartOrderByOrderId(orderId),
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -34,7 +35,7 @@ export const getCartsByOrder = async (orderId) => {
 
 export const getCategory = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-active-categories`,
+    const response = await axiosInstance.get(API_URL.getActiveCategories,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -49,7 +50,7 @@ export const getCategory = async () => {
 }
 export const getStock = async () => {
   try {
-    const response = await axiosInstance.get(`/api/stock/list`,
+    const response = await axiosInstance.get(API_URL.stockList,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -65,7 +66,7 @@ export const getStock = async () => {
 
 export const addProduct = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/product/add`, data,
+    const response = await axiosInstance.post(API_URL.productAdd, data,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header

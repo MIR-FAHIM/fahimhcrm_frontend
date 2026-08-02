@@ -2,16 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  Box, Typography, CircularProgress, Paper, Tabs, Tab,
+  Alert, Box, Typography, CircularProgress, Paper, Snackbar, Tabs, Tab,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 
 import {
   getProfile, uploadProfileImage, logOut, updateProfile,
-  modulePermission, changePassController, getUserActivity
+  modulePermission, changePassController, getUserActivity,
+  changeEmployeeRole, changeEmployeeDepartment, changeEmployeeDesignation
 } from "../../../api/controller/admin_controller/user_controller";
 
 import { getAttendanceReportByUser } from "../../../api/controller/admin_controller/attendance_controller";
+import { fetchDepartment, fetchDesignation, fetchRole } from "../../../api/controller/admin_controller/department_controller";
 import { image_file_url } from "../../../api/config/index";
 import ProfileComponent from "./profile_components/profile_components";
 import TaskComponents from "./profile_components/task_components";
@@ -38,6 +40,15 @@ const EmpProfile = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const [permissions, setPermissions] = useState({});
   const { userProfileData, setUserProfileData } = useProfile();
+  const isSuperAdmin = userProfileData?.role?.role_name === "Super Admin";
+
+  const [roleOptions, setRoleOptions] = useState([]);
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [designationOptions, setDesignationOptions] = useState([]);
+  const [assignmentValues, setAssignmentValues] = useState({ role_id: "", department_id: "", designation_id: "" });
+  const [assignmentSaving, setAssignmentSaving] = useState({ role: false, department: false, designation: false });
+  const [assignmentLoading, setAssignmentLoading] = useState(false);
+  const [snack, setSnack] = useState({ open: false, msg: "", sev: "success" });
 
   useEffect(() => {
     handleGetModulePermission();
@@ -45,6 +56,105 @@ const EmpProfile = () => {
     handleUserActivity();
   }, [id]);
 
+  useEffect(() => {
+    if (!profileData) return;
+    setAssignmentValues({
+      role_id: String(profileData?.role_id || profileData?.role?.id || ""),
+      department_id: String(profileData?.department_id || profileData?.department?.id || ""),
+      designation_id: String(profileData?.designation_id || profileData?.designation?.id || ""),
+    });
+  }, [profileData]);
+
+  useEffect(() => {
+    if (!isSuperAdmin) return;
+    loadAssignmentOptions();
+  }, [isSuperAdmin]);
+
+  const showSnack = (msg, sev = "success") => setSnack({ open: true, msg, sev });
+
+  const loadAssignmentOptions = async () => {
+    setAssignmentLoading(true);
+    try {
+      const [roleRes, departmentRes, designationRes] = await Promise.all([
+        fetchRole(),
+        fetchDepartment(),
+        fetchDesignation(),
+      ]);
+      setRoleOptions(roleRes?.data || []);
+      setDepartmentOptions(departmentRes?.data || []);
+      setDesignationOptions(designationRes?.data || []);
+    } catch (err) {
+      console.error("Assignment options fetch error:", err);
+      showSnack("Failed to load role, department, and designation options.", "error");
+    } finally {
+      setAssignmentLoading(false);
+    }
+  };
+
+  const getErrorMessage = (error, fallback) =>
+    error?.response?.data?.message || error?.response?.data?.error || error?.message || fallback;
+
+  const refreshViewedProfile = async () => {
+    const updatedProfile = await getProfile(id);
+    setProfileData(updatedProfile.data || {});
+    return updatedProfile.data || {};
+  };
+
+  const handleAssignmentValueChange = (field, value) => {
+    if (!isSuperAdmin) return;
+    setAssignmentValues((current) => ({ ...current, [field]: value }));
+  };
+
+  const handleAssignmentSave = async (type) => {
+    if (!isSuperAdmin || !profileData?.id) {
+      showSnack("Only Super Admin can update employee assignments.", "error");
+      return;
+    }
+
+    const configs = {
+      role: {
+        field: "role_id",
+        payloadKey: "role_id",
+        label: "role",
+        request: changeEmployeeRole,
+        previous: String(profileData?.role_id || profileData?.role?.id || ""),
+      },
+      department: {
+        field: "department_id",
+        payloadKey: "department_id",
+        label: "department",
+        request: changeEmployeeDepartment,
+        previous: String(profileData?.department_id || profileData?.department?.id || ""),
+      },
+      designation: {
+        field: "designation_id",
+        payloadKey: "designation_id",
+        label: "designation",
+        request: changeEmployeeDesignation,
+        previous: String(profileData?.designation_id || profileData?.designation?.id || ""),
+      },
+    };
+
+    const config = configs[type];
+    const selectedValue = assignmentValues[config.field];
+    if (!selectedValue) {
+      showSnack(`Select a ${config.label} first.`, "warning");
+      return;
+    }
+
+    setAssignmentSaving((current) => ({ ...current, [type]: true }));
+    try {
+      await config.request(profileData.id, { [config.payloadKey]: selectedValue });
+      await refreshViewedProfile();
+      showSnack(`Employee ${config.label} updated successfully.`);
+    } catch (err) {
+      console.error(`Failed to update ${config.label}:`, err);
+      setAssignmentValues((current) => ({ ...current, [config.field]: config.previous }));
+      showSnack(getErrorMessage(err, `Failed to update employee ${config.label}.`), "error");
+    } finally {
+      setAssignmentSaving((current) => ({ ...current, [type]: false }));
+    }
+  };
   const handleGetModulePermission = async () => {
     try {
       const response = await modulePermission();
@@ -247,6 +357,13 @@ const EmpProfile = () => {
               canManageProfile={Boolean(permissions.employee)}
               handleLogout={handleLogout}
               imageUrl={imageUrl}
+              isSuperAdmin={isSuperAdmin}
+              assignmentOptions={{ roles: roleOptions, departments: departmentOptions, designations: designationOptions }}
+              assignmentValues={assignmentValues}
+              assignmentLoading={assignmentLoading}
+              assignmentSaving={assignmentSaving}
+              onAssignmentChange={handleAssignmentValueChange}
+              onAssignmentSave={handleAssignmentSave}
             />
           )}
 
@@ -278,6 +395,11 @@ const EmpProfile = () => {
           {activeTab === 4 && permissions.activity && <UserActivityList data={activityData} />}
         </Paper>
       )}
+      <Snackbar open={snack.open} autoHideDuration={3000} onClose={() => setSnack((state) => ({ ...state, open: false }))} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
+        <Alert severity={snack.sev} sx={{ width: "100%" }} onClose={() => setSnack((state) => ({ ...state, open: false }))}>
+          {snack.msg}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

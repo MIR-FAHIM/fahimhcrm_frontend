@@ -1,10 +1,22 @@
+import API_URL from '../../../api_url';
 // src/api/apiController.js
 import axiosInstance from '../../../axiosInstance.jsx'
+
+const getMasterDataToken = () => {
+  const storedUser = localStorage.getItem("loggedInUser") || localStorage.getItem("user");
+  let appToken = "";
+  try {
+    appToken = storedUser ? JSON.parse(storedUser)?.app_token : "";
+  } catch (error) {
+    appToken = "";
+  }
+  return appToken || localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+}
 
 // Fetch posts from API
 export const getTaskByUsers = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-user-task/${id}`,
+    const response = await axiosInstance.get(API_URL.getUserTaskById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -20,7 +32,7 @@ export const getTaskByUsers = async (id) => {
 }
 export const getWaitingTaskByUsers = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-user-waiting-task/${id}`,
+    const response = await axiosInstance.get(API_URL.getUserWaitingTaskById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -36,7 +48,7 @@ export const getWaitingTaskByUsers = async (id) => {
 }
 export const getFeatureByProject = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/projects/features/${id}`,
+    const response = await axiosInstance.get(API_URL.projectsFeaturesById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -52,7 +64,7 @@ export const getFeatureByProject = async (id) => {
 }
 export const getProjectsPhases = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-project-phase/${id}`,
+    const response = await axiosInstance.get(API_URL.getProjectPhaseById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -68,7 +80,7 @@ export const getProjectsPhases = async (id) => {
 }
 export const updateCompletionPercentage = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/update-completion-percentage`, data,
+    const response = await axiosInstance.post(API_URL.updateCompletionPercentage, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -84,7 +96,7 @@ export const updateCompletionPercentage = async (data) => {
 }
 export const addNotification = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/add-notification`, data,
+    const response = await axiosInstance.post(API_URL.addNotification, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -100,7 +112,7 @@ export const addNotification = async (data) => {
 }
 export const addTaskFollowup = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/add-task-followup`, data,
+    const response = await axiosInstance.post(API_URL.addTaskFollowup, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -116,7 +128,7 @@ export const addTaskFollowup = async (data) => {
 }
 export const addPhase = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/add-project-phase`, data,
+    const response = await axiosInstance.post(API_URL.addProjectPhase, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -132,7 +144,7 @@ export const addPhase = async (data) => {
 }
 export const addTaskImages = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/task/images/add`, data,
+    const response = await axiosInstance.post(API_URL.taskImagesAdd, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -148,7 +160,7 @@ export const addTaskImages = async (data) => {
 }
 export const updateShowCompletionPercentage = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/update-show-completion-percentage`, data,
+    const response = await axiosInstance.post(API_URL.updateShowCompletionPercentage, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -164,7 +176,7 @@ export const updateShowCompletionPercentage = async (data) => {
 }
 export const updateTask = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/update-task`, data,
+    const response = await axiosInstance.post(API_URL.updateTask, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -180,7 +192,7 @@ export const updateTask = async (data) => {
 }
 export const addWorkReport = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/work-reports`, data,
+    const response = await axiosInstance.post(API_URL.workReports, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -196,7 +208,7 @@ export const addWorkReport = async (data) => {
 }
 export const getAssignedTaskByUsers = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-assigned-task/${id}`,
+    const response = await axiosInstance.get(API_URL.getAssignedTaskById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -212,7 +224,7 @@ export const getAssignedTaskByUsers = async (id) => {
 }
 export const getTaskFollowup = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-task-followupsByTaskId/${id}`,
+    const response = await axiosInstance.get(API_URL.getTaskFollowupsByTaskIdById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -228,7 +240,7 @@ export const getTaskFollowup = async (id) => {
 }
 export const deleteTaskFollowup = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/delete-followup/${id}`,
+    const response = await axiosInstance.get(API_URL.deleteFollowupById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -244,7 +256,7 @@ export const deleteTaskFollowup = async (id) => {
 }
 export const getTaskImages = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/task/images/${id}`,
+    const response = await axiosInstance.get(API_URL.taskImagesById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -260,7 +272,7 @@ export const getTaskImages = async (id) => {
 }
 export const getTaskActivity = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-task-activitiesByTaskId/${id}`,
+    const response = await axiosInstance.get(API_URL.getTaskActivitiesByTaskIdById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -276,7 +288,7 @@ export const getTaskActivity = async (id) => {
 }
 export const getTaskDetails = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/task-details/${id}`,
+    const response = await axiosInstance.get(API_URL.taskDetailsById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -292,7 +304,7 @@ export const getTaskDetails = async (id) => {
 }
 export const getTaskReportByUser = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-task-report/${id}`,
+    const response = await axiosInstance.get(API_URL.getTaskReportById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -308,7 +320,7 @@ export const getTaskReportByUser = async (id) => {
 }
 export const getWorkReportByUser = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/work-reports/user/${id}`,
+    const response = await axiosInstance.get(API_URL.workReportsUserById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -324,7 +336,7 @@ export const getWorkReportByUser = async (id) => {
 }
 export const updateTaskStatus = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/update-task-status`, data,
+    const response = await axiosInstance.post(API_URL.updateTaskWorkflowStatus, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -341,7 +353,7 @@ export const updateTaskStatus = async (data) => {
 
 export const getAllTask = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-all-task`,
+    const response = await axiosInstance.get(API_URL.getAllTask,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -357,7 +369,7 @@ export const getAllTask = async () => {
 }
 export const getAllTaskByDepartment = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-all-task-department/${id}`,
+    const response = await axiosInstance.get(API_URL.getAllTaskDepartmentById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -373,7 +385,7 @@ export const getAllTaskByDepartment = async (id) => {
 }
 export const fetchTaskPriorities = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-priorites`,
+    const response = await axiosInstance.get(API_URL.getPriorities,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -389,7 +401,7 @@ export const fetchTaskPriorities = async () => {
 }
 export const getAllWorkReport = async () => {
   try {
-    const response = await axiosInstance.get(`/api/work-reports/by-date`,
+    const response = await axiosInstance.get(API_URL.workReportsByDate,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -405,7 +417,7 @@ export const getAllWorkReport = async () => {
 }
 export const getAllTaskByStatus = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-all-task-by-status`,
+    const response = await axiosInstance.get(API_URL.getAllTaskByStatus,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -421,7 +433,7 @@ export const getAllTaskByStatus = async () => {
 }
 export const getPhaseTask = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/task-by-project-phase/${id}`,
+    const response = await axiosInstance.get(API_URL.taskByProjectPhaseById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -437,7 +449,7 @@ export const getPhaseTask = async (id) => {
 }
 export const getProjectTask = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/task-by-project/${id}`,
+    const response = await axiosInstance.get(API_URL.taskByProjectById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -453,7 +465,7 @@ export const getProjectTask = async (id) => {
 }
 export const deleteTaskImage = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/delete-task-image/${id}`,
+    const response = await axiosInstance.get(API_URL.deleteTaskImageById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -469,7 +481,7 @@ export const deleteTaskImage = async (id) => {
 }
 export const getPriority = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-priorites`,
+    const response = await axiosInstance.get(API_URL.getPriorities,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -485,7 +497,7 @@ export const getPriority = async () => {
 }
 export const getStatus = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-task-status`,
+    const response = await axiosInstance.get(API_URL.getTaskStatus,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -501,7 +513,7 @@ export const getStatus = async () => {
 }
 export const getTaskType = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-task-type`,
+    const response = await axiosInstance.get(API_URL.getTaskType,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -517,7 +529,7 @@ export const getTaskType = async () => {
 }
 export const getProjects = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-project`,
+    const response = await axiosInstance.get(API_URL.getProject,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -533,7 +545,7 @@ export const getProjects = async () => {
 }
 export const getAllWorkShop = async () => {
   try {
-    const response = await axiosInstance.get(`/api/project-workshop/all`,
+    const response = await axiosInstance.get(API_URL.projectWorkshopAll,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -549,7 +561,7 @@ export const getAllWorkShop = async () => {
 }
 export const getAllWorkShopProject = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/project-workshop/get-by-project/${id}`,
+    const response = await axiosInstance.get(API_URL.projectWorkshopGetByProjectById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -565,7 +577,7 @@ export const getAllWorkShopProject = async (id) => {
 }
 export const deleteWorkShop = async (id) => {
   try {
-    const response = await axiosInstance.delete(`/api/project-workshop/remove/${id}`,
+    const response = await axiosInstance.delete(API_URL.projectWorkshopRemoveById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -582,7 +594,7 @@ export const deleteWorkShop = async (id) => {
 
 export const addWorkShop = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/project-workshop/add-work-shop`, data, 
+    const response = await axiosInstance.post(API_URL.projectWorkshopAddWorkShop, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -600,7 +612,7 @@ export const addWorkShop = async (data) => {
 
 export const getProjectsByDepartment = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-project-by-department/${id}`,
+    const response = await axiosInstance.get(API_URL.getProjectByDepartmentById(id),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -616,7 +628,7 @@ export const getProjectsByDepartment = async (id) => {
 }
 export const fetchTaskStatus = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-task-status`,
+    const response = await axiosInstance.get(API_URL.getTaskStatus,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -632,7 +644,7 @@ export const fetchTaskStatus = async () => {
 }
 export const fetchTaskType = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-task-type`,
+    const response = await axiosInstance.get(API_URL.getTaskType,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -648,7 +660,7 @@ export const fetchTaskType = async () => {
 }
 export const assignUser = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/assign-task`, data,
+    const response = await axiosInstance.post(API_URL.assignTask, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -664,7 +676,7 @@ export const assignUser = async (data) => {
 }
 export const addTask = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/add-task`, data,
+    const response = await axiosInstance.post(API_URL.addTask, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -680,7 +692,7 @@ export const addTask = async (data) => {
 }
 export const addProject = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/add-project`, data,
+    const response = await axiosInstance.post(API_URL.addProject, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -696,7 +708,7 @@ export const addProject = async (data) => {
 }
 export const addTaskPriority = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/add-priority`, data,
+    const response = await axiosInstance.post(API_URL.addPriority, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -712,7 +724,7 @@ export const addTaskPriority = async (data) => {
 }
 export const addTaskStatus = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/add-task-status`, data,
+    const response = await axiosInstance.post(API_URL.addTaskStatus, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -728,7 +740,7 @@ export const addTaskStatus = async (data) => {
 }
 export const addTaskType = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/add-task-type`, data,
+    const response = await axiosInstance.post(API_URL.addTaskType, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -740,5 +752,76 @@ export const addTaskType = async (data) => {
   } catch (error) {
     console.error("Error fetching task add:", error);
     return [];
+  }
+}
+export const updateTaskPriority = async (id, data) => {
+  try {
+    const response = await axiosInstance.put(API_URL.updatePriorityById(id), data, {
+      headers: { 'token': getMasterDataToken() },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updateTaskPriority:", error);
+    throw error;
+  }
+}
+
+export const deleteTaskPriority = async (id) => {
+  try {
+    const response = await axiosInstance.delete(API_URL.deletePriorityById(id), {
+      headers: { 'token': getMasterDataToken() },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleteTaskPriority:", error);
+    throw error;
+  }
+}
+
+export const updateTaskType = async (id, data) => {
+  try {
+    const response = await axiosInstance.put(API_URL.updateTaskTypeById(id), data, {
+      headers: { 'token': getMasterDataToken() },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updateTaskType:", error);
+    throw error;
+  }
+}
+
+export const deleteTaskType = async (id) => {
+  try {
+    const response = await axiosInstance.delete(API_URL.deleteTaskTypeById(id), {
+      headers: { 'token': getMasterDataToken() },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleteTaskType:", error);
+    throw error;
+  }
+}
+
+export const updateTaskStatusMaster = async (id, data) => {
+  try {
+    const response = await axiosInstance.put(API_URL.updateTaskStatusMaster(id), data, {
+      headers: { 'token': getMasterDataToken() },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updateTaskStatusMaster:", error);
+    throw error;
+  }
+}
+
+export const deleteTaskStatus = async (id) => {
+  try {
+    const response = await axiosInstance.delete(API_URL.deleteTaskStatusById(id), {
+      headers: { 'token': getMasterDataToken() },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleteTaskStatus:", error);
+    throw error;
   }
 }

@@ -82,6 +82,7 @@ import {
  POSManagementForm,
  ProductEntry,
  ProductList,
+ ProductManagement,
  ProductDetailVariant,
  POSPage,
  OrderList,
@@ -212,6 +213,7 @@ const AppRouter = () => {
           <Route path="/opportunity-tabs/:id" element={<OpportunityTabs />} />
           <Route path="/get-quotation-prospect/:id" element={<QuotationByProspect />} />
           <Route path="/create-quotation/:id" element={<POSManagementForm />} />
+          <Route path="/product-management" element={<ProductManagement />} />
           <Route path="/product-entry" element={<ProductEntry />} />
           <Route path="/product-list" element={<ProductList />} />
           <Route path="/product-details-variant/:id" element={<ProductDetailVariant />} />

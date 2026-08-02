@@ -3,11 +3,15 @@ import {
   Avatar,
   Box,
   Button,
+  CircularProgress,
+  FormControl,
   Grid,
   TextField,
   Typography,
   IconButton,
   Paper,
+  Select,
+  MenuItem,
   Stack,
   Chip,
   Divider,
@@ -95,6 +99,13 @@ const ProfileComponent = ({
   canManageProfile = false,
   handleLogout,
   handleUpdateData,
+  isSuperAdmin = false,
+  assignmentOptions = { roles: [], departments: [], designations: [] },
+  assignmentValues = { role_id: "", department_id: "", designation_id: "" },
+  assignmentLoading = false,
+  assignmentSaving = { role: false, department: false, designation: false },
+  onAssignmentChange = () => {},
+  onAssignmentSave = () => {},
 }) => {
   const theme = useTheme();
 
@@ -189,6 +200,35 @@ const ProfileComponent = ({
 
   const canUpload = isMyProfile;
   const canEditWorkingHours = isMyProfile || canManageProfile || isEditable;
+  const assignmentRows = [
+    {
+      key: "role",
+      field: "role_id",
+      label: "Role",
+      valueKey: "id",
+      labelKey: "role_name",
+      options: assignmentOptions.roles || [],
+      saving: assignmentSaving.role,
+    },
+    {
+      key: "department",
+      field: "department_id",
+      label: "Department",
+      valueKey: "id",
+      labelKey: "department_name",
+      options: assignmentOptions.departments || [],
+      saving: assignmentSaving.department,
+    },
+    {
+      key: "designation",
+      field: "designation_id",
+      label: "Designation",
+      valueKey: "id",
+      labelKey: "designation_name",
+      options: assignmentOptions.designations || [],
+      saving: assignmentSaving.designation,
+    },
+  ];
 
   const officeTimeLabel = useMemo(() => {
     if (!editData.office_start_time && !editData.office_end_time) return "Not set";
@@ -321,6 +361,49 @@ const ProfileComponent = ({
         </Grid>
       </SectionCard>
 
+
+      {isSuperAdmin && (
+        <SectionCard title="Super Admin Controls" sx={{ mb: 2 }}>
+          <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 2 }}>
+            Change this employee's role, department, or designation. Each field saves independently.
+          </Typography>
+          <Grid container spacing={2}>
+            {assignmentRows.map((row) => (
+              <Grid key={row.key} item xs={12} md={4}>
+                <Stack spacing={1}>
+                  <FormControl fullWidth size="small" disabled={!isSuperAdmin || assignmentLoading || row.saving}>
+                    <Select
+                      displayEmpty
+                      value={assignmentValues[row.field] || ""}
+                      onChange={(event) => onAssignmentChange(row.field, event.target.value)}
+                      sx={{ bgcolor: theme.palette.background.default }}
+                    >
+                      <MenuItem value="" disabled>
+                        Select {row.label}
+                      </MenuItem>
+                      {row.options.map((option) => (
+                        <MenuItem key={option[row.valueKey]} value={String(option[row.valueKey])}>
+                          {option[row.labelKey] || `#${option[row.valueKey]}`}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => onAssignmentSave(row.key)}
+                    disabled={!isSuperAdmin || assignmentLoading || row.saving || !assignmentValues[row.field]}
+                    startIcon={row.saving ? <CircularProgress size={15} color="inherit" /> : <SaveIcon />}
+                    sx={{ textTransform: "none", fontWeight: 800 }}
+                  >
+                    Save {row.label}
+                  </Button>
+                </Stack>
+              </Grid>
+            ))}
+          </Grid>
+        </SectionCard>
+      )}
       {/* General Info + Office Time */}
       <Grid container spacing={2}>
         <Grid item xs={12} md={7}>

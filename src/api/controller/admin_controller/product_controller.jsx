@@ -1,9 +1,26 @@
 import axiosInstance from '../../axiosInstance.jsx'
+import API_URL from '../../api_url';
+
+const getProductAuthToken = () => {
+  const storedUser = localStorage.getItem("loggedInUser") || localStorage.getItem("user");
+
+  try {
+    const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+    return parsedUser?.app_token || localStorage.getItem("authToken");
+  } catch {
+    return localStorage.getItem("authToken");
+  }
+};
+
+const productAuthHeaders = (isMultipart = false) => ({
+  token: getProductAuthToken(),
+  ...(isMultipart ? { "Content-Type": "multipart/form-data" } : {}),
+});
 
 // Fetch posts from API
 export const getProduct = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/product/active`,
+    const response = await axiosInstance.get(API_URL.productActive,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -18,7 +35,7 @@ export const getProduct = async (id) => {
 }
 export const getStock = async () => {
   try {
-    const response = await axiosInstance.get(`/api/stock/list`,
+    const response = await axiosInstance.get(API_URL.stockList,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -33,7 +50,7 @@ export const getStock = async () => {
 }
 export const getBrand = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-brands`,
+    const response = await axiosInstance.get(API_URL.getBrands,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -48,7 +65,7 @@ export const getBrand = async () => {
 }
 export const getCategory = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-active-categories`,
+    const response = await axiosInstance.get(API_URL.getActiveCategories,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -63,7 +80,7 @@ export const getCategory = async () => {
 }
 export const getProductWithVariants = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/product-variant/all/${id}`,
+    const response = await axiosInstance.get(API_URL.productVariantAllById(id),
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -79,7 +96,7 @@ export const getProductWithVariants = async (id) => {
 
 export const getAllVarients = async () => {
   try {
-    const response = await axiosInstance.get(`/api/product-variant/get-all-varients`,
+    const response = await axiosInstance.get(API_URL.productVariantGetAllVarients,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -94,7 +111,7 @@ export const getAllVarients = async () => {
 }
 export const addProduct = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/product/add`, data,
+    const response = await axiosInstance.post(API_URL.productAdd, data,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -107,9 +124,32 @@ export const addProduct = async (data) => {
     return [];
   }
 }
+
+export const addProductManagement = async (data) => {
+  const isMultipart = data instanceof FormData;
+  const response = await axiosInstance.post(API_URL.productAdd, data, {
+    headers: productAuthHeaders(isMultipart),
+  });
+  return response.data;
+}
+
+export const updateProductManagement = async (id, data) => {
+  const isMultipart = data instanceof FormData;
+  const response = await axiosInstance.put(API_URL.productUpdateById(id), data, {
+    headers: productAuthHeaders(isMultipart),
+  });
+  return response.data;
+}
+
+export const deleteProductManagement = async (id) => {
+  const response = await axiosInstance.delete(API_URL.productDeleteById(id), {
+    headers: productAuthHeaders(),
+  });
+  return response.data;
+}
 export const createMultipleCart = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/cart/multiple`, data,
+    const response = await axiosInstance.post(API_URL.cartMultiple, data,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -124,7 +164,7 @@ export const createMultipleCart = async (data) => {
 }
 export const addOrder = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/product-orders/add-order`, data,
+    const response = await axiosInstance.post(API_URL.productOrdersAddOrder, data,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -139,7 +179,7 @@ export const addOrder = async (data) => {
 }
 export const addVariant = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/product-variant/add`, data,
+    const response = await axiosInstance.post(API_URL.productVariantAdd, data,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header

@@ -1,10 +1,11 @@
+import API_URL from '../../api_url';
 // src/api/apiController.js
 import axiosInstance from '../../axiosInstance.jsx'
 
 // Fetch posts from API
 export const getAttendanceByDate = async (date) => {
   try {
-    const response = await axiosInstance.get(`/api/get-attendance-date?date=${date}`,
+    const response = await axiosInstance.get(API_URL.getAttendanceDate(date),
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -21,7 +22,7 @@ export const getAttendanceByDate = async (date) => {
 
 export const updateAttendance = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/update-attendance`, data,
+    const response = await axiosInstance.post(API_URL.updateAttendance, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -37,7 +38,7 @@ export const updateAttendance = async (data) => {
 }
 export const getAttendanceCountData = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/attendanceReportByUser-count-data`, data,
+    const response = await axiosInstance.post(API_URL.attendanceReportByUserCountData, data,
       {
         headers: {
           // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -56,7 +57,7 @@ export const getAttendanceCountData = async (data) => {
 
 export const getAttendanceReportByUser = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/get-attendance-report-user`, data,
+    const response = await axiosInstance.post(API_URL.getAttendanceReportUser, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -80,7 +81,7 @@ export const getAttendanceAdjustment = async () => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/get-attendance-adjustment`,
+    const response = await axiosInstance.get(API_URL.getAttendanceAdjustment,
       {
         headers: {
           'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -99,7 +100,7 @@ export const getAttendanceAdjustment = async () => {
 
 export const hasCheckedIn = async (userId) => {
   try {
-    const response = await axiosInstance.get(`/api/is-checkedin-today?user_id=${userId}`,
+    const response = await axiosInstance.get(API_URL.isCheckedinToday(userId),
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -116,7 +117,7 @@ export const hasCheckedIn = async (userId) => {
 
 export const checkInNow = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/check-in-now`, data,
+    const response = await axiosInstance.post(API_URL.checkInNow, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -132,7 +133,7 @@ export const checkInNow = async (data) => {
 }
 export const requestAdjustment = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/request-attendance-adjustment`, data,
+    const response = await axiosInstance.post(API_URL.requestAttendanceAdjustment, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -148,7 +149,7 @@ export const requestAdjustment = async (data) => {
 }
 export const approveAdjustment = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/approve-time-adjustment`, data,
+    const response = await axiosInstance.post(API_URL.approveTimeAdjustment, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -164,7 +165,7 @@ export const approveAdjustment = async (data) => {
 }
 export const checkOutNow = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/check-out-now`, data,
+    const response = await axiosInstance.post(API_URL.checkOutNow, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header

@@ -97,6 +97,7 @@ import QuotationByProspect from "./admin/quotation/get_quotation_by_prospect";
 import POSManagementForm from "./admin/quotation/create_quotation";
 import ProductEntry from "./admin/sale_product/product_entry";
 import ProductList from "./admin/sale_product/product_list";
+import ProductManagement from "./admin/sale_product/product_management";
 import ProductDetailVariant from "./admin/sale_product/product_details";
 import POSPage from "./admin/sale_product/pos_page";
 import OrderList from "./admin/sale_product/order_table";
@@ -231,6 +232,7 @@ export {
   POSManagementForm,
   ProductEntry,
   ProductList,
+  ProductManagement,
   ProductDetailVariant,
   POSPage,
   OrderList,

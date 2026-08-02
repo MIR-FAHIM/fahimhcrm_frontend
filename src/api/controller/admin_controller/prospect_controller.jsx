@@ -1,3 +1,4 @@
+import API_URL from '../../api_url';
 // src/api/apiController.js
 import axiosInstance from '../../axiosInstance.jsx'
 
@@ -6,7 +7,7 @@ import axiosInstance from '../../axiosInstance.jsx'
 
 export const getProspectAllStatus = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-prospect-stages`,
+    const response = await axiosInstance.get(API_URL.getProspectStages,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -21,7 +22,7 @@ export const getProspectAllStatus = async () => {
 }
 export const getProspectStagesByLog = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/prospectstage-by-log-and-prospect`,data,
+    const response = await axiosInstance.post(API_URL.prospectstageByLogAndProspect,data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -36,7 +37,7 @@ export const getProspectStagesByLog = async (data) => {
 }
 export const deleteProspect = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/delete-prospect/${id}`,
+    const response = await axiosInstance.get(API_URL.deleteProspectById(id),
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -51,7 +52,7 @@ export const deleteProspect = async (id) => {
 }
 export const updateProspect = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/update-prospect`,data,
+    const response = await axiosInstance.post(API_URL.updateProspect,data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -66,7 +67,7 @@ export const updateProspect = async (data) => {
 }
 export const fetchMonthlyProspectController = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-prospect-month-report`,
+    const response = await axiosInstance.get(API_URL.getProspectMonthReport,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -81,7 +82,7 @@ export const fetchMonthlyProspectController = async () => {
 }
 export const fetchWeeklyProspectController = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-prospect-weekly-report`,
+    const response = await axiosInstance.get(API_URL.getProspectWeeklyReport,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -96,7 +97,7 @@ export const fetchWeeklyProspectController = async () => {
 }
 export const sourceWiseProspectController = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-prospect-source-wise`,
+    const response = await axiosInstance.get(API_URL.getProspectSourceWise,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -111,7 +112,7 @@ export const sourceWiseProspectController = async () => {
 }
 export const fetchMeetingByProspect = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-meeting-by-prospect/${id}`,
+    const response = await axiosInstance.get(API_URL.getMeetingByProspectById(id),
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -126,7 +127,7 @@ export const fetchMeetingByProspect = async (id) => {
 }
 export const getAllProspectStageOverview = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-prospect-stage-overview`,
+    const response = await axiosInstance.get(API_URL.getProspectStageOverview,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -141,7 +142,7 @@ export const getAllProspectStageOverview = async () => {
 }
 export const getAllLogActivityOfProspect = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-log-activity-by-prospect/${id}`,
+    const response = await axiosInstance.get(API_URL.getLogActivityByProspectById(id),
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -156,7 +157,7 @@ export const getAllLogActivityOfProspect = async (id) => {
 }
 export const getEffortCalculation = async () => {
   try {
-    const response = await axiosInstance.get(`/api/calculate-effort-prospect`,
+    const response = await axiosInstance.get(API_URL.calculateEffortProspect,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -171,7 +172,7 @@ export const getEffortCalculation = async () => {
 }
 export const getProspectIndustryType = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-industry-type`,
+    const response = await axiosInstance.get(API_URL.getIndustryType,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -186,7 +187,7 @@ export const getProspectIndustryType = async () => {
 }
 export const getProspectSource = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-information-source`,
+    const response = await axiosInstance.get(API_URL.getInformationSource,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -201,7 +202,7 @@ export const getProspectSource = async () => {
 }
 export const fetchAllProspect = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-all-prospect`,
+    const response = await axiosInstance.get(API_URL.getAllProspect,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -216,7 +217,7 @@ export const fetchAllProspect = async () => {
 }
 export const fetchAllWarehouse = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-warehouse`,
+    const response = await axiosInstance.get(API_URL.getWarehouse,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -231,7 +232,7 @@ export const fetchAllWarehouse = async () => {
 }
 export const fetchAllProspectByStage = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-prospect-by-stage`,
+    const response = await axiosInstance.get(API_URL.getProspectByStage,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -247,7 +248,7 @@ export const fetchAllProspectByStage = async () => {
 
 export const getProspectDetails = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-prospect-detail/${id}`,
+    const response = await axiosInstance.get(API_URL.getProspectDetailById(id),
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -262,7 +263,7 @@ export const getProspectDetails = async (id) => {
 }
 export const getContactPersonProspect = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-contact-person-prospect/${id}`,
+    const response = await axiosInstance.get(API_URL.getContactPersonProspectById(id),
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -277,7 +278,7 @@ export const getContactPersonProspect = async (id) => {
 }
 export const getAssignedPersonsProspect = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/prospect-concern-person/${id}`,
+    const response = await axiosInstance.get(API_URL.prospectConcernPersonById(id),
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -292,7 +293,7 @@ export const getAssignedPersonsProspect = async (id) => {
 }
 export const addProspect = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/create-prospect`, data,
+    const response = await axiosInstance.post(API_URL.createProspect, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -308,7 +309,7 @@ export const addProspect = async (data) => {
 }
 export const removeAssignPerson = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/prospect-concern-person/remove`, data,
+    const response = await axiosInstance.post(API_URL.prospectConcernPersonRemove, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -324,7 +325,7 @@ export const removeAssignPerson = async (data) => {
 }
 export const addConcernPersonsMultiple = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/prospect-concern-person/add`, data,
+    const response = await axiosInstance.post(API_URL.prospectConcernPersonAdd, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -340,7 +341,7 @@ export const addConcernPersonsMultiple = async (data) => {
 }
 export const checkProspectAvaiblity = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/check-prospectname-avaiblity`, data,
+    const response = await axiosInstance.post(API_URL.checkProspectnameAvaiblity, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -357,7 +358,7 @@ export const checkProspectAvaiblity = async (data) => {
 
 export const convertToPrsspect = async (ids) => {
   try {
-    const response = await axiosInstance.post(`/api/convert-to-prospect`, {
+    const response = await axiosInstance.post(API_URL.convertToProspect, {
       ids // ✅ wrapping in `data` key like your curl
     },
       {
@@ -375,7 +376,7 @@ export const convertToPrsspect = async (ids) => {
 }
 export const convertContactRowStatusMultiple = async (idList) => {
   try {
-    const response = await axiosInstance.post(`/api/update-contact-status`, 
+    const response = await axiosInstance.post(API_URL.updateContactStatus,
        idList, // ✅ wrapping in `data` key like your curl,
       {
         headers: {
@@ -392,7 +393,7 @@ export const convertContactRowStatusMultiple = async (idList) => {
 }
 export const convertContactRowStatusMultipleForFacebook = async (idList) => {
   try {
-    const response = await axiosInstance.post(`/api/update-contact-status-facebook`, 
+    const response = await axiosInstance.post(API_URL.updateContactStatusFacebook,
        idList, // ✅ wrapping in `data` key like your curl,
       {
         headers: {
@@ -429,7 +430,7 @@ export const addContactPerson = async (data) => {
       formData.append(`contacts[${index}][note]`, contact.note);
     });
 
-    const response = await axiosInstance.post(`/api/add-prospect-contact-person`,
+    const response = await axiosInstance.post(API_URL.addProspectContactPerson,
       formData,
       {
         headers: {
@@ -447,7 +448,7 @@ export const addContactPerson = async (data) => {
 };
 export const addLogActivityProspect = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/add-prospect-log-activity`, data,
+    const response = await axiosInstance.post(API_URL.addProspectLogActivity, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -463,7 +464,7 @@ export const addLogActivityProspect = async (data) => {
 }
 export const changeProspectStatus = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/change-prospect-stage`, data,
+    const response = await axiosInstance.post(API_URL.changeProspectStage, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -479,7 +480,7 @@ export const changeProspectStatus = async (data) => {
 }
 export const addMeeting = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/add-meeting`, data,
+    const response = await axiosInstance.post(API_URL.addMeeting, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -495,7 +496,7 @@ export const addMeeting = async (data) => {
 }
 export const addContactUs = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/add-contact-us`, data,
+    const response = await axiosInstance.post(API_URL.addContactUs, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -509,6 +510,3 @@ export const addContactUs = async (data) => {
   }
 
 }
-
-
-

@@ -1,11 +1,22 @@
 import axiosInstance from '../../axiosInstance.jsx'
 import { companyID } from '../../config'
+import API_URL from '../../api_url';
+const getUserAppToken = () => {
+  const storedUser = localStorage.getItem("loggedInUser") || localStorage.getItem("user");
+  let appToken = "";
+  try {
+    appToken = storedUser ? JSON.parse(storedUser)?.app_token : "";
+  } catch (error) {
+    appToken = "";
+  }
+  return appToken || localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+};
 
 // Fetch posts from API
 
 export const registerEmployee = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/register-employee`, data,
+    const response = await axiosInstance.post(API_URL.registerEmployee, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -21,7 +32,7 @@ export const registerEmployee = async (data) => {
 }
 export const uploadProfileImage = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/upload-user-image`, data,
+    const response = await axiosInstance.post(API_URL.uploadUserImage, data,
       {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -38,7 +49,7 @@ export const uploadProfileImage = async (data) => {
 }
 export const loginController = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/login`, data,
+    const response = await axiosInstance.post(API_URL.login, data,
       {
         headers: {
           'token': 'prefix_67e12b036e3f06.63889147', // Add the token in Authorization header
@@ -54,7 +65,7 @@ export const loginController = async (data) => {
 }
 export const addUserActivity = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/add-user-activity`, data,
+    const response = await axiosInstance.post(API_URL.addUserActivity, data,
       {
         headers: {
           'token': 'prefix_67e12b036e3f06.63889147', // Add the token in Authorization header
@@ -76,7 +87,7 @@ export const fetchEmployees = async () => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/get-all-employee`,
+    const response = await axiosInstance.get(API_URL.getAllEmployee,
       {
         headers: {
           'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -97,7 +108,7 @@ export const modulePermission = async () => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/module/permission/${companyID}`,
+    const response = await axiosInstance.get(API_URL.modulePermissionByCompanyID(companyID),
       {
         headers: {
           'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -118,7 +129,7 @@ export const dashBoardReport = async () => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/get-dashboard-report`,
+    const response = await axiosInstance.get(API_URL.getDashboardReport,
       {
         headers: {
           'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -141,7 +152,7 @@ export const attendanceDashboardReportController = async () => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/attendance-report-dashboard`,
+    const response = await axiosInstance.get(API_URL.attendanceReportDashboard,
       {
         headers: {
           'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -165,7 +176,7 @@ export const getFacebookLeads = async () => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/get-facebook-leads`,
+    const response = await axiosInstance.get(API_URL.getFacebookLeads,
       {
         headers: {
           'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -186,7 +197,7 @@ export const getAllUserTrack = async () => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/get-all-user-activity`,
+    const response = await axiosInstance.get(API_URL.getAllUserActivity,
       {
         headers: {
           'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -207,7 +218,7 @@ export const getUserActivity = async (id) => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/get-user-activity?user_id=${id}`,
+    const response = await axiosInstance.get(API_URL.getUserActivity(id),
       {
         headers: {
           'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -230,7 +241,7 @@ export const getContactUsLeads = async () => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/get-contact-us`,
+    const response = await axiosInstance.get(API_URL.getContactUs,
       {
         headers: {
           'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -248,7 +259,7 @@ export const getProfile = async (id, navigate) => {
 
 
   try {
-    const response = await axiosInstance.get(`/api/get-profile?user_id=${id}`,
+    const response = await axiosInstance.get(API_URL.getProfile(id),
       {
         headers: {
           'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -271,7 +282,7 @@ export const logOut = async (id) => {
 
 
   try {
-    const response = await axiosInstance.get(`/api/logout?user_id=${id}`,
+    const response = await axiosInstance.get(API_URL.logout(id),
       {
         headers: {
           'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -293,7 +304,7 @@ export const logOut = async (id) => {
 
 export const updateProfile = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/update-userinfo`, data,
+    const response = await axiosInstance.post(API_URL.updateUserinfo, data,
       {
         headers: {
 
@@ -310,7 +321,7 @@ export const updateProfile = async (data) => {
 };
 export const changePassController = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/change-password`, data,
+    const response = await axiosInstance.post(API_URL.changePassword, data,
       {
         headers: {
 
@@ -327,7 +338,7 @@ export const changePassController = async (data) => {
 };
 export const getUserModePreference = async (userId) => {
   try {
-    const response = await axiosInstance.get(`/api/get-user-mode-preference?user_id=${encodeURIComponent(userId)}`,
+    const response = await axiosInstance.get(API_URL.getUserModePreference(userId),
       {
         headers: {
           'token': localStorage.getItem("authToken"),
@@ -343,7 +354,7 @@ export const getUserModePreference = async (userId) => {
 
 export const updateUserModePreference = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/update-user-mode-preference`, data,
+    const response = await axiosInstance.post(API_URL.updateUserModePreference, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"),
@@ -353,6 +364,41 @@ export const updateUserModePreference = async (data) => {
     return response.data;
   } catch (error) {
     console.error("Error updating user mode preference:", error);
+    throw error;
+  }
+};
+export const changeEmployeeRole = async (userId, data) => {
+  try {
+    const response = await axiosInstance.post(API_URL.changeRoleByUserId(userId), data, {
+      headers: { token: getUserAppToken() },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error changing employee role:", error);
+    throw error;
+  }
+};
+
+export const changeEmployeeDepartment = async (userId, data) => {
+  try {
+    const response = await axiosInstance.post(API_URL.changeDepartmentByUserId(userId), data, {
+      headers: { token: getUserAppToken() },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error changing employee department:", error);
+    throw error;
+  }
+};
+
+export const changeEmployeeDesignation = async (userId, data) => {
+  try {
+    const response = await axiosInstance.post(API_URL.changeDesignationByUserId(userId), data, {
+      headers: { token: getUserAppToken() },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error changing employee designation:", error);
     throw error;
   }
 };

@@ -1,4 +1,5 @@
 import axiosInstance from '../../axiosInstance.jsx'
+import API_URL from '../../api_url';
 
 // Fetch posts from API
 
@@ -13,7 +14,7 @@ export const fetchClients = async () => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/clients`,
+    const response = await axiosInstance.get(API_URL.clients,
         {
             headers: {
               'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -33,7 +34,7 @@ export const fetchConversationRoom = async () => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/conversation-room`,
+    const response = await axiosInstance.get(API_URL.conversationRoom,
         {
             headers: {
               'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -53,7 +54,7 @@ export const getClientDetails = async (id) => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/get-client-details/${id}`,
+    const response = await axiosInstance.get(API_URL.getClientDetailsById(id),
         {
             headers: {
               'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -67,7 +68,7 @@ export const getClientDetails = async (id) => {
 }
 export const getTicketByClient = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/tickets/get-ticket-client/${id}`,
+    const response = await axiosInstance.get(API_URL.ticketsGetTicketClientById(id),
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -82,7 +83,7 @@ export const getTicketByClient = async (id) => {
 }
 export const addTicket = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/tickets/add-ticket`, data,
+    const response = await axiosInstance.post(API_URL.ticketsAddTicket, data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header

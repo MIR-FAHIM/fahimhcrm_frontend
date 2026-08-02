@@ -1,4 +1,5 @@
 import axiosInstance from '../../../axiosInstance.jsx'
+import API_URL from '../../../api_url';
 
 // Fetch posts from API
 
@@ -13,7 +14,7 @@ export const getReportText = async () => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/report-text`,
+    const response = await axiosInstance.get(API_URL.reportText,
         {
             headers: {
               'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -35,7 +36,7 @@ export const fetchClients = async () => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/clients`,
+    const response = await axiosInstance.get(API_URL.clients,
         {
             headers: {
               'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -55,7 +56,7 @@ export const addNotices = async (data) => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.post(`/api/notice/add`, data,
+    const response = await axiosInstance.post(API_URL.noticeAdd, data,
         {
             headers: {
               'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -75,7 +76,7 @@ export const deleteNotice = async (data) => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.post(`/api/delete-notice`, data,
+    const response = await axiosInstance.post(API_URL.deleteNotice, data,
         {
             headers: {
               'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -95,7 +96,7 @@ export const updateNotice = async (data) => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.post(`/api/update-notice`, data,
+    const response = await axiosInstance.post(API_URL.updateNotice, data,
         {
             headers: {
               'token': localStorage.getItem("authToken"),// Add the token in Authorization header
@@ -115,7 +116,7 @@ export const fetchNotices = async () => {
     return []; // Return an empty array or handle as necessary
   }
   try {
-    const response = await axiosInstance.get(`/api/notice/all`,
+    const response = await axiosInstance.get(API_URL.noticeAll,
         {
             headers: {
               'token': localStorage.getItem("authToken"),// Add the token in Authorization header

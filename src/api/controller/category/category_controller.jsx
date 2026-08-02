@@ -1,3 +1,4 @@
+import API_URL from '../../api_url';
 // src/api/apiController.js
 import axiosInstance from './axiosInstance.js'
 
@@ -6,7 +7,7 @@ import axiosInstance from './axiosInstance.js'
 // Fetch posts from API
 export const fetchCategory = async () => {
   try {
-    const response = await axiosInstance.get(`/api/getProductCategories`);
+    const response = await axiosInstance.get(API_URL.getProductCategories);
     return response.data.data;
   } catch (error) {
     console.error("Error fetching category:", error);
@@ -17,7 +18,7 @@ export const fetchCategory = async () => {
 
 export const addMainCategory = async (data) => {
     try {
-      const response = await axiosInstance.get(`/api/createMainCategory`, data);
+      const response = await axiosInstance.get(API_URL.createMainCategory, data);
       return response; // Return the response from the API
     } catch (error) {
       console.error("Error posting main cat data:", error);

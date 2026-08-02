@@ -1,11 +1,12 @@
 import axiosInstance from '../../axiosInstance.jsx'
+import API_URL from '../../api_url';
 
 // Fetch posts from API
 
 
 export const getOpportunityByStage = async () => {
   try {
-    const response = await axiosInstance.get(`/api/get-opportunities-by-stage`,
+    const response = await axiosInstance.get(API_URL.getOpportunitiesByStage,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -20,7 +21,7 @@ export const getOpportunityByStage = async () => {
 }
 export const getQuotationByProspect = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/quotations/prospect/${id}`,
+    const response = await axiosInstance.get(API_URL.quotationsProspectById(id),
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -35,7 +36,7 @@ export const getQuotationByProspect = async (id) => {
 }
 export const getOpportunityDetail = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/details-opportunity/${id}`,
+    const response = await axiosInstance.get(API_URL.detailsOpportunityById(id),
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -50,7 +51,7 @@ export const getOpportunityDetail = async (id) => {
 }
 export const addOpportunity = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/add-opportunity`,data,
+    const response = await axiosInstance.post(API_URL.addOpportunity,data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -65,7 +66,7 @@ export const addOpportunity = async (data) => {
 }
 export const createQuotation = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/add-quotation`,data,
+    const response = await axiosInstance.post(API_URL.addQuotation,data,
       {
         headers: {
           'token': localStorage.getItem("authToken"), // Add the token in Authorization header

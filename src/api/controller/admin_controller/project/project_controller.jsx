@@ -1,3 +1,4 @@
+import API_URL from '../../../api_url';
 
 
 import axiosInstance from '../../../axiosInstance.jsx'
@@ -5,7 +6,7 @@ import axiosInstance from '../../../axiosInstance.jsx'
 // Fetch posts from API
 export const getProjectDetails = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/get-project-details/${id}`,
+    const response = await axiosInstance.get(API_URL.getProjectDetailsById(id),
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -20,7 +21,7 @@ export const getProjectDetails = async (id) => {
 }
 export const getProjectTeam = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/project-members/${id}`,
+    const response = await axiosInstance.get(API_URL.projectMembersById(id),
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -35,7 +36,7 @@ export const getProjectTeam = async (id) => {
 }
 export const getProjectTeamTaskCount = async (id) => {
   try {
-    const response = await axiosInstance.get(`/api/project-members-task-count/${id}`,
+    const response = await axiosInstance.get(API_URL.projectMembersTaskCountById(id),
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -50,7 +51,7 @@ export const getProjectTeamTaskCount = async (id) => {
 }
 export const addProjectMembers = async (data) => {
   try {
-    const response = await axiosInstance.post(`/api/project-members/add-multiple`, data,
+    const response = await axiosInstance.post(API_URL.projectMembersAddMultiple, data,
         {
             headers: {
               // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
@@ -65,7 +66,7 @@ export const addProjectMembers = async (data) => {
 }
 export const updateProjectPhase = async (id, data) => {
   try {
-    const response = await axiosInstance.post(`/api/update-phase/${id}`,
+    const response = await axiosInstance.post(API_URL.updatePhaseById(id),
       data,
         {
           
