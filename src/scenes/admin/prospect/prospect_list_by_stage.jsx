@@ -497,7 +497,17 @@ const ProspectListByStage = () => {
   const handleDetails = (id) => navigate(`/prospect-detail/${id}`);
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: theme.palette.background.default, minHeight: "100vh" }}>
+    <Box
+      sx={{
+        p: { xs: 2, md: 3 },
+        bgcolor: theme.palette.background.default,
+        minHeight: "100vh",
+        width: "100%",
+        maxWidth: "100%",
+        overflowX: "hidden",
+        boxSizing: "border-box",
+      }}
+    >
       <Stack
         direction={{ xs: "column", lg: "row" }}
         justifyContent="space-between"
@@ -657,14 +667,29 @@ const ProspectListByStage = () => {
       </Paper>
 
       {loading ? (
-        <Box sx={{ display: "flex", gap: 1.5, overflowX: "auto", pb: 1.5 }}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "repeat(auto-fit, minmax(280px, 1fr))", xl: "repeat(auto-fit, minmax(300px, 1fr))" },
+            gap: 1.5,
+            width: "100%",
+          }}
+        >
           {[0, 1, 2, 3].map((item) => (
-            <Skeleton key={item} variant="rounded" width={340} height={620} sx={{ flex: "0 0 auto" }} />
+            <Skeleton key={item} variant="rounded" height={620} sx={{ width: "100%", minWidth: 0 }} />
           ))}
         </Box>
       ) : visibleStages.length ? (
-        <Box sx={{ width: "100%", overflowX: "auto", pb: 1.5 }}>
-          <Box sx={{ display: "flex", gap: 1.5, minWidth: "max-content" }}>
+        <Box sx={{ width: "100%", maxWidth: "100%", overflowX: "hidden", pb: 1.5 }}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "repeat(auto-fit, minmax(280px, 1fr))", xl: "repeat(auto-fit, minmax(300px, 1fr))" },
+              gap: 1.5,
+              alignItems: "start",
+              width: "100%",
+            }}
+          >
             {visibleStages.map((status) => {
               const list = filteredMap[status.stage_name] || [];
               const originalCount = prospects[status.stage_name]?.length || 0;
@@ -676,8 +701,8 @@ const ProspectListByStage = () => {
                   key={status.id}
                   elevation={0}
                   sx={{
-                    width: 340,
-                    flexShrink: 0,
+                    width: "100%",
+                    minWidth: 0,
                     borderRadius: 2,
                     bgcolor: theme.palette.background.paper,
                     border: `1px solid ${theme.palette.divider}`,

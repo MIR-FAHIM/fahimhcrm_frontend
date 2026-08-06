@@ -1,9 +1,18 @@
 // Full EmpProfile Page with Error Handling and Code Cleanup
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
-  Alert, Box, Typography, CircularProgress, Paper, Snackbar, Tabs, Tab,
+  Alert, Avatar, Box, Chip, CircularProgress, Paper, Snackbar, Stack, Tab, Tabs, Typography, useTheme,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import AssessmentIcon from "@mui/icons-material/Assessment";
+import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
+import HistoryIcon from "@mui/icons-material/History";
+import BadgeIcon from "@mui/icons-material/Badge";
+import ApartmentIcon from "@mui/icons-material/Apartment";
+import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
 import { useParams, useNavigate } from "react-router-dom";
 
 import {
@@ -23,9 +32,12 @@ import AttendanceReport from "./profile_components/attendance_emp_report";
 import { useProfile } from '../../provider/profile_context';
 
 const EmpProfile = () => {
+  const theme = useTheme();
   const navigate = useNavigate();
   const { id } = useParams();
   const userID = localStorage.getItem("userId");
+  const brand = theme.palette.blueAccent?.main ?? theme.palette.primary.main;
+  const brandDark = theme.palette.blueAccent?.dark ?? theme.palette.primary.dark;
 
   const [loading, setLoading] = useState(true);
   const [attendanceLoading, setAttendanceLoading] = useState(false);
@@ -33,7 +45,7 @@ const EmpProfile = () => {
   const [profileData, setProfileData] = useState(null);
   const [attendanceData, setAttendanceData] = useState([]);
   const [activityData, setActivityData] = useState([]);
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState("general");
   const [year, setYear] = useState(new Date().getFullYear()); // Default to current year
   const [month, setMonth] = useState(new Date().getMonth() + 1); // Default to current month
   const [selectedFile, setSelectedFile] = useState(null);
@@ -49,6 +61,37 @@ const EmpProfile = () => {
   const [assignmentSaving, setAssignmentSaving] = useState({ role: false, department: false, designation: false });
   const [assignmentLoading, setAssignmentLoading] = useState(false);
   const [snack, setSnack] = useState({ open: false, msg: "", sev: "success" });
+
+  const getInitials = (name = "") =>
+    name
+      .split(" ")
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase() || "BT";
+
+  const tabItems = useMemo(() => {
+    const tabs = [
+      { value: "general", label: "Profile", icon: <PersonOutlineIcon fontSize="small" /> },
+      { value: "attendance-month", label: "Monthly Attendance", icon: <CalendarMonthIcon fontSize="small" /> },
+      { value: "attendance-summary", label: "Attendance Summary", icon: <AssessmentIcon fontSize="small" /> },
+    ];
+
+    if (permissions.task) {
+      tabs.push({ value: "tasks", label: "Tasks", icon: <AssignmentTurnedInIcon fontSize="small" /> });
+    }
+
+    if (permissions.activity) {
+      tabs.push({
+        value: "activity",
+        label: activityData.length ? `Activity (${activityData.length})` : "Activity",
+        icon: <HistoryIcon fontSize="small" />,
+      });
+    }
+
+    return tabs;
+  }, [activityData.length, permissions.activity, permissions.task]);
 
   useEffect(() => {
     handleGetModulePermission();
@@ -278,7 +321,7 @@ const EmpProfile = () => {
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
-    if (newValue === 1 && profileData?.id) {
+    if (newValue === "attendance-month" && profileData?.id) {
       fetchAttendance(profileData.id, month, year);
     }
   };
@@ -286,7 +329,7 @@ const EmpProfile = () => {
   const handleMonthChange = (e) => {
     const selectedMonth = parseInt(e.target.value);
     setMonth(selectedMonth);
-    if (activeTab === 1) {
+    if (activeTab === "attendance-month") {
       fetchAttendance(profileData?.id, selectedMonth, year);
     }
   };
@@ -294,7 +337,7 @@ const EmpProfile = () => {
   const handleYearChange = (e) => {
     const selectedYear = parseInt(e.target.value);
     setYear(selectedYear);
-    if (activeTab === 1) {
+    if (activeTab === "attendance-month") {
       fetchAttendance(profileData?.id, month, selectedYear);
     }
   };
@@ -308,45 +351,138 @@ const EmpProfile = () => {
   };
 
   return (
-    <Box p={3}>
+    <Box sx={{ p: { xs: 2, md: 3 }, bgcolor: theme.palette.background.default, minHeight: "100vh", overflowX: "hidden" }}>
       {loading ? (
-        <Box display="flex" justifyContent="center" alignItems="center" height="80vh">
-          <CircularProgress size={60} />
-          <Typography variant="h6" ml={2}>Loading profile data...</Typography>
-        </Box>
-      ) : (
-        <Paper sx={{ padding: 3, borderRadius: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' }}>
-
-          {error && (
-            <Typography color="error" mb={2} variant="h6" textAlign="center">{error}</Typography>
-          )}
-
-          <Tabs
-            value={activeTab}
-            onChange={handleTabChange}
-            centered
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="72vh">
+          <Paper
+            elevation={0}
             sx={{
-              mb: 3,
-              '.MuiTabs-indicator': { backgroundColor: '#1976d2' },
-              '.MuiTab-root': {
-                textTransform: 'none',
-                fontWeight: 'bold',
-                fontSize: '1rem',
-                color: '#607d8b',
-                '&.Mui-selected': {
-                  color: '#1976d2',
-                },
-              },
+              width: "min(720px, 100%)",
+              p: 4,
+              borderRadius: 2,
+              bgcolor: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.divider}`,
+              textAlign: "center",
             }}
           >
-            <Tab label="General Information" />
-            <Tab label="Attendance(Month)" />
-            <Tab label="Attendance Report" />
-            {permissions.task && <Tab label="Tasks" />}
-            {permissions.activity && <Tab label="Activity" />}
-          </Tabs>
+            <CircularProgress size={44} sx={{ color: brand, mb: 2 }} />
+            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+              Loading employee profile
+            </Typography>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+              Preparing profile, attendance, task, and activity sections.
+            </Typography>
+          </Paper>
+        </Box>
+      ) : (
+        <Box sx={{ maxWidth: 1280, mx: "auto" }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
-          {activeTab === 0 && profileData && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 2, md: 2.5 },
+              mb: 2,
+              borderRadius: 2,
+              bgcolor: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.divider}`,
+              background:
+                theme.palette.mode === "dark"
+                  ? `linear-gradient(135deg, ${alpha(brand, 0.18)}, ${alpha(theme.palette.background.paper, 0.98)} 46%)`
+                  : `linear-gradient(135deg, ${alpha(brand, 0.10)}, ${theme.palette.background.paper} 48%)`,
+            }}
+          >
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2} alignItems={{ xs: "flex-start", md: "center" }} justifyContent="space-between">
+              <Stack direction="row" spacing={1.5} alignItems="center">
+                <Avatar
+                  src={imageUrl || undefined}
+                  sx={{
+                    width: 58,
+                    height: 58,
+                    bgcolor: alpha(brand, 0.16),
+                    color: brand,
+                    border: `1px solid ${alpha(brand, 0.28)}`,
+                    fontWeight: 900,
+                  }}
+                >
+                  {getInitials(profileData?.name)}
+                </Avatar>
+                <Box>
+                  <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                    <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 950, lineHeight: 1.05 }}>
+                      Employee Profile
+                    </Typography>
+                    <Chip size="small" label={`ID #${profileData?.id || id}`} sx={{ fontWeight: 800, bgcolor: alpha(brand, 0.12), color: brand }} />
+                  </Stack>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 0.5 }}>
+                    Manage {profileData?.name || "employee"} information, attendance, work, and activity from one place.
+                  </Typography>
+                </Box>
+              </Stack>
+
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                <Chip icon={<BadgeIcon />} label={profileData?.role?.role_name || "Role not set"} variant="outlined" />
+                <Chip icon={<ApartmentIcon />} label={profileData?.department?.department_name || "Department not set"} variant="outlined" />
+                <Chip icon={<WorkOutlineIcon />} label={profileData?.designation?.designation_name || "Designation not set"} variant="outlined" />
+              </Stack>
+            </Stack>
+          </Paper>
+
+          <Paper
+            elevation={0}
+            sx={{
+              mb: 2,
+              borderRadius: 2,
+              bgcolor: theme.palette.background.paper,
+              border: `1px solid ${theme.palette.divider}`,
+              overflow: "hidden",
+            }}
+          >
+            <Tabs
+              value={activeTab}
+              onChange={handleTabChange}
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              sx={{
+                px: 1,
+                minHeight: 64,
+                ".MuiTabs-indicator": {
+                  height: 3,
+                  borderRadius: 999,
+                  backgroundColor: brand,
+                },
+                ".MuiTabs-flexContainer": { gap: 0.5 },
+                ".MuiTab-root": {
+                  minHeight: 64,
+                  textTransform: "none",
+                  fontWeight: 850,
+                  color: theme.palette.text.secondary,
+                  borderRadius: 1.5,
+                  px: { xs: 1.5, sm: 2 },
+                  "&:hover": {
+                    bgcolor: alpha(brand, 0.08),
+                    color: theme.palette.text.primary,
+                  },
+                  "&.Mui-selected": {
+                    color: brandDark,
+                    bgcolor: alpha(brand, 0.10),
+                  },
+                },
+              }}
+            >
+              {tabItems.map((item) => (
+                <Tab key={item.value} value={item.value} icon={item.icon} iconPosition="start" label={item.label} />
+              ))}
+            </Tabs>
+          </Paper>
+
+          <Box sx={{ minWidth: 0 }}>
+          {activeTab === "general" && profileData && (
             <ProfileComponent
               handleUpdateData={handleUpdateProfileData}
               changePass={handleChangePass}
@@ -367,8 +503,8 @@ const EmpProfile = () => {
             />
           )}
 
-          {activeTab === 1 && (
-            <Box mt={3}> {/* This Box wrapper resolves the error */}
+          {activeTab === "attendance-month" && (
+            <Box mt={2}>
               <AttendanceReport
               name = {profileData.name}
                 month={month}
@@ -381,8 +517,8 @@ const EmpProfile = () => {
               />
             </Box>
           )}
-          {activeTab === 2 && (
-            <Box mt={3}> {/* This Box wrapper resolves the error */}
+          {activeTab === "attendance-summary" && (
+            <Box mt={2}>
               <AttendanceCountReport
               userId = {id}
              name = {profileData.name}
@@ -391,9 +527,10 @@ const EmpProfile = () => {
             </Box>
           )}
 
-          {activeTab === 3 && permissions.task && <TaskComponents user={id} refreshTrigger={activeTab}/>}
-          {activeTab === 4 && permissions.activity && <UserActivityList data={activityData} />}
-        </Paper>
+          {activeTab === "tasks" && permissions.task && <TaskComponents user={id} refreshTrigger={activeTab}/>}
+          {activeTab === "activity" && permissions.activity && <UserActivityList data={activityData} />}
+          </Box>
+        </Box>
       )}
       <Snackbar open={snack.open} autoHideDuration={3000} onClose={() => setSnack((state) => ({ ...state, open: false }))} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
         <Alert severity={snack.sev} sx={{ width: "100%" }} onClose={() => setSnack((state) => ({ ...state, open: false }))}>

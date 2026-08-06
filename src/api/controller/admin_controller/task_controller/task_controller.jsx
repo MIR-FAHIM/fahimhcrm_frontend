@@ -727,15 +727,14 @@ export const addTaskStatus = async (data) => {
     const response = await axiosInstance.post(API_URL.addTaskStatus, data,
       {
         headers: {
-          // 'token': localStorage.getItem("authToken"), // Add the token in Authorization header
-          'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+          'token': getMasterDataToken(),
         },
       }
     );
     return response.data;
   } catch (error) {
     console.error("Error fetching task add:", error);
-    return [];
+    throw error;
   }
 }
 export const addTaskType = async (data) => {

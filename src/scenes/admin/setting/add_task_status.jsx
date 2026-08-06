@@ -74,6 +74,16 @@ const getDepartmentName = (status) =>
   status?.department?.name ||
   (getDepartmentId(status) ? `Department #${getDepartmentId(status)}` : "No department");
 
+const normalizeDepartmentIds = (ids = []) =>
+  Array.from(new Set(ids.map((id) => String(id)).filter(Boolean)));
+
+const isSuccessfulCreateResponse = (response) => {
+  if (!response) return false;
+  if (Array.isArray(response)) return response.length > 0;
+  if (response.status) return String(response.status).toLowerCase() === "success";
+  return true;
+};
+
 const AddTaskStatus = () => {
   const theme = useTheme();
   const brand = theme.palette.blueAccent?.main ?? theme.palette.primary.main;
@@ -84,6 +94,7 @@ const AddTaskStatus = () => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [createProgress, setCreateProgress] = useState("");
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -151,7 +162,7 @@ const AddTaskStatus = () => {
     return statuses.filter((status) => String(getDepartmentId(status)) === String(departmentId)).length;
   };
 
-  const selectedDepartmentNames = form.department_ids
+  const selectedDepartmentNames = normalizeDepartmentIds(form.department_ids)
     .map((id) => departmentById.get(String(id))?.department_name)
     .filter(Boolean);
 
@@ -164,34 +175,69 @@ const AddTaskStatus = () => {
       return;
     }
 
-    if (!form.department_ids.length) {
+    const departmentIds = normalizeDepartmentIds(form.department_ids);
+
+    if (!departmentIds.length) {
       showSnack("Select at least one department.", "warning");
       return;
     }
 
     setSaving(true);
+    setCreateProgress("");
     try {
-      const responses = await Promise.all(
-        form.department_ids.map((departmentId) =>
-          addTaskStatus({
+      const failedDepartments = [];
+      const createdDepartments = [];
+
+      for (let index = 0; index < departmentIds.length; index += 1) {
+        const departmentId = departmentIds[index];
+        const departmentName = departmentById.get(String(departmentId))?.department_name || `Department #${departmentId}`;
+        setCreateProgress(`Saving ${index + 1} of ${departmentIds.length}: ${departmentName}`);
+
+        try {
+          const response = await addTaskStatus({
             status_name: statusName,
             department_id: departmentId,
             isActive: form.isActive ? "1" : "0",
-          })
-        )
-      );
+          });
 
-      const failed = responses.find((response) => response?.status && response.status !== "success");
-      if (failed) throw new Error(failed.message || "Failed to create one or more task statuses.");
+          if (!isSuccessfulCreateResponse(response)) {
+            throw new Error(response?.message || response?.error || "Backend did not confirm this status.");
+          }
+
+          createdDepartments.push(departmentId);
+        } catch (error) {
+          failedDepartments.push({
+            id: departmentId,
+            name: departmentName,
+            message: getErrorMessage(error, "Failed to create task status."),
+          });
+        }
+      }
+
+      await loadData();
+
+      if (failedDepartments.length) {
+        const failedNames = failedDepartments.map((item) => item.name).join(", ");
+        setForm((current) => ({
+          ...current,
+          status_name: statusName,
+          department_ids: failedDepartments.map((item) => item.id),
+        }));
+        showSnack(
+          `${createdDepartments.length} saved, ${failedDepartments.length} failed: ${failedNames}. Please retry the remaining department${failedDepartments.length > 1 ? "s" : ""}.`,
+          createdDepartments.length ? "warning" : "error"
+        );
+        return;
+      }
 
       setForm({ status_name: "", department_ids: [], isActive: true });
-      showSnack(`Task status added to ${form.department_ids.length} department${form.department_ids.length > 1 ? "s" : ""}.`);
-      await loadData();
+      showSnack(`Task status added to ${departmentIds.length} department${departmentIds.length > 1 ? "s" : ""}.`);
     } catch (error) {
       console.error("Error creating task status:", error);
       showSnack(getErrorMessage(error, "Failed to create task status."), "error");
     } finally {
       setSaving(false);
+      setCreateProgress("");
     }
   };
 
@@ -288,10 +334,15 @@ const AddTaskStatus = () => {
                   const value = event.target.value;
                   setForm((current) => ({
                     ...current,
-                    department_ids: typeof value === "string" ? value.split(",") : value,
+                    department_ids: normalizeDepartmentIds(typeof value === "string" ? value.split(",") : value),
                   }));
                 }}
                 renderValue={() => selectedDepartmentNames.join(", ")}
+                MenuProps={{
+                  PaperProps: {
+                    sx: { maxHeight: 360 },
+                  },
+                }}
               >
                 {departments.map((department) => (
                   <MenuItem key={department.id} value={String(department.id)}>
@@ -307,9 +358,14 @@ const AddTaskStatus = () => {
               sx={{ minHeight: 40, m: 0 }}
             />
             <Button type="submit" variant="contained" startIcon={saving ? <CircularProgress size={16} color="inherit" /> : <AddRoundedIcon />} disabled={saving} sx={{ borderRadius: 2, fontWeight: 900, minWidth: 170 }}>
-              Add Status
+              {saving ? "Saving..." : "Add Status"}
             </Button>
           </Stack>
+          {createProgress && (
+            <Alert severity="info" sx={{ mt: 1.5 }}>
+              {createProgress}
+            </Alert>
+          )}
         </Box>
       </Paper>
 

@@ -250,7 +250,7 @@ const Hero = () => {
       </Typography>
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} justifyContent="center" alignItems="center">
         <Button
-        onClick={() => window.location.href = `https://hrmfahim.biswasandbrothers.com/login`}
+        onClick={() => window.location.href = `https://hcrm.braintodo.com/login`}
           size="large"
           variant="contained"
           endIcon={<ArrowForwardIcon />}

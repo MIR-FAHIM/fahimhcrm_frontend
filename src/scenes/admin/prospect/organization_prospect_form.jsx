@@ -46,29 +46,34 @@ import { fetchDesignation, fetchInfluenceRoles, fetchZone } from "../../../api/c
 
 const Section = ({ title, subtitle, children, mt = 3 }) => {
   const theme = useTheme();
+  const brand = theme.palette.blueAccent?.main ?? theme.palette.info.main;
   return (
     <Paper
       elevation={0}
       sx={{
         mt,
-        p: 2.5,
-        borderRadius: 2,
+        p: { xs: 2, md: 2.5 },
+        borderRadius: 2.5,
         bgcolor: theme.palette.background.paper,
         border: `1px solid ${theme.palette.divider}`,
+        boxShadow: theme.palette.mode === "dark" ? "none" : "0 16px 36px rgba(15, 23, 42, 0.05)",
       }}
     >
       {(title || subtitle) && (
-        <Box mb={2}>
-          {title && (
-            <Typography variant="subtitle1" fontWeight={800} color="text.primary">
-              {title}
-            </Typography>
-          )}
-          {subtitle && (
-            <Typography variant="body2" color="text.secondary">
-              {subtitle}
-            </Typography>
-          )}
+        <Box mb={2} sx={{ display: "flex", gap: 1.2, alignItems: "flex-start" }}>
+          <Box sx={{ width: 4, alignSelf: "stretch", borderRadius: 2, bgcolor: brand }} />
+          <Box>
+            {title && (
+              <Typography variant="subtitle1" fontWeight={900} color="text.primary">
+                {title}
+              </Typography>
+            )}
+            {subtitle && (
+              <Typography variant="body2" color="text.secondary">
+                {subtitle}
+              </Typography>
+            )}
+          </Box>
         </Box>
       )}
       {children}
@@ -307,21 +312,22 @@ const OrganizationForm = () => {
   };
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, maxWidth: 1200, mx: "auto", bgcolor: theme.palette.background.default }}>
+    <Box sx={{ p: { xs: 2, md: 2.5 }, maxWidth: "none", mx: "auto", bgcolor: "transparent" }}>
       {/* Title */}
-      <Box display="flex" alignItems="center" gap={1} mb={1}>
-        <Typography variant="h5" fontWeight={800} color="text.primary">
+      <Box display="flex" alignItems="center" gap={1} mb={1} flexWrap="wrap">
+        <Typography variant="h5" fontWeight={950} color="text.primary">
           Create Organization Lead
         </Typography>
         <Chip
           size="small"
-          label="New"
+          label="Company profile"
           sx={{
             bgcolor: alpha(brand, 0.16),
             color: brand,
-            fontWeight: 700,
+            fontWeight: 850,
           }}
         />
+        <Chip size="small" label={`${contactPersons.length} contact${contactPersons.length > 1 ? "s" : ""}`} variant="outlined" sx={{ fontWeight: 850 }} />
       </Box>
       <Divider sx={{ mb: 2, borderColor: theme.palette.divider }} />
 
@@ -524,12 +530,23 @@ const OrganizationForm = () => {
             elevation={0}
             sx={{
               border: `1px solid ${theme.palette.divider}`,
-              borderRadius: 2,
+              borderRadius: 2.5,
               p: 2,
               mb: 2,
-              bgcolor: theme.palette.background.paper,
+              bgcolor: alpha(brand, theme.palette.mode === "dark" ? 0.08 : 0.03),
             }}
           >
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5} gap={1} flexWrap="wrap">
+              <Typography fontWeight={900} color="text.primary">
+                Contact Person #{index + 1}
+              </Typography>
+              <Chip
+                size="small"
+                label={person.is_primary ? "Primary contact" : "Secondary contact"}
+                color={person.is_primary ? "success" : "default"}
+                variant={person.is_primary ? "filled" : "outlined"}
+              />
+            </Box>
             <Grid container spacing={2} alignItems="flex-start">
               {["name", "email", "mobile"].map((field) => (
                 <Grid item xs={12} sm={3} key={field}>
@@ -741,7 +758,20 @@ const OrganizationForm = () => {
       </Section>
 
       {/* Actions */}
-      <Box mt={3}>
+      <Paper
+        elevation={0}
+        sx={{
+          mt: 3,
+          p: 2,
+          borderRadius: 2.5,
+          border: `1px solid ${theme.palette.divider}`,
+          bgcolor: theme.palette.background.paper,
+          position: { md: "sticky" },
+          bottom: { md: 12 },
+          zIndex: 2,
+          boxShadow: theme.palette.mode === "dark" ? "none" : "0 18px 38px rgba(15, 23, 42, 0.08)",
+        }}
+      >
         <Grid container spacing={2}>
           <Grid item xs={12} sm={4}>
             <Button
@@ -777,14 +807,15 @@ const OrganizationForm = () => {
               sx={{
                 bgcolor: theme.palette.success.main,
                 color: theme.palette.getContrastText(theme.palette.success.main),
+                fontWeight: 900,
                 "&:hover": { bgcolor: theme.palette.success.dark || theme.palette.success.main },
               }}
             >
-              Save
+              Save Organization Lead
             </Button>
           </Grid>
         </Grid>
-      </Box>
+      </Paper>
 
       {/* Matched Prospects Dialog */}
       <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="sm">

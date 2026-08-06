@@ -130,6 +130,7 @@ import VisitMap from "./admin/fieldforce/visit_map";// Import the WorkShop compo
 import DateWiseVisit from "./admin/fieldforce/date_wise_visit";// Import the WorkShop component
 import PrivacyPolicy from "./admin/setting/privacy_policy";// Import the WorkShop component
 import NewSystemUpdate from "./admin/setting/new_system_update";
+import BrainToDoLanding from "./landing/BrainToDoLanding";
 
 
 
@@ -265,4 +266,5 @@ export {
   DateWiseVisit,
   PrivacyPolicy,
   NewSystemUpdate,
+  BrainToDoLanding,
 };

@@ -115,9 +115,12 @@ import {
  DateWiseVisit,
  PrivacyPolicy,
  NewSystemUpdate,
+ BrainToDoLanding,
 } from "./scenes";
 
 const AppRouter = () => {
+  const useLandingRoot = import.meta.env.VITE_LANDING_ROOT === "true";
+
   return (
     //  <Router basename="/hcrm">
        <Router >      
@@ -134,10 +137,14 @@ const AppRouter = () => {
         <Route path="/" element={<Dashboard />} /> 
         */}
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/landing" element={<BrainToDoLanding />} />
      {/* <Route path="/" element={<LandingPage />}></Route>  */}
      <Route path="/what-next" element={<NextFeatures />}></Route> 
 
 
+        {useLandingRoot ? (
+          <Route path="/" element={<BrainToDoLanding />} />
+        ) : (
         <Route path="/" element={<App />}>
         <Route path="/" element={<Dashboard />} />
           <Route path="/team" element={<Team />} />
@@ -247,6 +254,7 @@ const AppRouter = () => {
         
           <Route path="/new-system-update" element={<NewSystemUpdate />} />
         </Route>
+        )}
       </Routes>
     </Router>
   );
