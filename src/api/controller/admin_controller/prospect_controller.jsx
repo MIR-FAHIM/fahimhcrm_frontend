@@ -426,7 +426,8 @@ export const addContactPerson = async (data) => {
       formData.append(`contacts[${index}][influencing_role_id]`, contact.influencing_role_id);
       formData.append(`contacts[${index}][birth_date]`, contact.birth_date);
       formData.append(`contacts[${index}][anniversary]`, contact.anniversary);
-      formData.append(`contacts[${index}][is_switched_job]`, contact.is_switched_job);
+      const isSwitchedJob = contact.is_switched_job === true || contact.is_switched_job === 1 || contact.is_switched_job === "1" ? 1 : 0;
+      formData.append(`contacts[${index}][is_switched_job]`, isSwitchedJob);
       formData.append(`contacts[${index}][note]`, contact.note);
     });
 

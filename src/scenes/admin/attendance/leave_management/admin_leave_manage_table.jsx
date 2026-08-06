@@ -18,6 +18,16 @@ import {
 import { getAllLeave, approveLeave, rejectLeave } from "../../../../api/controller/admin_controller/leave_manage/leave_manage";
 import { tokens } from "../../../../theme";
 
+const resolveLeaveList = (response) => {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response?.data?.data)) return response.data.data;
+  return [];
+};
+
+const getResponseMessage = (response, fallback) =>
+  response?.message || response?.error || fallback;
+
 const LeaveManageTable = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -32,9 +42,13 @@ const LeaveManageTable = () => {
     setLoading(true);
     try {
       const response = await getAllLeave();
-      setLeaveRequests(response.data);
+      setLeaveRequests(resolveLeaveList(response));
+      if (response?.status === "failed") {
+        showSnackbar(response.message || "No leave requests found.", "info");
+      }
     } catch (error) {
       console.error("Error fetching leave requests:", error);
+      setLeaveRequests([]);
       showSnackbar("Failed to fetch leave requests. Please try again.", "error");
     } finally {
       setLoading(false);
@@ -59,8 +73,9 @@ const LeaveManageTable = () => {
   };
 
   const handleApprove = async (leaveId) => {
+    setLeaveRequests((prevRequests) => (Array.isArray(prevRequests) ? prevRequests : []));
     setLeaveRequests((prevRequests) =>
-      prevRequests.map((leave) =>
+      (Array.isArray(prevRequests) ? prevRequests : []).map((leave) =>
         leave.id === leaveId ? { ...leave, approving: true } : leave
       )
     );
@@ -71,7 +86,7 @@ const LeaveManageTable = () => {
       const response = await approveLeave(data, leaveId);
       if (response.status === "success") {
         setLeaveRequests((prevRequests) =>
-          prevRequests.map((leave) =>
+          (Array.isArray(prevRequests) ? prevRequests : []).map((leave) =>
             leave.id === leaveId
               ? { ...leave, status: "Approved", is_approve: 1, approver: { name: "Admin User" }, approving: false }
               : leave
@@ -80,15 +95,15 @@ const LeaveManageTable = () => {
         showSnackbar("Leave request approved successfully!", "success");
       } else {
         setLeaveRequests((prevRequests) =>
-          prevRequests.map((leave) =>
+          (Array.isArray(prevRequests) ? prevRequests : []).map((leave) =>
             leave.id === leaveId ? { ...leave, approving: false } : leave
           )
         );
-        showSnackbar(`Failed to approve leave: ${response.message}`, "error");
+        showSnackbar(getResponseMessage(response, "Failed to approve leave."), "error");
       }
     } catch (error) {
       setLeaveRequests((prevRequests) =>
-        prevRequests.map((leave) =>
+        (Array.isArray(prevRequests) ? prevRequests : []).map((leave) =>
           leave.id === leaveId ? { ...leave, approving: false } : leave
         )
       );
@@ -99,7 +114,7 @@ const LeaveManageTable = () => {
   
   const handleReject = async (leaveId) => {
     setLeaveRequests((prevRequests) =>
-      prevRequests.map((leave) =>
+      (Array.isArray(prevRequests) ? prevRequests : []).map((leave) =>
         leave.id === leaveId ? { ...leave, approving: true } : leave
       )
     );
@@ -110,7 +125,7 @@ const LeaveManageTable = () => {
       const response = await rejectLeave(data, leaveId);
       if (response.status === "success") {
         setLeaveRequests((prevRequests) =>
-          prevRequests.map((leave) =>
+          (Array.isArray(prevRequests) ? prevRequests : []).map((leave) =>
             leave.id === leaveId
               ? { ...leave, status: "Rejected", is_approve: 2, approver: { name: "Admin User" }, approving: false }
               : leave
@@ -119,15 +134,15 @@ const LeaveManageTable = () => {
         showSnackbar("Leave Rejected!", "success");
       } else {
         setLeaveRequests((prevRequests) =>
-          prevRequests.map((leave) =>
+          (Array.isArray(prevRequests) ? prevRequests : []).map((leave) =>
             leave.id === leaveId ? { ...leave, approving: false } : leave
           )
         );
-        showSnackbar(`Failed to reject leave: ${response.message}`, "error");
+        showSnackbar(getResponseMessage(response, "Failed to reject leave."), "error");
       }
     } catch (error) {
       setLeaveRequests((prevRequests) =>
-        prevRequests.map((leave) =>
+        (Array.isArray(prevRequests) ? prevRequests : []).map((leave) =>
           leave.id === leaveId ? { ...leave, approving: false } : leave
         )
       );
@@ -161,7 +176,7 @@ const LeaveManageTable = () => {
             <CircularProgress />
             <Typography variant="h6" sx={{ ml: 2, color: colors.gray[100] }}>Loading leave requests...</Typography>
           </Box>
-        ) : leaveRequests.length === 0 ? (
+        ) : !Array.isArray(leaveRequests) || leaveRequests.length === 0 ? (
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
             <Typography variant="h6" sx={{ color: colors.gray[400] }}>No leave requests to display.</Typography>
           </Box>
@@ -181,7 +196,7 @@ const LeaveManageTable = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {leaveRequests.map((leave, index) => (
+                {(Array.isArray(leaveRequests) ? leaveRequests : []).map((leave, index) => (
                   <TableRow 
                     key={leave.id} 
                     sx={{ 
