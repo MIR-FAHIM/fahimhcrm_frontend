@@ -32,18 +32,18 @@ export const google_map_key = "AIzaSyBgU4tHGpYmeb5KYEB9Ml4qoz1w-JJmKb8";
 
 //fahim crm
 
-// export const base_url = "https://apihcrm.braintodo.com/public/";
-// export const image_file_url = "https://apihcrm.braintodo.com/public/storage";
-// export const appname = "BrainWork";
-// export const siteName = "BrainWork";
-// export const companyID = "3";
+export const base_url = "https://apihcrm.braintodo.com/public/";
+export const image_file_url = "https://apihcrm.braintodo.com/public/storage";
+export const appname = "BrainWork";
+export const siteName = "BrainWork";
+export const companyID = "3";
 
 
 
 // automate
 
-export const base_url = "https://hrm.automate.com.bd/";
-export const image_file_url = "https://hrm.automate.com.bd/storage";
-export const appname = "BrainWork";
-export const siteName = "BrainWork";
-export const companyID = "3";
+// export const base_url = "https://hrm.automate.com.bd/";
+// export const image_file_url = "https://hrm.automate.com.bd/storage";
+// export const appname = "AutomateIT";
+// export const siteName = "AutomateIT";
+// export const companyID = "3";

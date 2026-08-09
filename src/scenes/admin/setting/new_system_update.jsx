@@ -50,10 +50,10 @@ const UpdateStat = ({ icon, label, value, helper, tone = "primary" }) => {
     >
       <Stack direction="row" spacing={1.25} alignItems="center" justifyContent="space-between">
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 800 }}>
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
             {label}
           </Typography>
-          <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1.1 }}>
+          <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1.1 }}>
             {value}
           </Typography>
           {helper && (
@@ -92,16 +92,16 @@ const UpdateCard = ({ item, index }) => {
     >
       <Stack spacing={1.25}>
         <Stack direction="row" spacing={1.25} alignItems="flex-start">
-          <Avatar variant="rounded" sx={{ bgcolor: alpha(brand, 0.12), color: brand, fontWeight: 900 }}>
+          <Avatar variant="rounded" sx={{ bgcolor: alpha(brand, 0.12), color: brand, fontWeight: 700 }}>
             {index + 1}
           </Avatar>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1.15 }}>
+            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1.15 }}>
               {item.title}
             </Typography>
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 0.75 }}>
-              <Chip size="small" icon={<CategoryIcon />} label={item.feature} sx={{ fontWeight: 850, bgcolor: alpha(brand, 0.1), color: brand }} />
-              <Chip size="small" icon={<EventIcon />} label={formatDate(item.published_date)} variant="outlined" sx={{ fontWeight: 850 }} />
+              <Chip size="small" icon={<CategoryIcon />} label={item.feature} sx={{ fontWeight: 650, bgcolor: alpha(brand, 0.1), color: brand }} />
+              <Chip size="small" icon={<EventIcon />} label={formatDate(item.published_date)} variant="outlined" sx={{ fontWeight: 650 }} />
             </Stack>
           </Box>
         </Stack>
@@ -158,7 +158,7 @@ const NewSystemUpdate = () => {
             <NewReleasesIcon />
           </Avatar>
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1 }}>
+            <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1 }}>
               New System Updates
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
@@ -166,7 +166,7 @@ const NewSystemUpdate = () => {
             </Typography>
           </Box>
         </Stack>
-        <Chip icon={<EventIcon />} label={`Latest: ${formatDate(latestDate)}`} sx={{ alignSelf: { xs: "flex-start", lg: "center" }, fontWeight: 900, bgcolor: alpha(brand, 0.1), color: brand }} />
+        <Chip icon={<EventIcon />} label={`Latest: ${formatDate(latestDate)}`} sx={{ alignSelf: { xs: "flex-start", lg: "center" }, fontWeight: 700, bgcolor: alpha(brand, 0.1), color: brand }} />
       </Stack>
 
       <Stack direction="row" gap={2} flexWrap="wrap" sx={{ mb: 2.5 }}>
@@ -208,7 +208,7 @@ const NewSystemUpdate = () => {
                 color={selected ? "primary" : "default"}
                 variant={selected ? "filled" : "outlined"}
                 onClick={() => setFeatureFilter(feature)}
-                sx={{ fontWeight: 850 }}
+                sx={{ fontWeight: 650 }}
               />
             );
           })}
@@ -222,7 +222,7 @@ const NewSystemUpdate = () => {
       ) : (
         <Paper elevation={0} sx={{ p: 5, textAlign: "center", borderRadius: 2, bgcolor: theme.palette.background.paper, border: `1px dashed ${theme.palette.divider}` }}>
           <NewReleasesIcon color="disabled" sx={{ fontSize: 42 }} />
-          <Typography variant="h6" sx={{ mt: 1, color: theme.palette.text.primary, fontWeight: 900 }}>
+          <Typography variant="h6" sx={{ mt: 1, color: theme.palette.text.primary, fontWeight: 700 }}>
             No updates found
           </Typography>
           <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>

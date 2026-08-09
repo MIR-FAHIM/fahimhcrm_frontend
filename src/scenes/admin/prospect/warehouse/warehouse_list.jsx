@@ -36,7 +36,7 @@ const NoRows = () => {
       }}
     >
       <RoomIcon sx={{ fontSize: 40, color: theme.palette.text.secondary }} />
-      <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 800 }}>
+      <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 600 }}>
         No Warehouses Found
       </Typography>
       <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
@@ -214,7 +214,7 @@ const WarehouseList = () => {
                   startIcon={<OpenInNewIcon />}
                   sx={{
                     textTransform: "none",
-                    fontWeight: 800,
+                    fontWeight: 600,
                     borderRadius: 2,
                     bgcolor: brand,
                     color: brandContrast,
@@ -270,7 +270,7 @@ const WarehouseList = () => {
             onClick={reload}
             sx={{
               textTransform: "none",
-              fontWeight: 800,
+              fontWeight: 600,
               borderRadius: 2,
               borderColor: brand,
               color: brand,
@@ -285,7 +285,7 @@ const WarehouseList = () => {
             onClick={handleAddWarehouse}
             sx={{
               textTransform: "none",
-              fontWeight: 800,
+              fontWeight: 600,
               borderRadius: 2,
               bgcolor: brand,
               color: brandContrast,
@@ -315,7 +315,7 @@ const WarehouseList = () => {
             backgroundColor: alpha(brand, 0.12),
             color: textPri,
             fontSize: 14,
-            fontWeight: 800,
+            fontWeight: 600,
             borderBottom: `1px solid ${divider}`,
           },
           "& .MuiDataGrid-footerContainer": {

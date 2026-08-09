@@ -202,7 +202,7 @@ const EmployeeAttendanceReport = () => {
             bgcolor: theme.palette.background.paper,
           }}
         >
-          <Typography variant="h6" fontWeight={800} sx={{ mb: 1, color: colors.gray[100] }}>
+          <Typography variant="h6" fontWeight={600} sx={{ mb: 1, color: colors.gray[100] }}>
             Employees
           </Typography>
           <TextField
@@ -263,7 +263,7 @@ const EmployeeAttendanceReport = () => {
             maxHeight: "80vh",
           }}
         >
-          <Typography variant="h6" fontWeight={800} sx={{ mb: 1, color: colors.gray[100] }}>
+          <Typography variant="h6" fontWeight={600} sx={{ mb: 1, color: colors.gray[100] }}>
             Employees
           </Typography>
           <TextField
@@ -367,7 +367,7 @@ const EmployeeAttendanceReport = () => {
                     {(selectedEmployee.name || "U")?.charAt(0)}
                   </Avatar>
                   <Box>
-                    <Typography variant="subtitle1" fontWeight={800} sx={{ color: colors.gray[100], lineHeight: 1.15 }}>
+                    <Typography variant="subtitle1" fontWeight={600} sx={{ color: colors.gray[100], lineHeight: 1.15 }}>
                       {selectedEmployee.name}
                     </Typography>
                     <Typography variant="caption" sx={{ color: colors.gray[400] }}>
@@ -436,7 +436,7 @@ const EmployeeAttendanceReport = () => {
                   bgcolor: theme.palette.background.paper,
                 }}
               >
-                <Typography variant="subtitle2" fontWeight={800} sx={{ color: colors.gray[100], mb: 1 }}>
+                <Typography variant="subtitle2" fontWeight={600} sx={{ color: colors.gray[100], mb: 1 }}>
                   Summary
                 </Typography>
                 <Stack direction="row" spacing={1} sx={{ overflowX: "auto", pb: 0.5 }}>
@@ -468,7 +468,7 @@ const EmployeeAttendanceReport = () => {
 
                 <Divider sx={{ my: 1.5, borderColor: colors.gray[800] }} />
 
-                <Typography variant="subtitle2" fontWeight={800} sx={{ color: colors.gray[100], mb: 1 }}>
+                <Typography variant="subtitle2" fontWeight={600} sx={{ color: colors.gray[100], mb: 1 }}>
                   Filters
                 </Typography>
                 <Stack direction="row" spacing={1} sx={{ overflowX: "auto", pb: 0.5 }}>
@@ -703,7 +703,7 @@ const EmployeeAttendanceReport = () => {
                     {(selectedEmployee.name || "U")?.charAt(0)}
                   </Avatar>
                   <Box>
-                    <Typography variant="h6" fontWeight={800} sx={{ color: colors.gray[100], lineHeight: 1.15 }}>
+                    <Typography variant="h6" fontWeight={600} sx={{ color: colors.gray[100], lineHeight: 1.15 }}>
                       {selectedEmployee.name}
                     </Typography>
                     <Typography variant="caption" sx={{ color: colors.gray[400] }}>

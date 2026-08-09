@@ -32,7 +32,7 @@ const TaskCompletionSlider = ({
     >
       <Stack direction={{ xs: "column", sm: "row" }} alignItems={{ xs: "stretch", sm: "center" }} justifyContent="space-between" spacing={2}>
         <Box>
-          <Typography variant="subtitle1" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+          <Typography variant="subtitle1" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
             Task Progress
           </Typography>
           <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
@@ -43,7 +43,7 @@ const TaskCompletionSlider = ({
           variant="h4"
           sx={{
             color: theme.palette.success.main,
-            fontWeight: 900,
+            fontWeight: 700,
             minWidth: 88,
             textAlign: { xs: "left", sm: "right" },
           }}
@@ -75,7 +75,7 @@ const TaskCompletionSlider = ({
           variant="contained"
           startIcon={<SaveRounded />}
           onClick={handleSaveCompletion}
-          sx={{ borderRadius: 2, fontWeight: 900, whiteSpace: "nowrap" }}
+          sx={{ borderRadius: 2, fontWeight: 700, whiteSpace: "nowrap" }}
         >
           Save Progress
         </Button>
@@ -96,7 +96,7 @@ const TaskCompletionSlider = ({
           label={
             <Stack direction="row" spacing={1} alignItems="center">
               <VisibilityRounded fontSize="small" color="success" />
-              <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 800 }}>
+              <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 600 }}>
                 Display completion progress
               </Typography>
             </Stack>

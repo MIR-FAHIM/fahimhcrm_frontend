@@ -261,7 +261,7 @@ const ContactUsLead = () => {
                 : theme.palette.gray?.[800] ?? paper,
               color: textPri,
               borderBottom: `1px solid ${divider}`,
-              fontWeight: 800,
+              fontWeight: 600,
             },
             "& .MuiDataGrid-columnHeaderTitle": { fontSize: 14 },
             "& .MuiDataGrid-cell": {

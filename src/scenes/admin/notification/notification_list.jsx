@@ -170,7 +170,7 @@ const NotificationRow = ({ n, metaForType, onView, onMarkRead }) => {
 
       <Box flex={1} minWidth={0}>
         <Stack direction="row" alignItems="baseline" justifyContent="space-between" spacing={1}>
-          <Typography variant="subtitle1" fontWeight={800} noWrap color="text.primary">
+          <Typography variant="subtitle1" fontWeight={600} noWrap color="text.primary">
             {n.title}
           </Typography>
           <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: "nowrap" }}>
@@ -202,7 +202,7 @@ const NotificationRow = ({ n, metaForType, onView, onMarkRead }) => {
               onClick={() => onView(n.related_id, n.type)}
               sx={{
                 textTransform: "none",
-                fontWeight: 800,
+                fontWeight: 600,
                 bgcolor: meta.color,
                 color: meta.text,
                 borderRadius: 1.5,
@@ -250,7 +250,7 @@ const LiveStream = ({ messages }) => {
         border: `1px dashed ${theme.palette.divider}`,
       }}
     >
-      <Typography variant="subtitle2" fontWeight={800} sx={{ mb: 1 }}>
+      <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
         Live updates
       </Typography>
       <Stack spacing={0.75}>
@@ -414,7 +414,7 @@ const NotificationPage = () => {
       {/* Header */}
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
         <Box>
-          <Typography variant="h5" fontWeight={800}>
+          <Typography variant="h5" fontWeight={600}>
             Notifications
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -429,7 +429,7 @@ const NotificationPage = () => {
           onClick={handleMarkAll}
           sx={{
             textTransform: "none",
-            fontWeight: 800,
+            fontWeight: 600,
             borderRadius: 2,
           }}
         >

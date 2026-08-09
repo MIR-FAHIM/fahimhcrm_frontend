@@ -67,7 +67,7 @@ const QuotationByProspect = ({ prosID }) => {
         <Button
           variant="contained"
           color="primary"
-          sx={{ borderRadius: "20px", textTransform: "none", fontSize: "14px", fontWeight: "bold" }}
+          sx={{ borderRadius: "20px", textTransform: "none", fontSize: "14px", fontWeight: 600 }}
           onClick={() => handleViewDetails(params.row.id)}
         >
           View Details
@@ -87,7 +87,7 @@ const QuotationByProspect = ({ prosID }) => {
         <Button
           variant="contained"
           color="secondary"
-          sx={{ padding: "10px 20px", borderRadius: "25px", fontSize: "14px", fontWeight: "bold" }}
+          sx={{ padding: "10px 20px", borderRadius: "25px", fontSize: "14px", fontWeight: 600 }}
           onClick={handleAddQuotation}
         >
           Add Quoation +
@@ -107,7 +107,7 @@ const QuotationByProspect = ({ prosID }) => {
             display: "flex",
             alignItems: "center",
           },
-          "& .MuiDataGrid-columnHeaders": { backgroundColor: colors.gray[10], fontSize: "16px", fontWeight: "bold" },
+          "& .MuiDataGrid-columnHeaders": { backgroundColor: colors.gray[10], fontSize: "16px", fontWeight: 600 },
           "& .MuiDataGrid-virtualScroller": { backgroundColor: colors.primary[400] },
           "& .MuiDataGrid-footerContainer": { backgroundColor: colors.gray[10], borderTop: "1px solid rgba(224, 224, 224, 1)" },
           "& .MuiCheckbox-root": { color: `${colors.greenAccent[200]} !important` },

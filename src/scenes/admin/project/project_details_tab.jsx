@@ -106,7 +106,7 @@ const ProjectDetailsTab = () => {
                 }}
             >
                 <Stack spacing={2}>
-                    <Typography variant="h6" fontWeight={800} sx={{ color: colors.gray[100] }}>
+                    <Typography variant="h6" fontWeight={600} sx={{ color: colors.gray[100] }}>
                         Project Details
                     </Typography>
 

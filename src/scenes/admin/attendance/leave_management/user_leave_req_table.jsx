@@ -91,7 +91,7 @@ const UserLeaveRequestsPage = () => {
       p={3}
     >
       <Paper elevation={6} sx={{ p: 4, maxWidth: 1000, width: "100%", borderRadius: 2, mb: 4, bgcolor: "#ffffff" }}>
-        <Typography variant="h5" component="h1" gutterBottom textAlign="center" sx={{ mb: 3, fontWeight: "bold", color: "#1a237e" }}>
+        <Typography variant="h5" component="h1" gutterBottom textAlign="center" sx={{ mb: 3, fontWeight: 600, color: "#1a237e" }}>
           My Leave Dashboard
         </Typography>
 
@@ -115,10 +115,10 @@ const UserLeaveRequestsPage = () => {
               <Table size="small" aria-label="leave balance table">
                 <TableHead sx={{ bgcolor: "#e8eaf6" }}>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: "bold", color: "#1a237e" }}>Leave Type</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: "bold", color: "#1a237e" }}>Total</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: "bold", color: "#1a237e" }}>Taken</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: "bold", color: "#1a237e" }}>Remaining</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: "#1a237e" }}>Leave Type</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600, color: "#1a237e" }}>Total</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600, color: "#1a237e" }}>Taken</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600, color: "#1a237e" }}>Remaining</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -131,7 +131,7 @@ const UserLeaveRequestsPage = () => {
                         <Typography
                           variant="body2"
                           sx={{
-                            fontWeight: "bold",
+                            fontWeight: 600,
                             color: leave.remaining_leave > 0 ? "success.main" : "error.main",
                           }}
                         >
@@ -165,12 +165,12 @@ const UserLeaveRequestsPage = () => {
               <Table aria-label="user leave requests table">
                 <TableHead sx={{ bgcolor: "#e8eaf6" }}>
                   <TableRow>
-                    <TableCell sx={{ fontWeight: "bold", color: "#1a237e" }}>Leave Type</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", color: "#1a237e" }}>Start Date</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", color: "#1a237e" }}>End Date</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", color: "#1a237e" }}>Duration</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", color: "#1a237e" }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", color: "#1a237e" }}>Reason</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: "#1a237e" }}>Leave Type</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: "#1a237e" }}>Start Date</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: "#1a237e" }}>End Date</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: "#1a237e" }}>Duration</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: "#1a237e" }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: "#1a237e" }}>Reason</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -183,15 +183,15 @@ const UserLeaveRequestsPage = () => {
                         <TableCell>{leave.duration} Days</TableCell>
                         <TableCell>
                           {leave.is_approve === 1 ? (
-                            <Typography variant="body2" color="success.main" sx={{ fontWeight: "bold" }}>
+                            <Typography variant="body2" color="success.main" sx={{ fontWeight: 600 }}>
                               Approved
                             </Typography>
                           ) : leave.is_approve === 2 ? (
-                            <Typography variant="body2" color="error.main" sx={{ fontWeight: "bold" }}>
+                            <Typography variant="body2" color="error.main" sx={{ fontWeight: 600 }}>
                               Rejected
                             </Typography>
                           ) : (
-                            <Typography variant="body2" color="warning.dark" sx={{ fontWeight: "bold" }}>
+                            <Typography variant="body2" color="warning.dark" sx={{ fontWeight: 600 }}>
                               Pending
                             </Typography>
                           )}

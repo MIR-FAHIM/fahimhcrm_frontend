@@ -1,190 +1,235 @@
-import { Box, Button, Typography, useTheme, Chip, CircularProgress, Dialog } from "@mui/material";
-import { Header } from "../../../../components";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Dialog,
+  Paper,
+  Stack,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { tokens } from "../../../../theme";
+import AddTaskRoundedIcon from "@mui/icons-material/AddTaskRounded";
+import ConfirmationNumberRoundedIcon from "@mui/icons-material/ConfirmationNumberRounded";
+import dayjs from "dayjs";
 import { getTicketByClient } from "../../../../api/controller/admin_controller/client_controller";
 import AddTaskFormProject from "./add_task_for_client";
-const ClientTicket = () => {
+
+const statusColor = (theme, status = "") => {
+  const normalized = status.toLowerCase();
+  if (normalized === "open") return theme.palette.success.main;
+  if (normalized === "closed") return theme.palette.text.secondary;
+  if (normalized === "pending") return theme.palette.warning.main;
+  return theme.palette.info.main;
+};
+
+const ClientTicket = ({ clientId, refreshKey = 0 }) => {
   const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
-  const navigate = useNavigate();
-const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
-const [selectedTicket, setSelectedTicket] = useState(null);
+  const brand = theme.palette.blueAccent?.main ?? theme.palette.primary.main;
+  const brandDark = theme.palette.blueAccent?.dark ?? theme.palette.primary.dark;
+  const brandContrast = theme.palette.blueAccent?.contrastText ?? theme.palette.primary.contrastText;
+
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(null);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Define the DataGrid columns based on the API response structure
-  const columns = [
-    { field: "ticket_code", headerName: "Ticket Code", flex: 1 },
-    { field: "subject", headerName: "Subject", flex: 1.5 },
-    { field: "type", headerName: "Type", flex: 0.8 },
-    {
-      field: "priority",
-      headerName: "Priority",
-      flex: 1,
-      // Custom cell renderer to display the priority name with its color
-      renderCell: ({ row: { priority } }) => (
-        <Chip
-          label={priority?.priority_name || "N/A"}
-          sx={{
-            backgroundColor: priority?.color_code || "#9e9e9e",
-            color: theme.palette.getContrastText(priority?.color_code || "#9e9e9e"),
-            fontWeight: "bold",
-          }}
-        />
-      ),
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      flex: 0.8,
-      // Custom cell renderer to capitalize the status and add a pill style
-      renderCell: ({ row: { status } }) => (
-        <Chip
-          label={status.charAt(0).toUpperCase() + status.slice(1)}
-          sx={{
-            backgroundColor: status === "open" ? colors.greenAccent[600] : colors.grey[600],
-            color: "white",
-            fontWeight: "bold",
-          }}
-        />
-      ),
-    },
-    {
-      field: "created_at",
-      headerName: "Created At",
-      flex: 1,
-      // Custom cell renderer to format the date
-      valueFormatter: ({ value }) => new Date(value).toLocaleDateString(),
-    },
-   {
-  field: "actions",
-  headerName: "Actions",
-  flex: 1,
-  renderCell: (params) => (
-    <Button
-      variant="contained"
-      sx={{
-        backgroundColor: colors.blueAccent[700],
-        "&:hover": {
-          backgroundColor: colors.blueAccent[600],
-        },
-      }}
-      onClick={() => {
-        setSelectedTicket(params.row); // save ticket details
-        setIsTaskDialogOpen(true); // open dialog
-      }}
-    >
-      Task
-    </Button>
-  ),
-}
-  ];
-
   useEffect(() => {
-    // The client ID should be dynamic, but for this example, we use a placeholder '1'
-    const clientId = 1; 
-
+    let mounted = true;
     const fetchTickets = async () => {
+      setLoading(true);
+      setError(null);
       try {
         const response = await getTicketByClient(clientId);
-        if (response.status === "success") {
-          // The API response returns data as an array, which is perfect for DataGrid rows
-          setTickets(response.data);
+        if (!mounted) return;
+        if (response?.status === "success") {
+          setTickets(Array.isArray(response.data) ? response.data : []);
         } else {
-          setError("Failed to fetch tickets.");
+          setError(response?.message || "Failed to fetch tickets.");
         }
       } catch (err) {
-        setError("Error fetching data. Please check your network connection.");
+        if (mounted) setError(err?.message || "Error fetching tickets.");
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
-    
-    fetchTickets();
-  }, []);
 
-  return (
-    <Box m="20px">
-     
+    if (clientId) fetchTickets();
 
-      <Box
-        m="40px 0 0 0"
-        height="75vh"
-        sx={{
-          "& .MuiDataGrid-root": {
-            border: "none",
-          },
-          "& .MuiDataGrid-cell": {
-            borderBottom: "none",
-          },
-          "& .name-column--cell": {
-            color: colors.greenAccent[400],
-          },
-          "& .MuiDataGrid-columnHeaders": {
-            backgroundColor: colors.gray[700],
-            borderBottom: "none",
-          },
-          "& .MuiDataGrid-virtualScroller": {
-            backgroundColor: colors.primary[400],
-          },
-          "& .MuiDataGrid-footerContainer": {
-            borderTop: "none",
-            backgroundColor: colors.gray[700],
-          },
-          "& .MuiCheckbox-root": {
-            color: `${colors.greenAccent[200]} !important`,
-          },
-          "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
-            color: `${colors.gray[100]} !important`,
-          },
-        }}
-      >
-        {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-            <CircularProgress />
-          </Box>
-        ) : error ? (
-          <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-            <Typography variant="h5" color="error">
-              {error}
+    return () => {
+      mounted = false;
+    };
+  }, [clientId, refreshKey]);
+
+  const columns = useMemo(
+    () => [
+      {
+        field: "ticket_code",
+        headerName: "Ticket",
+        flex: 1,
+        minWidth: 150,
+        renderCell: ({ row }) => (
+          <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0 }}>
+            <ConfirmationNumberRoundedIcon fontSize="small" sx={{ color: brand }} />
+            <Typography noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
+              {row.ticket_code || `#${row.id}`}
+            </Typography>
+          </Stack>
+        ),
+      },
+      {
+        field: "subject",
+        headerName: "Subject",
+        flex: 1.7,
+        minWidth: 220,
+        renderCell: ({ row }) => (
+          <Box sx={{ minWidth: 0 }}>
+            <Typography noWrap sx={{ color: theme.palette.text.primary, fontWeight: 650 }}>
+              {row.subject || "Untitled ticket"}
+            </Typography>
+            <Typography noWrap variant="caption" sx={{ color: theme.palette.text.secondary }}>
+              {row.description || row.category || "No description"}
             </Typography>
           </Box>
-        ) : (
-          <DataGrid
-            rows={tickets}
-            columns={columns}
-            components={{ Toolbar: GridToolbar }}
-            getRowId={(row) => row.id}
+        ),
+      },
+      {
+        field: "type",
+        headerName: "Type",
+        width: 120,
+        renderCell: ({ row }) => (
+          <Chip size="small" label={row.type || "N/A"} variant="outlined" sx={{ fontWeight: 650 }} />
+        ),
+      },
+      {
+        field: "priority",
+        headerName: "Priority",
+        width: 150,
+        renderCell: ({ row }) => {
+          const color = row.priority?.color_code || theme.palette.warning.main;
+          return (
+            <Chip
+              size="small"
+              label={row.priority?.priority_name || "N/A"}
+              sx={{ bgcolor: alpha(color, 0.16), color, fontWeight: 700 }}
+            />
+          );
+        },
+      },
+      {
+        field: "status",
+        headerName: "Status",
+        width: 130,
+        renderCell: ({ row }) => {
+          const color = statusColor(theme, row.status);
+          const label = row.status ? row.status.charAt(0).toUpperCase() + row.status.slice(1) : "Unknown";
+          return <Chip size="small" label={label} sx={{ bgcolor: alpha(color, 0.14), color, fontWeight: 700 }} />;
+        },
+      },
+      {
+        field: "created_at",
+        headerName: "Created",
+        width: 145,
+        valueFormatter: ({ value }) => (value ? dayjs(value).format("MMM D, YYYY") : "-"),
+      },
+      {
+        field: "actions",
+        headerName: "Actions",
+        width: 130,
+        sortable: false,
+        filterable: false,
+        align: "right",
+        headerAlign: "right",
+        renderCell: (params) => (
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AddTaskRoundedIcon />}
+            sx={{ bgcolor: brand, color: brandContrast, fontWeight: 700, "&:hover": { bgcolor: brandDark } }}
+            onClick={() => {
+              setSelectedTicket(params.row);
+              setIsTaskDialogOpen(true);
+            }}
+          >
+            Task
+          </Button>
+        ),
+      },
+    ],
+    [brand, brandContrast, brandDark, theme]
+  );
+
+  return (
+    <Box>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      <Paper
+        elevation={0}
+        sx={{
+          height: 520,
+          borderRadius: 2,
+          overflow: "hidden",
+          bgcolor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <DataGrid
+          rows={tickets}
+          columns={columns}
+          loading={loading}
+          slots={{ toolbar: GridToolbar }}
+          getRowId={(row) => row.id}
+          disableRowSelectionOnClick
+          pageSizeOptions={[10, 25, 50]}
+          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+          sx={{
+            border: "none",
+            color: theme.palette.text.primary,
+            "& .MuiDataGrid-columnHeaders": {
+              bgcolor: alpha(brand, theme.palette.mode === "dark" ? 0.18 : 0.08),
+              color: theme.palette.text.primary,
+              borderBottom: `1px solid ${theme.palette.divider}`,
+            },
+            "& .MuiDataGrid-columnHeaderTitle": { fontWeight: 700 },
+            "& .MuiDataGrid-cell": { borderBottom: `1px solid ${theme.palette.divider}` },
+            "& .MuiDataGrid-row:hover": { bgcolor: alpha(brand, theme.palette.mode === "dark" ? 0.16 : 0.06) },
+            "& .MuiDataGrid-virtualScroller, & .MuiDataGrid-footerContainer, & .MuiDataGrid-toolbarContainer": {
+              bgcolor: theme.palette.background.paper,
+            },
+            "& .MuiDataGrid-footerContainer, & .MuiDataGrid-toolbarContainer": {
+              borderTop: `1px solid ${theme.palette.divider}`,
+            },
+            "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+              color: `${brand} !important`,
+              fontWeight: 650,
+            },
+            "& .MuiDataGrid-overlay": { bgcolor: alpha(theme.palette.background.paper, 0.92) },
+          }}
+        />
+      </Paper>
+
+      <Dialog
+        open={isTaskDialogOpen}
+        onClose={() => setIsTaskDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{ sx: { backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary } }}
+      >
+        {selectedTicket && (
+          <AddTaskFormProject
+            projectId={parseInt(clientId, 10)}
+            statusID={1}
+            title={selectedTicket.ticket_code}
+            details={selectedTicket.subject}
+            onClose={() => setIsTaskDialogOpen(false)}
           />
-        )
-        }
-        <Dialog
-  open={isTaskDialogOpen}
-  onClose={() => setIsTaskDialogOpen(false)}
-  maxWidth="sm"
-  fullWidth
-  PaperProps={{
-    sx: {
-      backgroundColor: theme.palette.background.paper,
-      color: theme.palette.text.primary
-    }
-  }}
->
-  {selectedTicket && (
-    <AddTaskFormProject
-      projectId={parseInt(1)}
-      statusID={1}
-      title={selectedTicket.ticket_code}   // ✅ Ticket code as title
-      details={selectedTicket.subject}   // ✅ Ticket code as title
-      onClose={() => setIsTaskDialogOpen(false)}
-    />
-  )}
-</Dialog>
-      </Box>
+        )}
+      </Dialog>
     </Box>
   );
 };

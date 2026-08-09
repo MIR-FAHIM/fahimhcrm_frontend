@@ -280,7 +280,7 @@ const MasterDataPage = ({
             {iconNode}
           </Avatar>
           <Box>
-            <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1 }}>
+            <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1 }}>
               {title}
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
@@ -289,8 +289,8 @@ const MasterDataPage = ({
           </Box>
         </Stack>
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-          <Chip icon={iconNode} label={`${items.length} ${countLabel}`} sx={{ fontWeight: 900, bgcolor: alpha(brand, 0.1), color: brand }} />
-          {includeDepartment && <Chip icon={<ApartmentRoundedIcon />} label={`${departments.length} departments`} variant="outlined" sx={{ fontWeight: 900 }} />}
+          <Chip icon={iconNode} label={`${items.length} ${countLabel}`} sx={{ fontWeight: 700, bgcolor: alpha(brand, 0.1), color: brand }} />
+          {includeDepartment && <Chip icon={<ApartmentRoundedIcon />} label={`${departments.length} departments`} variant="outlined" sx={{ fontWeight: 700 }} />}
         </Stack>
       </Stack>
 
@@ -298,7 +298,7 @@ const MasterDataPage = ({
         <Box component="form" onSubmit={handleCreate}>
           <Stack direction={{ xs: "column", md: "row" }} spacing={1.5} alignItems={{ xs: "stretch", md: "flex-start" }}>
             <Box sx={{ flex: 1 }}>{renderFields(form, updateFormValue)}</Box>
-            <Button type="submit" variant="contained" startIcon={saving ? <CircularProgress size={16} /> : <AddRoundedIcon />} disabled={saving} sx={{ borderRadius: 2, fontWeight: 900, minWidth: 150 }}>
+            <Button type="submit" variant="contained" startIcon={saving ? <CircularProgress size={16} /> : <AddRoundedIcon />} disabled={saving} sx={{ borderRadius: 2, fontWeight: 700, minWidth: 150 }}>
               Add {entityLabel}
             </Button>
           </Stack>
@@ -308,7 +308,7 @@ const MasterDataPage = ({
       <Paper elevation={0} sx={{ borderRadius: 2, bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, overflow: "hidden" }}>
         <Stack direction={{ xs: "column", lg: "row" }} spacing={1.5} alignItems={{ xs: "stretch", lg: "center" }} justifyContent="space-between" sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
           <Box>
-            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
               {listTitle}
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
@@ -344,11 +344,11 @@ const MasterDataPage = ({
           <Table size="small">
             <TableHead>
               <TableRow sx={{ bgcolor: alpha(brand, 0.08) }}>
-                <TableCell sx={{ fontWeight: 900, width: 90 }}>ID</TableCell>
-                <TableCell sx={{ fontWeight: 900 }}>{nameLabel}</TableCell>
-                {includeColor && <TableCell sx={{ fontWeight: 900 }}>Color</TableCell>}
-                {includeDepartment && <TableCell sx={{ fontWeight: 900 }}>Department</TableCell>}
-                <TableCell sx={{ fontWeight: 900, width: 130 }} align="right">Actions</TableCell>
+                <TableCell sx={{ fontWeight: 700, width: 90 }}>ID</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{nameLabel}</TableCell>
+                {includeColor && <TableCell sx={{ fontWeight: 700 }}>Color</TableCell>}
+                {includeDepartment && <TableCell sx={{ fontWeight: 700 }}>Department</TableCell>}
+                <TableCell sx={{ fontWeight: 700, width: 130 }} align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -361,25 +361,25 @@ const MasterDataPage = ({
               ) : filteredItems.length ? (
                 filteredItems.map((item) => (
                   <TableRow key={item.id} hover>
-                    <TableCell sx={{ color: theme.palette.text.secondary, fontWeight: 800 }}>#{item.id}</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>#{item.id}</TableCell>
                     <TableCell>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Avatar variant="rounded" sx={{ width: 30, height: 30, bgcolor: alpha(item.color_code || brand, 0.12), color: item.color_code || brand }}>
                           {iconNode}
                         </Avatar>
-                        <Typography sx={{ color: theme.palette.text.primary, fontWeight: 850 }}>
+                        <Typography sx={{ color: theme.palette.text.primary, fontWeight: 650 }}>
                           {item[nameField] || `Untitled ${entityLabel.toLowerCase()}`}
                         </Typography>
                       </Stack>
                     </TableCell>
                     {includeColor && (
                       <TableCell>
-                        <Chip size="small" label={item.color_code || defaultColor} sx={{ fontWeight: 850, color: item.color_code || defaultColor, borderColor: alpha(item.color_code || defaultColor, 0.4) }} variant="outlined" />
+                        <Chip size="small" label={item.color_code || defaultColor} sx={{ fontWeight: 650, color: item.color_code || defaultColor, borderColor: alpha(item.color_code || defaultColor, 0.4) }} variant="outlined" />
                       </TableCell>
                     )}
                     {includeDepartment && (
                       <TableCell>
-                        <Chip icon={<ApartmentRoundedIcon />} label={getDepartmentName?.(item) || "No department"} size="small" variant="outlined" sx={{ fontWeight: 850 }} />
+                        <Chip icon={<ApartmentRoundedIcon />} label={getDepartmentName?.(item) || "No department"} size="small" variant="outlined" sx={{ fontWeight: 650 }} />
                       </TableCell>
                     )}
                     <TableCell align="right">

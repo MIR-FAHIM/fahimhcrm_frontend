@@ -149,7 +149,7 @@ const StatTile = ({ icon, label, value, tone = "primary" }) => {
           <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
             {label}
           </Typography>
-          <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+          <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
             {value}
           </Typography>
         </Box>
@@ -177,7 +177,7 @@ const SmartToolbar = ({ label, onNavigate, onView, view, views }) => {
         <Button variant="outlined" size="small" onClick={() => onNavigate("PREV")} sx={{ borderRadius: 2 }}>
           Prev
         </Button>
-        <Button variant="contained" size="small" startIcon={<TodayRounded />} onClick={() => onNavigate("TODAY")} sx={{ borderRadius: 2, fontWeight: 900 }}>
+        <Button variant="contained" size="small" startIcon={<TodayRounded />} onClick={() => onNavigate("TODAY")} sx={{ borderRadius: 2, fontWeight: 700 }}>
           Today
         </Button>
         <Button variant="outlined" size="small" onClick={() => onNavigate("NEXT")} sx={{ borderRadius: 2 }}>
@@ -185,7 +185,7 @@ const SmartToolbar = ({ label, onNavigate, onView, view, views }) => {
         </Button>
       </Stack>
 
-      <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900, textAlign: "center" }}>
+      <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700, textAlign: "center" }}>
         {label}
       </Typography>
 
@@ -198,7 +198,7 @@ const SmartToolbar = ({ label, onNavigate, onView, view, views }) => {
             color={view === viewName ? "primary" : "default"}
             variant={view === viewName ? "filled" : "outlined"}
             onClick={() => onView(viewName)}
-            sx={{ fontWeight: 800 }}
+            sx={{ fontWeight: 600 }}
           />
         ))}
       </Stack>
@@ -212,7 +212,7 @@ const MonthDateHeader = ({ date, label, tasksByDate }) => {
 
   return (
     <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={0.5} sx={{ px: 0.5, minHeight: 24 }}>
-      <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: moment(date).isSame(moment(), "day") ? 900 : 700 }}>
+      <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: moment(date).isSame(moment(), "day") ? 700 : 600 }}>
         {label}
       </Typography>
       {count > 0 && (
@@ -220,7 +220,7 @@ const MonthDateHeader = ({ date, label, tasksByDate }) => {
           size="small"
           label={count}
           color={count > 1 ? "primary" : "default"}
-          sx={{ height: 19, minWidth: 24, fontSize: 11, fontWeight: 900 }}
+          sx={{ height: 19, minWidth: 24, fontSize: 11, fontWeight: 700 }}
         />
       )}
     </Stack>
@@ -235,7 +235,7 @@ const CalendarEvent = ({ event }) => {
     <Tooltip title={`${event.title} - ${event.priorityName} - ${event.statusName}`}>
       <Stack direction="row" spacing={0.5} alignItems="center" sx={{ minWidth: 0, overflow: "hidden" }}>
         <Box sx={{ width: 7, height: 7, borderRadius: 999, bgcolor: color, flexShrink: 0 }} />
-        <Typography variant="caption" noWrap sx={{ fontWeight: 900, color: theme.palette.text.primary, lineHeight: 1.2 }}>
+        <Typography variant="caption" noWrap sx={{ fontWeight: 700, color: theme.palette.text.primary, lineHeight: 1.2 }}>
           {event.title}
         </Typography>
       </Stack>
@@ -265,7 +265,7 @@ const TaskAgendaCard = ({ task, active, onSelect, onOpenDetails }) => {
       <Stack spacing={1.25}>
         <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={1}>
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="subtitle2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+            <Typography variant="subtitle2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
               {task.title}
             </Typography>
             <Typography variant="caption" noWrap sx={{ color: theme.palette.text.secondary, display: "block" }}>
@@ -280,9 +280,9 @@ const TaskAgendaCard = ({ task, active, onSelect, onOpenDetails }) => {
         </Stack>
 
         <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
-          <Chip size="small" label={task.priorityName} color={task.priorityTone} variant="outlined" sx={{ fontWeight: 800 }} />
-          <Chip size="small" label={task.statusName} color={task.statusTone} sx={{ fontWeight: 800 }} />
-          <Chip size="small" label={task.taskTypeName} variant="outlined" sx={{ fontWeight: 800 }} />
+          <Chip size="small" label={task.priorityName} color={task.priorityTone} variant="outlined" sx={{ fontWeight: 600 }} />
+          <Chip size="small" label={task.statusName} color={task.statusTone} sx={{ fontWeight: 600 }} />
+          <Chip size="small" label={task.taskTypeName} variant="outlined" sx={{ fontWeight: 600 }} />
         </Stack>
 
         {task.description && (
@@ -311,7 +311,7 @@ const TaskAgendaCard = ({ task, active, onSelect, onOpenDetails }) => {
               event.stopPropagation();
               onOpenDetails(task.id);
             }}
-            sx={{ borderRadius: 2, fontWeight: 900 }}
+            sx={{ borderRadius: 2, fontWeight: 700 }}
           >
             Details
           </Button>
@@ -495,7 +495,7 @@ const TaskCalendar = () => {
               <CalendarMonthRounded />
             </Avatar>
             <Box>
-              <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1 }}>
+              <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1 }}>
                 Task Calendar
               </Typography>
               <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
@@ -509,7 +509,7 @@ const TaskCalendar = () => {
           startIcon={refreshing ? <CircularProgress size={16} color="inherit" /> : <RefreshRounded />}
           disabled={refreshing}
           onClick={() => fetchTasks({ silent: true })}
-          sx={{ borderRadius: 2, fontWeight: 900, alignSelf: { xs: "stretch", lg: "center" } }}
+          sx={{ borderRadius: 2, fontWeight: 700, alignSelf: { xs: "stretch", lg: "center" } }}
         >
           Refresh
         </Button>
@@ -613,7 +613,7 @@ const TaskCalendar = () => {
             "& .rbc-header": {
               borderColor: theme.palette.divider,
               color: theme.palette.text.secondary,
-              fontWeight: 900,
+              fontWeight: 700,
               fontSize: 12,
               textTransform: "uppercase",
               padding: "8px 4px",
@@ -627,7 +627,7 @@ const TaskCalendar = () => {
             "& .rbc-today": { backgroundColor: alpha(theme.palette.info.main, 0.08) },
             "& .rbc-show-more": {
               color: theme.palette.primary.main,
-              fontWeight: 900,
+              fontWeight: 700,
               backgroundColor: alpha(theme.palette.primary.main, 0.08),
               borderRadius: 999,
               px: 0.75,
@@ -677,7 +677,7 @@ const TaskCalendar = () => {
           >
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2} sx={{ mb: 2 }}>
               <Box>
-                <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                   {moment(selectedDate).format("MMM D, YYYY")}
                 </Typography>
                 <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
@@ -688,7 +688,7 @@ const TaskCalendar = () => {
                 icon={<EventRounded />}
                 label={selectedDayTasks.length}
                 color={selectedDayTasks.length > 1 ? "primary" : "default"}
-                sx={{ fontWeight: 900 }}
+                sx={{ fontWeight: 700 }}
               />
             </Stack>
 
@@ -731,16 +731,16 @@ const TaskCalendar = () => {
               border: `1px solid ${theme.palette.divider}`,
             }}
           >
-            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900, mb: 1 }}>
+            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700, mb: 1 }}>
               Selected Task
             </Typography>
             {selectedTaskForPanel ? (
               <Stack spacing={1.5}>
                 <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                  <Chip size="small" label={selectedTaskForPanel.priorityName} color={selectedTaskForPanel.priorityTone} sx={{ fontWeight: 800 }} />
-                  <Chip size="small" label={selectedTaskForPanel.statusName} color={selectedTaskForPanel.statusTone} variant="outlined" sx={{ fontWeight: 800 }} />
+                  <Chip size="small" label={selectedTaskForPanel.priorityName} color={selectedTaskForPanel.priorityTone} sx={{ fontWeight: 600 }} />
+                  <Chip size="small" label={selectedTaskForPanel.statusName} color={selectedTaskForPanel.statusTone} variant="outlined" sx={{ fontWeight: 600 }} />
                 </Stack>
-                <Typography variant="subtitle1" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                <Typography variant="subtitle1" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                   {selectedTaskForPanel.title}
                 </Typography>
                 <Typography variant="body2" sx={{ color: theme.palette.text.secondary, whiteSpace: "pre-line" }}>
@@ -750,22 +750,22 @@ const TaskCalendar = () => {
                 <Stack spacing={1}>
                   <Stack direction="row" justifyContent="space-between" spacing={2}>
                     <Typography variant="body2" color="text.secondary">Due</Typography>
-                    <Typography variant="body2" fontWeight={800}>{selectedTaskForPanel.dueLabel}</Typography>
+                    <Typography variant="body2" fontWeight={600}>{selectedTaskForPanel.dueLabel}</Typography>
                   </Stack>
                   <Stack direction="row" justifyContent="space-between" spacing={2}>
                     <Typography variant="body2" color="text.secondary">Type</Typography>
-                    <Typography variant="body2" fontWeight={800}>{selectedTaskForPanel.taskTypeName}</Typography>
+                    <Typography variant="body2" fontWeight={600}>{selectedTaskForPanel.taskTypeName}</Typography>
                   </Stack>
                   <Stack direction="row" justifyContent="space-between" spacing={2}>
                     <Typography variant="body2" color="text.secondary">Project</Typography>
-                    <Typography variant="body2" fontWeight={800} textAlign="right">{selectedTaskForPanel.projectName}</Typography>
+                    <Typography variant="body2" fontWeight={600} textAlign="right">{selectedTaskForPanel.projectName}</Typography>
                   </Stack>
                 </Stack>
                 <Button
                   variant="contained"
                   endIcon={<ArrowForwardRounded />}
                   onClick={() => handleOpenDetails(selectedTaskForPanel.id)}
-                  sx={{ borderRadius: 2, fontWeight: 900 }}
+                  sx={{ borderRadius: 2, fontWeight: 700 }}
                 >
                   View Task Details
                 </Button>
@@ -787,7 +787,7 @@ const TaskCalendar = () => {
                 border: `1px solid ${theme.palette.divider}`,
               }}
             >
-              <Typography variant="subtitle1" sx={{ color: theme.palette.text.primary, fontWeight: 900, mb: 1 }}>
+              <Typography variant="subtitle1" sx={{ color: theme.palette.text.primary, fontWeight: 700, mb: 1 }}>
                 Tasks Without Due Date
               </Typography>
               <Stack spacing={1}>

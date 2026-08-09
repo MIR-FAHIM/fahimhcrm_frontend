@@ -517,7 +517,7 @@ const ProductEntry = () => {
           <TableContainer component={Paper} elevation={3}>
             <Table size="small">
               <TableHead>
-                <TableRow sx={{ "& .MuiTableCell-head": { fontWeight: "bold", backgroundColor: "#f5f5f5" } }}>
+                <TableRow sx={{ "& .MuiTableCell-head": { fontWeight: 600, backgroundColor: "#f5f5f5" } }}>
                   <TableCell>SKU</TableCell>
                   <TableCell>Price (৳)</TableCell>
                   <TableCell>Quantity</TableCell>

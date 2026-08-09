@@ -150,7 +150,7 @@ const StatTile = ({ icon, label, value, tone = "primary" }) => {
           <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
             {label}
           </Typography>
-          <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+          <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
             {value}
           </Typography>
         </Box>
@@ -189,7 +189,7 @@ const Section = ({ title, subtitle, icon, action, children }) => {
             </Avatar>
           )}
           <Box>
-            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1.1 }}>
+            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1.1 }}>
               {title}
             </Typography>
             {subtitle && (
@@ -257,7 +257,7 @@ const StageJourney = ({ stages = [], currentStageId, onChangeStage }) => {
                       {active ? <CheckCircleRounded fontSize="small" /> : index + 1}
                     </Avatar>
                     <Box sx={{ minWidth: 0 }}>
-                      <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                      <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                         {stage.stage_name}
                       </Typography>
                       <Typography variant="caption" noWrap sx={{ color: theme.palette.text.secondary }}>
@@ -300,7 +300,7 @@ const ActivitySummary = ({ summary = {} }) => {
             label={`${type.replace(/_/g, " ")} ${count}`}
             sx={{
               textTransform: "capitalize",
-              fontWeight: 900,
+              fontWeight: 700,
               bgcolor: alpha(color, 0.12),
               color,
               border: `1px solid ${alpha(color, 0.22)}`,
@@ -547,9 +547,9 @@ export default function ProspectDetailsPage() {
           </Button>
           <Box sx={{ minWidth: 0 }}>
             <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-              <Chip icon={isIndividual ? <PersonRounded /> : <BusinessRounded />} label={isIndividual ? "Individual" : "Organization"} sx={{ fontWeight: 900 }} />
-              <Chip icon={<FlagRounded />} label={stageName} color="primary" variant="outlined" sx={{ fontWeight: 900 }} />
-              {isOpportunity && <Chip icon={<StarRounded />} label="Opportunity" color="success" sx={{ fontWeight: 900 }} />}
+              <Chip icon={isIndividual ? <PersonRounded /> : <BusinessRounded />} label={isIndividual ? "Individual" : "Organization"} sx={{ fontWeight: 700 }} />
+              <Chip icon={<FlagRounded />} label={stageName} color="primary" variant="outlined" sx={{ fontWeight: 700 }} />
+              {isOpportunity && <Chip icon={<StarRounded />} label="Opportunity" color="success" sx={{ fontWeight: 700 }} />}
             </Stack>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 0.5 }}>
               Prospect workspace with relationship, stage, activity, meetings, emails, and task actions.
@@ -576,7 +576,7 @@ export default function ProspectDetailsPage() {
             startIcon={refreshing ? <CircularProgress size={16} color="inherit" /> : <RefreshRounded />}
             disabled={refreshing}
             onClick={() => loadWorkspace({ silent: true })}
-            sx={{ borderRadius: 2, fontWeight: 900 }}
+            sx={{ borderRadius: 2, fontWeight: 700 }}
           >
             Refresh
           </Button>
@@ -612,13 +612,13 @@ export default function ProspectDetailsPage() {
                 height: 64,
                 bgcolor: alpha(theme.palette.primary.main, 0.14),
                 color: theme.palette.primary.main,
-                fontWeight: 900,
+                fontWeight: 700,
               }}
             >
               {isIndividual ? <PersonRounded /> : <BusinessRounded />}
             </Avatar>
             <Box sx={{ minWidth: 0 }}>
-              <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1.1, wordBreak: "break-word" }}>
+              <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1.1, wordBreak: "break-word" }}>
                 {details.prospect_name || "Untitled prospect"}
               </Typography>
               <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 0.75 }}>
@@ -686,7 +686,7 @@ export default function ProspectDetailsPage() {
               sx={{
                 mb: 2,
                 borderBottom: `1px solid ${theme.palette.divider}`,
-                "& .MuiTab-root": { fontWeight: 900, minHeight: 44 },
+                "& .MuiTab-root": { fontWeight: 700, minHeight: 44 },
               }}
             >
               {TABS.map((tab, index) => (
@@ -714,7 +714,7 @@ export default function ProspectDetailsPage() {
                       onClick={() => addLogActivity(action.type)}
                       sx={{
                         borderRadius: 2,
-                        fontWeight: 900,
+                        fontWeight: 700,
                         color: theme.palette[action.tone]?.main || theme.palette.primary.main,
                         borderColor: alpha(theme.palette[action.tone]?.main || theme.palette.primary.main, 0.45),
                       }}

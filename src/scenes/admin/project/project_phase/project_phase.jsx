@@ -183,7 +183,7 @@ const ProjectPhases = ({ protId }) => {
         {/* Header */}
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
           <Box>
-            <Typography variant="h4" fontWeight={800} color={textPri} lineHeight={1.2}>
+            <Typography variant="h4" fontWeight={600} color={textPri} lineHeight={1.2}>
               Project Phases
             </Typography>
             {projectDetails?.project_name && (
@@ -293,7 +293,7 @@ const ProjectPhases = ({ protId }) => {
                               <Box>
                                 <Typography
                                   variant="subtitle2"
-                                  fontWeight={800}
+                                  fontWeight={600}
                                   color={textPri}
                                   sx={{ px: 1 }}
                                 >
@@ -409,7 +409,7 @@ const ProjectPhases = ({ protId }) => {
             },
           }}
         >
-          <DialogTitle sx={{ fontWeight: 800, color: textPri }}>Add New Phase</DialogTitle>
+          <DialogTitle sx={{ fontWeight: 600, color: textPri }}>Add New Phase</DialogTitle>
           <DialogContent>
             <Grid container spacing={2} mt={0.5}>
               <Grid item xs={12}>
@@ -517,7 +517,7 @@ const ProjectPhases = ({ protId }) => {
             },
           }}
         >
-          <DialogTitle sx={{ fontWeight: 800, color: textPri }}>
+          <DialogTitle sx={{ fontWeight: 600, color: textPri }}>
             Update “{phaseName}”
           </DialogTitle>
           <DialogContent sx={{ pt: 1 }}>

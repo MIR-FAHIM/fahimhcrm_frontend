@@ -137,7 +137,7 @@ const MetaTile = ({ icon, label, value, caption, tone = "primary" }) => {
           <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
             {label}
           </Typography>
-          <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+          <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
             {displayValue}
           </Typography>
           {caption && (
@@ -186,7 +186,7 @@ const Section = ({ icon, title, subtitle, action, children }) => {
             </Avatar>
           )}
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1.1 }}>
+            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1.1 }}>
               {title}
             </Typography>
             {subtitle && (
@@ -483,9 +483,9 @@ const TaskDetails = () => {
           </Button>
           <Box sx={{ minWidth: 0 }}>
             <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-              <Chip size="small" icon={<TaskAltRounded />} label={`Task #${task.id}`} sx={{ fontWeight: 800 }} />
-              <Chip size="small" label={getStatusName(task)} color="primary" variant="outlined" sx={{ fontWeight: 800 }} />
-              <Chip size="small" label={dueInfo.label} color={dueInfo.tone === "default" ? "default" : dueInfo.tone} sx={{ fontWeight: 800 }} />
+              <Chip size="small" icon={<TaskAltRounded />} label={`Task #${task.id}`} sx={{ fontWeight: 600 }} />
+              <Chip size="small" label={getStatusName(task)} color="primary" variant="outlined" sx={{ fontWeight: 600 }} />
+              <Chip size="small" label={dueInfo.label} color={dueInfo.tone === "default" ? "default" : dueInfo.tone} sx={{ fontWeight: 600 }} />
             </Stack>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 0.5 }}>
               Task detail workspace with controls, people, follow-ups, media, and activity history
@@ -498,7 +498,7 @@ const TaskDetails = () => {
           startIcon={refreshing ? <CircularProgress size={16} color="inherit" /> : <RefreshRounded />}
           disabled={refreshing}
           onClick={() => refreshTask({ silent: true })}
-          sx={{ borderRadius: 2, fontWeight: 900, alignSelf: { xs: "stretch", lg: "center" } }}
+          sx={{ borderRadius: 2, fontWeight: 700, alignSelf: { xs: "stretch", lg: "center" } }}
         >
           Refresh
         </Button>
@@ -557,7 +557,7 @@ const TaskDetails = () => {
                     </Typography>
                     <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
                       <RouteRounded fontSize="small" color="info" />
-                      <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                      <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                         Visit
                       </Typography>
                     </Stack>
@@ -583,7 +583,7 @@ const TaskDetails = () => {
                   startIcon={<MapRounded />}
                   disabled={visitRelation?.latitude == null || visitRelation?.longitude == null}
                   onClick={() => handleOpenMap(visitRelation?.latitude, visitRelation?.longitude)}
-                  sx={{ borderRadius: 2, fontWeight: 800 }}
+                  sx={{ borderRadius: 2, fontWeight: 600 }}
                 >
                   Show Map
                 </Button>
@@ -609,12 +609,12 @@ const TaskDetails = () => {
                         variant="text"
                         size="small"
                         onClick={() => navigate(`/prospect-detail/${visit.lead.id}`)}
-                        sx={{ display: "block", p: 0, mt: 0.5, textAlign: "left", fontWeight: 900 }}
+                        sx={{ display: "block", p: 0, mt: 0.5, textAlign: "left", fontWeight: 700 }}
                       >
                         {visit.lead.prospect_name || fallback}
                       </Button>
                     ) : (
-                      <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 900, mt: 0.5 }}>
+                      <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 700, mt: 0.5 }}>
                         {visit?.lead || fallback}
                       </Typography>
                     )}
@@ -661,7 +661,7 @@ const TaskDetails = () => {
                 variant={taskFollowUps.length ? "contained" : "outlined"}
                 startIcon={<AddRounded />}
                 onClick={() => setDrawerOpen(true)}
-                sx={{ borderRadius: 2, fontWeight: 900 }}
+                sx={{ borderRadius: 2, fontWeight: 700 }}
               >
                 {taskFollowUps.length ? `Open Follow-ups (${taskFollowUps.length})` : "Add Follow-up"}
               </Button>
@@ -677,14 +677,14 @@ const TaskDetails = () => {
             >
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ xs: "flex-start", sm: "center" }}>
                 <Box sx={{ flex: 1 }}>
-                  <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 800 }}>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 600 }}>
                     {taskFollowUps.length ? "Follow-up conversation is active." : "No follow-ups have been created for this task."}
                   </Typography>
                   <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                     Use follow-ups for reminders, pending questions, and next actions.
                   </Typography>
                 </Box>
-                <Chip label={`${taskActivities.length} activities`} icon={<HistoryRounded />} variant="outlined" sx={{ fontWeight: 800 }} />
+                <Chip label={`${taskActivities.length} activities`} icon={<HistoryRounded />} variant="outlined" sx={{ fontWeight: 600 }} />
               </Stack>
             </Box>
           </Section>
@@ -711,7 +711,7 @@ const TaskDetails = () => {
                 {getInitials(creator?.name)}
               </Avatar>
               <Box sx={{ minWidth: 0 }}>
-                <Typography variant="subtitle1" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                <Typography variant="subtitle1" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                   {creator?.name || "Unknown creator"}
                 </Typography>
                 <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
@@ -743,7 +743,7 @@ const TaskDetails = () => {
             <Stack direction="row" alignItems="center" spacing={1.25} sx={{ mb: 2 }}>
               <FolderRounded color="primary" />
               <Box sx={{ minWidth: 0 }}>
-                <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                   Project
                 </Typography>
                 <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
@@ -753,7 +753,7 @@ const TaskDetails = () => {
             </Stack>
             {task.project ? (
               <Box>
-                <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                   {task.project.project_name || fallback}
                 </Typography>
                 <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 0.75, whiteSpace: "pre-line" }}>
@@ -777,10 +777,10 @@ const TaskDetails = () => {
             }}
           >
             <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
-              <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+              <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                 Snapshot
               </Typography>
-              <Chip size="small" label={`${progressValue}%`} color="success" sx={{ fontWeight: 900 }} />
+              <Chip size="small" label={`${progressValue}%`} color="success" sx={{ fontWeight: 700 }} />
             </Stack>
             <LinearProgress
               variant="determinate"
@@ -790,19 +790,19 @@ const TaskDetails = () => {
             <Stack spacing={1.25}>
               <Stack direction="row" justifyContent="space-between" spacing={2}>
                 <Typography variant="body2" color="text.secondary">Type</Typography>
-                <Typography variant="body2" fontWeight={800}>{getTaskTypeName(task)}</Typography>
+                <Typography variant="body2" fontWeight={600}>{getTaskTypeName(task)}</Typography>
               </Stack>
               <Stack direction="row" justifyContent="space-between" spacing={2}>
                 <Typography variant="body2" color="text.secondary">Priority</Typography>
-                <Typography variant="body2" fontWeight={800}>{getPriorityName(task)}</Typography>
+                <Typography variant="body2" fontWeight={600}>{getPriorityName(task)}</Typography>
               </Stack>
               <Stack direction="row" justifyContent="space-between" spacing={2}>
                 <Typography variant="body2" color="text.secondary">Due</Typography>
-                <Typography variant="body2" fontWeight={800}>{formatDate(task.due_date)}</Typography>
+                <Typography variant="body2" fontWeight={600}>{formatDate(task.due_date)}</Typography>
               </Stack>
               <Stack direction="row" justifyContent="space-between" spacing={2}>
                 <Typography variant="body2" color="text.secondary">Media</Typography>
-                <Typography variant="body2" fontWeight={800}><ImageRounded sx={{ fontSize: 16, verticalAlign: "middle", mr: 0.5 }} />Gallery</Typography>
+                <Typography variant="body2" fontWeight={600}><ImageRounded sx={{ fontSize: 16, verticalAlign: "middle", mr: 0.5 }} />Gallery</Typography>
               </Stack>
             </Stack>
           </Paper>

@@ -166,7 +166,7 @@ const LeaveManageTable = () => {
           component="h1" 
           gutterBottom 
           textAlign="center" 
-          sx={{ mb: 3, fontWeight: 'bold', color: colors.blueAccent[500] }}
+          sx={{ mb: 3, fontWeight: 600, color: colors.blueAccent[500] }}
         >
           Employee Leave Request Management
         </Typography>
@@ -185,14 +185,14 @@ const LeaveManageTable = () => {
             <Table aria-label="leave requests table">
               <TableHead sx={{ backgroundColor: colors.primary[600] }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 'bold', color: colors.gray[100] }}>Employee</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: colors.gray[100] }}>Leave Type</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: colors.gray[100] }}>Start Date</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: colors.gray[100] }}>End Date</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: colors.gray[100] }}>Duration</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: colors.gray[100] }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: colors.gray[100] }}>Reason</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', color: colors.gray[100] }} align="center">Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: colors.gray[100] }}>Employee</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: colors.gray[100] }}>Leave Type</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: colors.gray[100] }}>Start Date</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: colors.gray[100] }}>End Date</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: colors.gray[100] }}>Duration</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: colors.gray[100] }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: colors.gray[100] }}>Reason</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: colors.gray[100] }} align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -213,15 +213,15 @@ const LeaveManageTable = () => {
                     <TableCell sx={{ color: colors.gray[100] }}>{leave.duration} Days</TableCell>
                     <TableCell sx={{ color: colors.gray[100] }}>
                       {leave.is_approve === 1 ? (
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: colors.greenAccent[500] }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: colors.greenAccent[500] }}>
                           Approved {leave.approver?.name ? `(by ${leave.approver.name})` : ''}
                         </Typography>
                       ) : leave.is_approve === 2 ? (
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: colors.redAccent[500] }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: colors.redAccent[500] }}>
                           Rejected
                         </Typography>
                       ) : (
-                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: colors.blueAccent[500] }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: colors.blueAccent[500] }}>
                           Pending
                         </Typography>
                       )}

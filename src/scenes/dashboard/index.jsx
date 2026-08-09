@@ -93,7 +93,7 @@ const SectionHeader = ({ title, subtitle, action }) => (
     mb={1.5}
   >
     <Box>
-      <Typography variant="h6" fontWeight={900} lineHeight={1.1}>
+      <Typography variant="h6" fontWeight={700} lineHeight={1.1}>
         {title}
       </Typography>
       {subtitle && (
@@ -138,10 +138,10 @@ const SmartMetric = ({ icon, label, value, tone = "primary", helper }) => {
             {icon}
           </Box>
           <Box minWidth={0}>
-            <Typography variant="caption" color="text.secondary" fontWeight={800}>
+            <Typography variant="caption" color="text.secondary" fontWeight={600}>
               {label}
             </Typography>
-            <Typography variant="h5" fontWeight={900} lineHeight={1.1}>
+            <Typography variant="h5" fontWeight={700} lineHeight={1.1}>
               {value}
             </Typography>
           </Box>
@@ -168,7 +168,7 @@ const QuickAction = ({ icon, label, onClick, disabled }) => (
       px: 1.5,
       py: 1.1,
       minHeight: 44,
-      fontWeight: 800,
+      fontWeight: 600,
     }}
   >
     {label}
@@ -572,21 +572,21 @@ function Dashboard() {
                 size="small"
                 label={todayLabel}
                 icon={<CalendarTodayOutlined />}
-                sx={{ fontWeight: 800, bgcolor: alpha(theme.palette.primary.main, 0.12) }}
+                sx={{ fontWeight: 600, bgcolor: alpha(theme.palette.primary.main, 0.12) }}
               />
               <Chip
                 size="small"
                 label={activeWorkdayText}
                 color={isCheckIn ? "success" : "warning"}
                 variant={isCheckIn ? "filled" : "outlined"}
-                sx={{ fontWeight: 800 }}
+                sx={{ fontWeight: 600 }}
               />
               {notices.length > 0 && (
                 <Chip
                   size="small"
                   label={`${notices.length} notice${notices.length > 1 ? "s" : ""}`}
                   icon={<NotificationsActiveOutlined />}
-                  sx={{ fontWeight: 800 }}
+                  sx={{ fontWeight: 600 }}
                 />
               )}
             </Stack>
@@ -595,7 +595,7 @@ function Dashboard() {
               variant="h3"
               sx={{
                 fontSize: { xs: 28, md: 38 },
-                fontWeight: 950,
+                fontWeight: 700,
                 lineHeight: 1,
                 color: theme.palette.text.primary,
               }}
@@ -672,7 +672,7 @@ function Dashboard() {
                   <GpsFixedRounded />
                 </Box>
                 <Box minWidth={0} flex={1}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={800}>
+                  <Typography variant="caption" color="text.secondary" fontWeight={600}>
                     Current location
                   </Typography>
                   <Typography variant="body2" fontWeight={700} noWrap title={locationText}>

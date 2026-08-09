@@ -331,7 +331,7 @@ const UserActivityList = () => {
             "& .MuiDataGrid-columnHeaders": {
               backgroundColor: colors.gray[10],
               fontSize: 14,
-              fontWeight: 800,
+              fontWeight: 600,
               borderBottom: `1px solid ${theme.palette.divider}`,
             },
             "& .MuiDataGrid-virtualScroller": { backgroundColor: colors.primary[800] },

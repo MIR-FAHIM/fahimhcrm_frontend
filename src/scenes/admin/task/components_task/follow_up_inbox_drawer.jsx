@@ -103,7 +103,7 @@ export default function TaskFollowupInboxDrawer({
           gap: 2,
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: 800 }}>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Task Follow-ups
         </Typography>
         <Box sx={{ flex: 1 }} />
@@ -251,7 +251,7 @@ export default function TaskFollowupInboxDrawer({
                     {(selected.created_by_name || "U")?.charAt(0)}
                   </Avatar>
                   <Box sx={{ minWidth: 0 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
                       {selected.followup_title}
                     </Typography>
                     <Typography variant="caption" sx={{ color: colors.gray[400] }}>

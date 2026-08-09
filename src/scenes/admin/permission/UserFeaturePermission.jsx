@@ -69,7 +69,7 @@ const UserFeaturePermission = () => {
             {(option.name || "?").slice(0, 1).toUpperCase()}
           </Avatar>
           <Box minWidth={0}>
-            <Typography variant="body2" fontWeight={800} noWrap>
+            <Typography variant="body2" fontWeight={600} noWrap>
               {option.name || `User ${option.id}`}
             </Typography>
             <Typography variant="caption" color="text.secondary" noWrap>

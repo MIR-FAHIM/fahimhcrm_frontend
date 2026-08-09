@@ -104,7 +104,7 @@ const FieldCard = ({ title, icon, children, colors, theme, dense }) => (
     <Typography
       variant="h6"
       sx={{
-        fontWeight: 800,
+        fontWeight: 600,
         color: colors.blueAccent[300],
         mb: dense ? 1 : 1.5,
         display: "flex",
@@ -306,7 +306,7 @@ const AddContactPersonPros = () => {
               <HeaderIcon sx={{ color: colors.blueAccent[300] }} />
               <Typography
                 variant="h5"
-                fontWeight={800}
+                fontWeight={600}
                 sx={{ color: colors.gray[100], display: "flex", alignItems: "center", gap: 1 }}
               >
                 {details.prospect_name || "Loading…"}
@@ -527,7 +527,7 @@ const AddContactPersonPros = () => {
           {/* ---------- Contacts ---------- */}
           <Divider sx={{ my: 4, borderColor: colors.gray[800] }} />
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h5" sx={{ color: colors.gray[100], fontWeight: 800 }}>
+            <Typography variant="h5" sx={{ color: colors.gray[100], fontWeight: 600 }}>
               Manage Contact Persons
             </Typography>
             <Tooltip title="Add contact">

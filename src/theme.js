@@ -129,6 +129,9 @@ export const tokens = (mode) => ({
       }),
 });
 
+export const appFontFamily =
+  '"Inter", "Noto Sans Bengali", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+
 /** MUI theme settings */
 export const themeSettings = (mode) => {
   const colors = tokens(mode);
@@ -162,16 +165,41 @@ export const themeSettings = (mode) => {
     },
     shape: { borderRadius: 12 },
     typography: {
-      fontFamily: "'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif",
-      h5: { fontWeight: 800 },
-      button: { textTransform: "none", fontWeight: 700 },
+      fontFamily: appFontFamily,
+      htmlFontSize: 16,
+      fontSize: 14,
+      fontWeightLight: 300,
+      fontWeightRegular: 450,
+      fontWeightMedium: 600,
+      fontWeightBold: 700,
+      h1: { fontSize: "2.25rem", fontWeight: 750, lineHeight: 1.15, letterSpacing: 0 },
+      h2: { fontSize: "2rem", fontWeight: 740, lineHeight: 1.18, letterSpacing: 0 },
+      h3: { fontSize: "1.72rem", fontWeight: 720, lineHeight: 1.2, letterSpacing: 0 },
+      h4: { fontSize: "1.42rem", fontWeight: 700, lineHeight: 1.25, letterSpacing: 0 },
+      h5: { fontSize: "1.18rem", fontWeight: 680, lineHeight: 1.3, letterSpacing: 0 },
+      h6: { fontSize: "1rem", fontWeight: 680, lineHeight: 1.35, letterSpacing: 0 },
+      subtitle1: { fontSize: "0.95rem", fontWeight: 620, lineHeight: 1.45, letterSpacing: 0 },
+      subtitle2: { fontSize: "0.84rem", fontWeight: 620, lineHeight: 1.45, letterSpacing: 0 },
+      body1: { fontSize: "0.93rem", fontWeight: 450, lineHeight: 1.55, letterSpacing: 0 },
+      body2: { fontSize: "0.84rem", fontWeight: 450, lineHeight: 1.5, letterSpacing: 0 },
+      caption: { fontSize: "0.74rem", fontWeight: 560, lineHeight: 1.35, letterSpacing: 0 },
+      overline: { fontSize: "0.72rem", fontWeight: 650, letterSpacing: 0, textTransform: "uppercase" },
+      button: { textTransform: "none", fontSize: "0.84rem", fontWeight: 650, letterSpacing: 0 },
     },
     components: {
       MuiCssBaseline: {
         styleOverrides: {
+          "html, body, #root": {
+            fontFamily: appFontFamily,
+          },
           body: {
             backgroundColor: isDark ? colors.gray[900] : colors.gray[900],
             color: isDark ? colors.gray[100] : colors.gray[100],
+            fontSize: 14,
+            fontWeight: 450,
+            textRendering: "optimizeLegibility",
+            WebkitFontSmoothing: "antialiased",
+            MozOsxFontSmoothing: "grayscale",
           },
           "#root": {
             backgroundColor: isDark ? colors.gray[900] : colors.gray[900],
@@ -181,15 +209,27 @@ export const themeSettings = (mode) => {
           },
         },
       },
+      MuiTypography: {
+        styleOverrides: {
+          root: {
+            letterSpacing: 0,
+          },
+        },
+      },
       MuiTableCell: {
         styleOverrides: {
           root: {
             borderColor: isDark ? colors.gray[700] : colors.gray[700],
+            fontFamily: appFontFamily,
+            fontSize: "0.84rem",
+            fontWeight: 450,
           },
           head: {
             color: isDark ? colors.gray[100] : colors.gray[100],
             backgroundColor: isDark ? colors.gray[800] : colors.gray[800],
-            fontWeight: 800,
+            fontSize: "0.78rem",
+            fontWeight: 700,
+            letterSpacing: 0,
           },
         },
       },
@@ -221,6 +261,35 @@ export const themeSettings = (mode) => {
         styleOverrides: {
           root: {
             backgroundColor: isDark ? colors.gray[800] : colors.gray[900],
+            fontFamily: appFontFamily,
+            fontSize: "0.86rem",
+          },
+        },
+      },
+      MuiInputBase: {
+        styleOverrides: {
+          root: {
+            fontFamily: appFontFamily,
+            fontSize: "0.86rem",
+          },
+        },
+      },
+      MuiInputLabel: {
+        styleOverrides: {
+          root: {
+            fontFamily: appFontFamily,
+            fontSize: "0.86rem",
+            fontWeight: 600,
+            letterSpacing: 0,
+          },
+        },
+      },
+      MuiMenuItem: {
+        styleOverrides: {
+          root: {
+            fontFamily: appFontFamily,
+            fontSize: "0.86rem",
+            fontWeight: 500,
           },
         },
       },
@@ -228,6 +297,8 @@ export const themeSettings = (mode) => {
         styleOverrides: {
           root: {
             backgroundColor: isDark ? colors.gray[800] : colors.gray[800],
+            fontFamily: appFontFamily,
+            fontSize: "0.86rem",
             "&:hover": {
               backgroundColor: isDark ? colors.gray[700] : colors.gray[700],
             },
@@ -239,8 +310,58 @@ export const themeSettings = (mode) => {
       },
       MuiButton: {
         styleOverrides: {
-          root: { borderRadius: 10 },
+          root: {
+            borderRadius: 10,
+            fontFamily: appFontFamily,
+            fontSize: "0.84rem",
+            fontWeight: 650,
+            letterSpacing: 0,
+          },
           containedPrimary: { boxShadow: "0 6px 14px rgba(58,134,255,0.25)" },
+        },
+      },
+      MuiChip: {
+        styleOverrides: {
+          root: {
+            fontFamily: appFontFamily,
+            fontSize: "0.75rem",
+            fontWeight: 620,
+          },
+        },
+      },
+      MuiTab: {
+        styleOverrides: {
+          root: {
+            fontFamily: appFontFamily,
+            fontSize: "0.84rem",
+            fontWeight: 650,
+            letterSpacing: 0,
+            textTransform: "none",
+          },
+        },
+      },
+      MuiTooltip: {
+        styleOverrides: {
+          tooltip: {
+            fontFamily: appFontFamily,
+            fontSize: "0.74rem",
+            fontWeight: 560,
+          },
+        },
+      },
+      MuiDataGrid: {
+        styleOverrides: {
+          root: {
+            fontFamily: appFontFamily,
+            fontSize: "0.84rem",
+          },
+          columnHeaderTitle: {
+            fontWeight: 700,
+            letterSpacing: 0,
+          },
+          cell: {
+            fontWeight: 450,
+          },
         },
       },
       MuiPaper: {

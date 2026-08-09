@@ -237,7 +237,7 @@ export default function OpportunityDetailsPage() {
 
   return (
     <Box sx={{ p: 3, bgcolor: theme.palette.background.default, minHeight: "100vh" }}>
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: 800, color: colors.gray[100] }}>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, color: colors.gray[100] }}>
         Opportunity
       </Typography>
 
@@ -382,7 +382,7 @@ export default function OpportunityDetailsPage() {
                 {details.activity_summary &&
                   Object.entries(details.activity_summary).map(([type, count]) => (
                     <Box key={type} sx={{ display: "flex", alignItems: "center", gap: 1, px: 1.5, py: 0.5, bgcolor: activityColors[type] || colors.gray[800], borderRadius: 1 }}>
-                      <Typography variant="caption" sx={{ fontWeight: 800, textTransform: "capitalize", color: colors.gray[100] }}>{type}</Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 600, textTransform: "capitalize", color: colors.gray[100] }}>{type}</Typography>
                       <Typography variant="caption" sx={{ color: colors.gray[100] }}>{count}</Typography>
                     </Box>
                   ))}

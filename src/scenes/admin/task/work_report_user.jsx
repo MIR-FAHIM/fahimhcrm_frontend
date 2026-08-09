@@ -81,7 +81,7 @@ const WorkReportList = () => {
 
   return (
     <Box sx={{ p: 4 }}>
-      <Typography variant="h4" fontWeight="bold" gutterBottom color="text.primary">
+      <Typography variant="h4" fontWeight={600} gutterBottom color="text.primary">
         Work Reports
       </Typography>
       <Divider sx={{ mb: 4 }} />
@@ -100,7 +100,7 @@ const WorkReportList = () => {
             }}
             onClick={() => handleToggleExpand(date)}
           >
-            <Typography variant="h5" fontWeight="bold" color="text.primary">
+            <Typography variant="h5" fontWeight={600} color="text.primary">
               {dayjs(date).format('MMMM D, YYYY')}
             </Typography>
             <IconButton
@@ -119,7 +119,7 @@ const WorkReportList = () => {
               <Box key={report.id} sx={{ mt: 2, mb: 3 }}>
                 <Divider sx={{ my: 2 }} />
                 {/* Display the user's name */}
-                <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 1, color: theme.palette.info.main }}>
+                <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1, color: theme.palette.info.main }}>
                   Report from: {report.user.name}
                 </Typography>
                 

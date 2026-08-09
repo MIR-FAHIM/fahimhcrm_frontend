@@ -138,10 +138,10 @@ const StatTile = ({ icon, label, value, helper, tone = "primary" }) => {
     >
       <Stack direction="row" spacing={1.25} alignItems="center" justifyContent="space-between">
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 800 }}>
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
             {label}
           </Typography>
-          <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1.15 }}>
+          <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1.15 }}>
             {value}
           </Typography>
           {helper && (
@@ -170,7 +170,7 @@ const SoftChip = ({ icon, label, color = "primary", variant = "outlined", sx }) 
       color={variant === "filled" && color !== "default" ? color : undefined}
       variant={variant === "filled" ? "filled" : "outlined"}
       sx={{
-        fontWeight: 800,
+        fontWeight: 600,
         bgcolor: variant === "filled" ? undefined : alpha(base, 0.08),
         borderColor: variant === "filled" ? undefined : alpha(base, 0.28),
         color: variant === "filled" ? undefined : base,
@@ -213,7 +213,7 @@ const VisitCard = ({ visit, onMap, onProspect, onTask }) => {
               sx={{
                 bgcolor: alpha(priorityColor, 0.14),
                 color: priorityColor,
-                fontWeight: 900,
+                fontWeight: 700,
                 width: 44,
                 height: 44,
               }}
@@ -222,7 +222,7 @@ const VisitCard = ({ visit, onMap, onProspect, onTask }) => {
             </Avatar>
             <Box sx={{ minWidth: 0 }}>
               <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap alignItems="center">
-                <Typography variant="subtitle1" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                <Typography variant="subtitle1" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                   {visit.purpose || "Visit plan"}
                 </Typography>
                 <SoftChip label={labelOf(visit.status)} color={statusTone(visit.status)} variant="filled" />
@@ -287,7 +287,7 @@ const VisitCard = ({ visit, onMap, onProspect, onTask }) => {
               endIcon={<OpenInNewIcon />}
               disabled={!visit?.lead?.id}
               onClick={() => visit?.lead?.id && onProspect(visit.lead.id)}
-              sx={{ borderRadius: 2, fontWeight: 900 }}
+              sx={{ borderRadius: 2, fontWeight: 700 }}
             >
               Prospect
             </Button>
@@ -297,7 +297,7 @@ const VisitCard = ({ visit, onMap, onProspect, onTask }) => {
               endIcon={<OpenInNewIcon />}
               disabled={!taskId}
               onClick={() => taskId && onTask(taskId)}
-              sx={{ borderRadius: 2, fontWeight: 900 }}
+              sx={{ borderRadius: 2, fontWeight: 700 }}
             >
               Task
             </Button>
@@ -319,7 +319,7 @@ const MetaItem = ({ icon, label, value }) => {
           <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
             {label}
           </Typography>
-          <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+          <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
             {value || fallback}
           </Typography>
         </Box>
@@ -446,7 +446,7 @@ export default function DateWiseVisit() {
             <TodayIcon />
           </Avatar>
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1 }}>
+            <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1 }}>
               Date-wise Visits
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
@@ -456,10 +456,10 @@ export default function DateWiseVisit() {
         </Stack>
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-          <Button variant="outlined" startIcon={<ListAltIcon />} onClick={expandAll} sx={{ borderRadius: 2, fontWeight: 900 }}>
+          <Button variant="outlined" startIcon={<ListAltIcon />} onClick={expandAll} sx={{ borderRadius: 2, fontWeight: 700 }}>
             Expand All
           </Button>
-          <Button variant="outlined" startIcon={<ExpandMoreIcon />} onClick={collapseAll} sx={{ borderRadius: 2, fontWeight: 900 }}>
+          <Button variant="outlined" startIcon={<ExpandMoreIcon />} onClick={collapseAll} sx={{ borderRadius: 2, fontWeight: 700 }}>
             Collapse
           </Button>
           <Button
@@ -467,7 +467,7 @@ export default function DateWiseVisit() {
             startIcon={refreshing ? <CircularProgress size={16} /> : <RefreshIcon />}
             disabled={loading || refreshing}
             onClick={() => loadVisits({ silent: true })}
-            sx={{ borderRadius: 2, fontWeight: 900 }}
+            sx={{ borderRadius: 2, fontWeight: 700 }}
           >
             Refresh
           </Button>
@@ -512,7 +512,7 @@ export default function DateWiseVisit() {
               {employeeOptions.map((option) => <MenuItem key={option.id} value={option.id}>{option.name}</MenuItem>)}
             </Select>
           </FormControl>
-          <Button variant="text" onClick={clearFilters} sx={{ fontWeight: 900, whiteSpace: "nowrap" }}>
+          <Button variant="text" onClick={clearFilters} sx={{ fontWeight: 700, whiteSpace: "nowrap" }}>
             Clear Filters
           </Button>
         </Stack>
@@ -520,10 +520,10 @@ export default function DateWiseVisit() {
         <Divider sx={{ my: 2 }} />
 
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-          <Chip icon={<FilterAltIcon />} clickable label={`All (${allVisits.length})`} color={statusFilter === "all" ? "primary" : "default"} variant={statusFilter === "all" ? "filled" : "outlined"} onClick={() => setStatusFilter("all")} sx={{ fontWeight: 850 }} />
+          <Chip icon={<FilterAltIcon />} clickable label={`All (${allVisits.length})`} color={statusFilter === "all" ? "primary" : "default"} variant={statusFilter === "all" ? "filled" : "outlined"} onClick={() => setStatusFilter("all")} sx={{ fontWeight: 650 }} />
           {statusOptions.filter((option) => option !== "all").map((option) => {
             const count = allVisits.filter((visit) => normalize(visit.status) === normalize(option)).length;
-            return <Chip key={option} clickable label={`${option} (${count})`} color={statusTone(option)} variant={statusFilter === option ? "filled" : "outlined"} onClick={() => setStatusFilter(option)} sx={{ fontWeight: 850 }} />;
+            return <Chip key={option} clickable label={`${option} (${count})`} color={statusTone(option)} variant={statusFilter === option ? "filled" : "outlined"} onClick={() => setStatusFilter(option)} sx={{ fontWeight: 650 }} />;
           })}
         </Stack>
       </Paper>
@@ -539,7 +539,7 @@ export default function DateWiseVisit() {
         ) : filteredGroups.length === 0 ? (
           <Box sx={{ p: 5, textAlign: "center" }}>
             <EventIcon color="disabled" sx={{ fontSize: 38 }} />
-            <Typography variant="h6" sx={{ mt: 1, color: theme.palette.text.primary, fontWeight: 900 }}>
+            <Typography variant="h6" sx={{ mt: 1, color: theme.palette.text.primary, fontWeight: 700 }}>
               No visits found
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
@@ -572,7 +572,7 @@ export default function DateWiseVisit() {
                         <ScheduleIcon />
                       </Avatar>
                       <Box sx={{ minWidth: 0 }}>
-                        <Typography variant="subtitle1" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                        <Typography variant="subtitle1" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                           {groupDate ? groupDate.format("dddd, MMM D, YYYY") : group.date || fallback}
                         </Typography>
                         <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>

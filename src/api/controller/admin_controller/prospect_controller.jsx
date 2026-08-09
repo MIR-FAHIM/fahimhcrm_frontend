@@ -4,6 +4,58 @@ import axiosInstance from '../../axiosInstance.jsx'
 
 // Fetch posts from API
 
+const getProspectToken = () => {
+  const storedUser = localStorage.getItem("loggedInUser") || localStorage.getItem("user");
+  try {
+    const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+    if (parsedUser?.app_token) return parsedUser.app_token;
+  } catch (error) {
+    // Fall back to legacy auth token below.
+  }
+  return localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
+};
+
+const locationHeaders = () => ({ token: getProspectToken() });
+
+const asLocationError = (error, fallback) =>
+  error?.response?.data?.message || error?.response?.data?.error || error?.message || fallback;
+
+export const fetchDivisions = async () => {
+  try {
+    const response = await axiosInstance.get(API_URL.getDivision, {
+      headers: locationHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching divisions:", error);
+    throw new Error(asLocationError(error, "Failed to fetch divisions."));
+  }
+};
+
+export const fetchDistrictsByDivision = async (divisionId) => {
+  try {
+    const response = await axiosInstance.get(API_URL.getDistrictByDivisionId(divisionId), {
+      headers: locationHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching districts:", error);
+    throw new Error(asLocationError(error, "Failed to fetch districts."));
+  }
+};
+
+export const fetchUpozelasByDistrict = async (districtId) => {
+  try {
+    const response = await axiosInstance.get(API_URL.getUpozelaByDistrictId(districtId), {
+      headers: locationHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching upazilas:", error);
+    throw new Error(asLocationError(error, "Failed to fetch upazilas."));
+  }
+};
+
 
 export const getProspectAllStatus = async () => {
   try {

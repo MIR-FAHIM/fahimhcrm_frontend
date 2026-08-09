@@ -64,7 +64,7 @@ const SoftwareSalePage = () => {
   return (
     <Box sx={{ px: 4, py: 6, bgcolor: "#f9f9f9" }}>
       <Box sx={{ textAlign: "center", mb: 4 }}>
-        <Typography variant="h3" gutterBottom fontWeight="bold">
+        <Typography variant="h3" gutterBottom fontWeight={600}>
           Our Software Solutions
         </Typography>
         <Typography variant="subtitle1" color="textSecondary">

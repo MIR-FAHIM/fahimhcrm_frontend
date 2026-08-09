@@ -130,7 +130,7 @@ const UserDetail = () => {
                 indicatorColor="primary"
                 sx={{
                   '& .MuiTab-root': {
-                    fontWeight: 'bold',
+                    fontWeight: 600,
                     textTransform: 'none',
                     '&:hover': {
                       backgroundColor: '#e0e0e0',

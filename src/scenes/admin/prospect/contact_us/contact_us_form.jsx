@@ -146,7 +146,7 @@ const payload = {
               color: theme.palette.primary.main,
             }}
           />
-          <Typography variant="h4" fontWeight={800} gutterBottom>
+          <Typography variant="h4" fontWeight={600} gutterBottom>
             We’re here to help you run on BrainToDo in your organization
           </Typography>
           <Typography variant="body1" color="text.secondary">
@@ -168,7 +168,7 @@ const payload = {
                 bgcolor: "background.paper",
               }}
             >
-              <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>
+              <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
                 Send us a message
               </Typography>
 
@@ -245,7 +245,7 @@ const payload = {
                     variant="contained"
                     startIcon={<SendIcon />}
                     disabled={sending}
-                    sx={{ fontWeight: 800, textTransform: "none" }}
+                    sx={{ fontWeight: 600, textTransform: "none" }}
                   >
                     {sending ? "Sending..." : "Send message"}
                   </Button>
@@ -286,7 +286,7 @@ const payload = {
                   bgcolor: "background.paper",
                 }}
               >
-                <Typography variant="h6" fontWeight={800} gutterBottom>
+                <Typography variant="h6" fontWeight={600} gutterBottom>
                   Contact details
                 </Typography>
                 <Stack spacing={1.25}>
@@ -326,7 +326,7 @@ const payload = {
                   flex: 1,
                 }}
               >
-                <Typography variant="h6" fontWeight={800} gutterBottom>
+                <Typography variant="h6" fontWeight={600} gutterBottom>
                   Frequently asked
                 </Typography>
 

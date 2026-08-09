@@ -298,7 +298,7 @@ const AddTaskStatus = () => {
             <FactCheckRoundedIcon />
           </Avatar>
           <Box>
-            <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1 }}>
+            <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1 }}>
               Task Statuses
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
@@ -307,8 +307,8 @@ const AddTaskStatus = () => {
           </Box>
         </Stack>
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-          <Chip icon={<FactCheckRoundedIcon />} label={`${statuses.length} task statuses`} sx={{ fontWeight: 900, bgcolor: alpha(brand, 0.1), color: brand }} />
-          <Chip icon={<ApartmentRoundedIcon />} label={`${departments.length} departments`} variant="outlined" sx={{ fontWeight: 900 }} />
+          <Chip icon={<FactCheckRoundedIcon />} label={`${statuses.length} task statuses`} sx={{ fontWeight: 700, bgcolor: alpha(brand, 0.1), color: brand }} />
+          <Chip icon={<ApartmentRoundedIcon />} label={`${departments.length} departments`} variant="outlined" sx={{ fontWeight: 700 }} />
         </Stack>
       </Stack>
 
@@ -357,7 +357,7 @@ const AddTaskStatus = () => {
               label="Active"
               sx={{ minHeight: 40, m: 0 }}
             />
-            <Button type="submit" variant="contained" startIcon={saving ? <CircularProgress size={16} color="inherit" /> : <AddRoundedIcon />} disabled={saving} sx={{ borderRadius: 2, fontWeight: 900, minWidth: 170 }}>
+            <Button type="submit" variant="contained" startIcon={saving ? <CircularProgress size={16} color="inherit" /> : <AddRoundedIcon />} disabled={saving} sx={{ borderRadius: 2, fontWeight: 700, minWidth: 170 }}>
               {saving ? "Saving..." : "Add Status"}
             </Button>
           </Stack>
@@ -372,7 +372,7 @@ const AddTaskStatus = () => {
       <Paper elevation={0} sx={{ borderRadius: 2, bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, overflow: "hidden" }}>
         <Stack direction={{ xs: "column", lg: "row" }} spacing={1.5} alignItems={{ xs: "stretch", lg: "center" }} justifyContent="space-between" sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
           <Box>
-            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
               Status List
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
@@ -406,10 +406,10 @@ const AddTaskStatus = () => {
           <Table size="small">
             <TableHead>
               <TableRow sx={{ bgcolor: alpha(brand, 0.08) }}>
-                <TableCell sx={{ fontWeight: 900, width: 90 }}>ID</TableCell>
-                <TableCell sx={{ fontWeight: 900 }}>Task Status Name</TableCell>
-                <TableCell sx={{ fontWeight: 900 }}>Department</TableCell>
-                <TableCell sx={{ fontWeight: 900, width: 130 }} align="right">Actions</TableCell>
+                <TableCell sx={{ fontWeight: 700, width: 90 }}>ID</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Task Status Name</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Department</TableCell>
+                <TableCell sx={{ fontWeight: 700, width: 130 }} align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -422,19 +422,19 @@ const AddTaskStatus = () => {
               ) : filteredStatuses.length ? (
                 filteredStatuses.map((status) => (
                   <TableRow key={status.id} hover>
-                    <TableCell sx={{ color: theme.palette.text.secondary, fontWeight: 800 }}>#{status.id}</TableCell>
+                    <TableCell sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>#{status.id}</TableCell>
                     <TableCell>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Avatar variant="rounded" sx={{ width: 30, height: 30, bgcolor: alpha(brand, 0.12), color: brand }}>
                           <FactCheckRoundedIcon fontSize="small" />
                         </Avatar>
-                        <Typography sx={{ color: theme.palette.text.primary, fontWeight: 850 }}>
+                        <Typography sx={{ color: theme.palette.text.primary, fontWeight: 650 }}>
                           {status.status_name || "Untitled task status"}
                         </Typography>
                       </Stack>
                     </TableCell>
                     <TableCell>
-                      <Chip icon={<ApartmentRoundedIcon />} label={getDepartmentName(status)} size="small" variant="outlined" sx={{ fontWeight: 850 }} />
+                      <Chip icon={<ApartmentRoundedIcon />} label={getDepartmentName(status)} size="small" variant="outlined" sx={{ fontWeight: 650 }} />
                     </TableCell>
                     <TableCell align="right">
                       <Stack direction="row" spacing={0.75} justifyContent="flex-end">
@@ -477,7 +477,7 @@ const AddTaskStatus = () => {
               value={editForm.status_name}
               onChange={(event) => setEditForm((current) => ({ ...current, status_name: event.target.value }))}
             />
-            <Chip icon={<ApartmentRoundedIcon />} label={getDepartmentName(editingStatus)} variant="outlined" sx={{ width: "fit-content", fontWeight: 850 }} />
+            <Chip icon={<ApartmentRoundedIcon />} label={getDepartmentName(editingStatus)} variant="outlined" sx={{ width: "fit-content", fontWeight: 650 }} />
             <FormControlLabel
               control={<Switch checked={editForm.isActive} onChange={(event) => setEditForm((current) => ({ ...current, isActive: event.target.checked }))} />}
               label="Active"

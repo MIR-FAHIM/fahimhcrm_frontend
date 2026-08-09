@@ -292,7 +292,7 @@ const WorkShop = ({ protId }) => {
       <Stack spacing={3}>
         {/* Header */}
         <Box>
-          <Typography variant="h4" fontWeight={800} gutterBottom>
+          <Typography variant="h4" fontWeight={600} gutterBottom>
             Project Workshop
           </Typography>
           <Typography variant="body1" color="text.secondary">

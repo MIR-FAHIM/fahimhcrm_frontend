@@ -67,7 +67,7 @@ const KPICard = ({ icon, label, value, onClick, color }) => {
             </IconButton>
           </Tooltip>
         </Stack>
-        <Typography variant="h5" sx={{ fontWeight: 800 }}>
+        <Typography variant="h5" sx={{ fontWeight: 600 }}>
           {value ?? 0}
         </Typography>
       </CardContent>

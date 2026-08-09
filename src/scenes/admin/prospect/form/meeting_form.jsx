@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { addMeeting, fetchMeetingByProspect } from '../../../../api/controller/admin_controller/prospect_controller';
 import { fetchEmployees } from "../../../../api/controller/admin_controller/user_controller";
-import { addTask } from '../../../../api/controller/admin_controller/task_controller/task_controller';
+import { addTask, getStatus } from '../../../../api/controller/admin_controller/task_controller/task_controller';
 
 const MeetingForm = ({ prospectId, meetingTitlee }) => {
   const userID = localStorage.getItem("userId");
@@ -30,9 +30,11 @@ const MeetingForm = ({ prospectId, meetingTitlee }) => {
     status: "0",
     meeting_with: '',
     priority_id: 1,
+    task_status_id: '',
   });
   
   const [employees, setEmployees] = useState([]);
+  const [taskStatuses, setTaskStatuses] = useState([]);
   const [meetingList, setMeetingList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [responseMsg, setResponseMsg] = useState('');
@@ -41,13 +43,29 @@ const MeetingForm = ({ prospectId, meetingTitlee }) => {
     setFormData((prev) => ({
       ...prev,
       meeting_title: meetingTitlee || '',
+      prospect_id: prospectId,
     }));
 
     fetchMeetingData();
     fetchEmployees()
       .then((res) => setEmployees(res.data || []))
       .catch(console.error);
-  }, []);
+    getStatus()
+      .then((res) => {
+        const statuses = res.data || [];
+        setTaskStatuses(statuses);
+        if (statuses.length) {
+          setFormData((prev) => ({
+            ...prev,
+            task_status_id: prev.task_status_id || statuses[0].id,
+          }));
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to fetch task statuses', err);
+        setResponseMsg('Failed to load task statuses. Meeting task cannot be created yet.');
+      });
+  }, [meetingTitlee, prospectId]);
 
   const fetchMeetingData = async () => {
     try {
@@ -71,6 +89,13 @@ const MeetingForm = ({ prospectId, meetingTitlee }) => {
     setLoading(true);
     setResponseMsg('');
 
+    const selectedStatusId = formData.task_status_id || taskStatuses[0]?.id;
+    if (!selectedStatusId) {
+      setResponseMsg('Failed to add meeting: no valid task status found. Please add an active task status first.');
+      setLoading(false);
+      return;
+    }
+
     const taskData = {
       task_title: formData.meeting_title,
       task_details: formData.meeting_context,
@@ -78,7 +103,7 @@ const MeetingForm = ({ prospectId, meetingTitlee }) => {
       task_type_id: 1,
       is_remind: 0,
       due_date: formData.start_time || '',
-      status_id: 1,
+      status_id: selectedStatusId,
       department_id: 1,
       created_by: userID,
       show_completion_percentage: 0,
@@ -102,10 +127,11 @@ const MeetingForm = ({ prospectId, meetingTitlee }) => {
         }));
         fetchMeetingData(); // Refresh meeting list
       } else {
-        throw new Error('Failed to create task or missing task_id');
+        throw new Error(taskResponse.message || 'Failed to create task or missing task_id');
       }
     } catch (err) {
-      setResponseMsg('Failed to add meeting: ' + err.message);
+      const errorMessage = err?.response?.data?.message || err?.response?.data?.error || err.message || 'Unknown error';
+      setResponseMsg('Failed to add meeting: ' + errorMessage);
     } finally {
       setLoading(false);
     }
@@ -196,12 +222,31 @@ const MeetingForm = ({ prospectId, meetingTitlee }) => {
                 />
               </Grid>
 
+              <Grid item xs={6}>
+                <TextField
+                  select
+                  fullWidth
+                  name="task_status_id"
+                  label="Task Status"
+                  value={formData.task_status_id}
+                  onChange={handleChange}
+                  required
+                  helperText="Used for the reminder task created with this meeting."
+                >
+                  {taskStatuses.map((status) => (
+                    <MenuItem key={status.id} value={status.id}>
+                      {status.status_name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
               <Grid item xs={12}>
                 <Button
                   type="submit"
                   variant="contained"
                   color="primary"
-                  disabled={loading}
+                  disabled={loading || !formData.task_status_id}
                   fullWidth
                 >
                   {loading ? 'Sending...' : 'Add Meeting'}

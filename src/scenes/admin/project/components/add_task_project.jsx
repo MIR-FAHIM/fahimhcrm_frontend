@@ -98,7 +98,7 @@ const AddTaskFormProject = ({projectId, statusID}) => {
         margin: "auto",
       }}
     >
-      <Typography variant="h5" fontWeight="bold" mb={3} color="text.primary">
+      <Typography variant="h5" fontWeight={600} mb={3} color="text.primary">
         Add New Task
       </Typography>
 

@@ -137,7 +137,7 @@ function RoadmapCard({ item, onVote, voted, votes, onNotify }) {
           >
             {item.icon}
           </Box>
-          <Typography variant="subtitle1" fontWeight={800}>
+          <Typography variant="subtitle1" fontWeight={600}>
             {item.title}
           </Typography>
           <Box flex={1} />
@@ -249,7 +249,7 @@ export default function NextFeatures() {
   return (
     <Box sx={{ bgcolor: "background.default", minHeight: "100vh" }}>
       <Container sx={{ py: 6 }}>
-        <Typography variant="h5" fontWeight={800} mb={2}>
+        <Typography variant="h5" fontWeight={600} mb={2}>
           What’s next for BrainToDo
         </Typography>
         <Stack spacing={2}>

@@ -152,10 +152,10 @@ const MetricCard = ({ label, value, accent = colors.cyan }) => (
       minWidth: 132,
     }}
   >
-    <Typography variant="caption" sx={{ color: colors.muted, fontWeight: 850 }}>
+    <Typography variant="caption" sx={{ color: colors.muted, fontWeight: 650 }}>
       {label}
     </Typography>
-    <Typography sx={{ color: colors.text, fontWeight: 950, fontSize: 22, mt: 0.3 }}>
+    <Typography sx={{ color: colors.text, fontWeight: 700, fontSize: 22, mt: 0.3 }}>
       {value}
     </Typography>
   </Paper>
@@ -183,7 +183,7 @@ const HeroProductPanel = () => (
           {["#EF4444", "#F59E0B", "#22C55E"].map((dot) => (
             <Box key={dot} sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: dot }} />
           ))}
-          <Typography sx={{ color: colors.muted, fontWeight: 850, fontSize: 13, ml: 1 }}>
+          <Typography sx={{ color: colors.muted, fontWeight: 650, fontSize: 13, ml: 1 }}>
             BrainToDo workspace
           </Typography>
         </Stack>
@@ -238,7 +238,7 @@ const FeatureMockup = ({ feature }) => {
     >
       <Box sx={{ px: 2, py: 1.4, bgcolor: colors.panelDeep, color: colors.text, display: "flex", alignItems: "center", gap: 1, borderBottom: `1px solid ${colors.border}` }}>
         <Icon fontSize="small" />
-        <Typography fontWeight={900}>{feature.title}</Typography>
+        <Typography fontWeight={700}>{feature.title}</Typography>
       </Box>
       <Box sx={{ p: { xs: 2, md: 3 } }}>
         <Box
@@ -268,10 +268,10 @@ const FeatureMockup = ({ feature }) => {
                   minHeight: 78,
                 }}
               >
-                <Typography variant="caption" sx={{ color: colors.muted, fontWeight: 800 }}>
+                <Typography variant="caption" sx={{ color: colors.muted, fontWeight: 600 }}>
                   BrainToDo
                 </Typography>
-                <Typography sx={{ color: colors.text, fontWeight: 950, mt: 0.5 }}>
+                <Typography sx={{ color: colors.text, fontWeight: 700, mt: 0.5 }}>
                   {stat}
                 </Typography>
               </Box>
@@ -303,16 +303,16 @@ const BrainToDoLanding = () => {
         <Container maxWidth="lg">
           <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ py: 1.35 }}>
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Box sx={{ width: 38, height: 38, borderRadius: 2, bgcolor: colors.green, color: "#052E16", display: "grid", placeItems: "center", fontWeight: 950 }}>
+              <Box sx={{ width: 38, height: 38, borderRadius: 2, bgcolor: colors.green, color: "#052E16", display: "grid", placeItems: "center", fontWeight: 700 }}>
                 B
               </Box>
-              <Typography sx={{ fontWeight: 950, fontSize: 20, color: colors.text }}>BrainToDo</Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: 20, color: colors.text }}>BrainToDo</Typography>
             </Stack>
             <Stack direction="row" spacing={1} alignItems="center">
-              <Button href="#features" sx={{ display: { xs: "none", sm: "inline-flex" }, color: colors.mutedStrong, fontWeight: 850, textTransform: "none" }}>
+              <Button href="#features" sx={{ display: { xs: "none", sm: "inline-flex" }, color: colors.mutedStrong, fontWeight: 650, textTransform: "none" }}>
                 Features
               </Button>
-              <Button href={ctaUrl} variant="contained" endIcon={<ArrowForwardRounded />} sx={{ bgcolor: colors.green, color: "#052E16", fontWeight: 950, textTransform: "none", borderRadius: 2, "&:hover": { bgcolor: "#4ADE80" } }}>
+              <Button href={ctaUrl} variant="contained" endIcon={<ArrowForwardRounded />} sx={{ bgcolor: colors.green, color: "#052E16", fontWeight: 700, textTransform: "none", borderRadius: 2, "&:hover": { bgcolor: "#4ADE80" } }}>
                 Try Free
               </Button>
             </Stack>
@@ -339,7 +339,7 @@ const BrainToDoLanding = () => {
                   bgcolor: alpha(colors.cyan, 0.12),
                   color: "#BAE6FD",
                   border: `1px solid ${alpha(colors.cyan, 0.24)}`,
-                  fontWeight: 900,
+                  fontWeight: 700,
                   mb: 2.5,
                 }}
               />
@@ -348,7 +348,7 @@ const BrainToDoLanding = () => {
                 sx={{
                   fontSize: { xs: 46, sm: 58, md: 76 },
                   lineHeight: 0.98,
-                  fontWeight: 950,
+                  fontWeight: 700,
                   letterSpacing: 0,
                   color: colors.text,
                   maxWidth: 720,
@@ -379,7 +379,7 @@ const BrainToDoLanding = () => {
                     px: 3,
                     py: 1.25,
                     textTransform: "none",
-                    fontWeight: 950,
+                    fontWeight: 700,
                     bgcolor: colors.green,
                     color: "#052E16",
                     borderRadius: 2.2,
@@ -398,7 +398,7 @@ const BrainToDoLanding = () => {
                     py: 1.25,
                     color: colors.text,
                     borderColor: colors.borderStrong,
-                    fontWeight: 900,
+                    fontWeight: 700,
                     textTransform: "none",
                     borderRadius: 2.2,
                     "&:hover": { borderColor: colors.cyan, bgcolor: alpha(colors.cyan, 0.08) },
@@ -409,11 +409,11 @@ const BrainToDoLanding = () => {
               </Stack>
 
               <Stack direction="row" spacing={1.2} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mt: 2.3 }}>
-                <Typography variant="caption" sx={{ color: colors.muted, fontWeight: 850 }}>
+                <Typography variant="caption" sx={{ color: colors.muted, fontWeight: 650 }}>
                   No credit card required.
                 </Typography>
                 {["HR", "Sales", "Projects", "Field teams"].map((item) => (
-                  <Chip key={item} size="small" label={item} sx={{ bgcolor: colors.panelSoft, color: colors.mutedStrong, border: `1px solid ${colors.border}`, fontWeight: 850 }} />
+                  <Chip key={item} size="small" label={item} sx={{ bgcolor: colors.panelSoft, color: colors.mutedStrong, border: `1px solid ${colors.border}`, fontWeight: 650 }} />
                 ))}
               </Stack>
             </Grid>
@@ -441,9 +441,9 @@ const BrainToDoLanding = () => {
                 <Chip
                   size="small"
                   label={`0${index + 1}`}
-                  sx={{ bgcolor: index % 2 ? alpha(colors.amber, 0.14) : alpha(colors.cyan, 0.14), color: index % 2 ? "#FCD34D" : "#BAE6FD", fontWeight: 950, mb: 1.5 }}
+                  sx={{ bgcolor: index % 2 ? alpha(colors.amber, 0.14) : alpha(colors.cyan, 0.14), color: index % 2 ? "#FCD34D" : "#BAE6FD", fontWeight: 700, mb: 1.5 }}
                 />
-                <Typography sx={{ fontWeight: 950, color: colors.text, mb: 1 }}>{title}</Typography>
+                <Typography sx={{ fontWeight: 700, color: colors.text, mb: 1 }}>{title}</Typography>
                 <Typography sx={{ color: colors.muted, lineHeight: 1.65 }}>{copy}</Typography>
               </Paper>
             </Grid>
@@ -454,8 +454,8 @@ const BrainToDoLanding = () => {
       <Box id="features" component="section" sx={{ bgcolor: colors.band, py: { xs: 7, md: 10 }, borderBlock: `1px solid ${colors.border}` }}>
         <Container maxWidth="lg">
           <Stack spacing={1} sx={{ maxWidth: 760, mb: 3 }}>
-            <Chip label="Feature UI preview" sx={{ width: "fit-content", bgcolor: alpha(colors.green, 0.14), color: "#BBF7D0", border: `1px solid ${alpha(colors.green, 0.24)}`, fontWeight: 900 }} />
-            <Typography variant="h3" sx={{ fontWeight: 950, color: colors.text, letterSpacing: 0 }}>
+            <Chip label="Feature UI preview" sx={{ width: "fit-content", bgcolor: alpha(colors.green, 0.14), color: "#BBF7D0", border: `1px solid ${alpha(colors.green, 0.24)}`, fontWeight: 700 }} />
+            <Typography variant="h3" sx={{ fontWeight: 700, color: colors.text, letterSpacing: 0 }}>
               Explore every major BrainToDo feature by tab
             </Typography>
             <Typography sx={{ color: colors.muted, fontSize: 17, lineHeight: 1.65 }}>
@@ -472,7 +472,7 @@ const BrainToDoLanding = () => {
               sx={{
                 px: 1,
                 borderBottom: `1px solid ${colors.border}`,
-                "& .MuiTab-root": { minHeight: 58, fontWeight: 900, textTransform: "none", color: colors.muted },
+                "& .MuiTab-root": { minHeight: 58, fontWeight: 700, textTransform: "none", color: colors.muted },
                 "& .Mui-selected": { color: colors.cyan },
                 "& .MuiTabs-indicator": { bgcolor: colors.cyan },
               }}
@@ -486,7 +486,7 @@ const BrainToDoLanding = () => {
             <Grid container spacing={0}>
               <Grid item xs={12} md={4}>
                 <Box sx={{ p: { xs: 2.5, md: 3 }, height: "100%" }}>
-                  <Typography variant="h4" sx={{ fontWeight: 950, color: colors.text, mb: 1 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: colors.text, mb: 1 }}>
                     {selectedFeature.title}
                   </Typography>
                   <Typography sx={{ color: colors.muted, lineHeight: 1.7, mb: 2.5 }}>
@@ -496,7 +496,7 @@ const BrainToDoLanding = () => {
                     {selectedFeature.rows.map((row) => (
                       <Stack key={row} direction="row" spacing={1} alignItems="center">
                         <CheckCircleRounded sx={{ color: colors.green, fontSize: 20 }} />
-                        <Typography sx={{ color: colors.mutedStrong, fontWeight: 800 }}>{row}</Typography>
+                        <Typography sx={{ color: colors.mutedStrong, fontWeight: 600 }}>{row}</Typography>
                       </Stack>
                     ))}
                   </Stack>
@@ -517,8 +517,8 @@ const BrainToDoLanding = () => {
           {workflow.map(([title, copy], index) => (
             <Grid item xs={12} sm={6} md={3} key={title}>
               <Paper elevation={0} sx={{ p: 2.3, height: "100%", borderRadius: 3, border: `1px solid ${colors.border}`, bgcolor: colors.panel }}>
-                <Chip label={`0${index + 1}`} sx={{ bgcolor: index % 2 ? alpha(colors.amber, 0.14) : alpha(colors.cyan, 0.14), color: index % 2 ? "#FCD34D" : "#BAE6FD", fontWeight: 950, mb: 2 }} />
-                <Typography sx={{ fontWeight: 950, fontSize: 22, mb: 1, color: colors.text }}>{title}</Typography>
+                <Chip label={`0${index + 1}`} sx={{ bgcolor: index % 2 ? alpha(colors.amber, 0.14) : alpha(colors.cyan, 0.14), color: index % 2 ? "#FCD34D" : "#BAE6FD", fontWeight: 700, mb: 2 }} />
+                <Typography sx={{ fontWeight: 700, fontSize: 22, mb: 1, color: colors.text }}>{title}</Typography>
                 <Typography sx={{ color: colors.muted, lineHeight: 1.65 }}>{copy}</Typography>
               </Paper>
             </Grid>
@@ -530,8 +530,8 @@ const BrainToDoLanding = () => {
         <Container maxWidth="lg">
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
-              <Chip label="The Creator Of BrainToDo" sx={{ bgcolor: alpha(colors.cyan, 0.14), color: "#BAE6FD", border: `1px solid ${alpha(colors.cyan, 0.24)}`, fontWeight: 900, mb: 2 }} />
-              <Typography variant="h3" sx={{ fontWeight: 950, letterSpacing: 0, mb: 2, color: colors.text }}>
+              <Chip label="The Creator Of BrainToDo" sx={{ bgcolor: alpha(colors.cyan, 0.14), color: "#BAE6FD", border: `1px solid ${alpha(colors.cyan, 0.24)}`, fontWeight: 700, mb: 2 }} />
+              <Typography variant="h3" sx={{ fontWeight: 700, letterSpacing: 0, mb: 2, color: colors.text }}>
                 Hi, I&apos;m Mir Fahim Rahman
               </Typography>
               <Typography sx={{ color: colors.mutedStrong, fontSize: 17, lineHeight: 1.8, mb: 2 }}>
@@ -540,7 +540,7 @@ const BrainToDoLanding = () => {
               <Typography sx={{ color: colors.mutedStrong, fontSize: 17, lineHeight: 1.8, mb: 2 }}>
                 I work <strong>one-to-one with every client</strong>, ensuring dedicated support, transparent communication, and results delivered exactly as promised.
               </Typography>
-              <Typography sx={{ color: colors.text, fontSize: 18, lineHeight: 1.7, fontWeight: 900 }}>
+              <Typography sx={{ color: colors.text, fontSize: 18, lineHeight: 1.7, fontWeight: 700 }}>
                 My commitment is simple: The system of BrainToDo will adapt to your business, office, and team management.
               </Typography>
             </Grid>
@@ -576,13 +576,13 @@ const BrainToDoLanding = () => {
 
       <Box component="section" sx={{ bgcolor: colors.bg, py: { xs: 7, md: 10 } }}>
         <Container maxWidth="md" sx={{ textAlign: "center" }}>
-          <Typography variant="h3" sx={{ color: colors.text, fontWeight: 950, letterSpacing: 0 }}>
+          <Typography variant="h3" sx={{ color: colors.text, fontWeight: 700, letterSpacing: 0 }}>
             Start managing your team with BrainToDo
           </Typography>
           <Typography sx={{ color: colors.muted, fontSize: 18, lineHeight: 1.65, mt: 1.5, mb: 3 }}>
             Give your office one system for people, tasks, leads, visits, permissions, and decisions.
           </Typography>
-          <Button href={ctaUrl} size="large" variant="contained" endIcon={<ArrowForwardRounded />} sx={{ bgcolor: colors.green, color: "#052E16", fontWeight: 950, textTransform: "none", borderRadius: 2.2, px: 3, "&:hover": { bgcolor: "#4ADE80" } }}>
+          <Button href={ctaUrl} size="large" variant="contained" endIcon={<ArrowForwardRounded />} sx={{ bgcolor: colors.green, color: "#052E16", fontWeight: 700, textTransform: "none", borderRadius: 2.2, px: 3, "&:hover": { bgcolor: "#4ADE80" } }}>
             Try BrainToDo for free
           </Button>
         </Container>
@@ -592,7 +592,7 @@ const BrainToDoLanding = () => {
       <Box component="footer" sx={{ bgcolor: colors.panelDeep, py: 3 }}>
         <Container maxWidth="lg">
           <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }} spacing={1}>
-            <Typography sx={{ color: colors.text, fontWeight: 900 }}>BrainToDo</Typography>
+            <Typography sx={{ color: colors.text, fontWeight: 700 }}>BrainToDo</Typography>
             <Typography sx={{ color: colors.muted }}>Built for practical business, office, and team management.</Typography>
           </Stack>
         </Container>

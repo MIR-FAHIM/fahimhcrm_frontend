@@ -247,7 +247,7 @@ const ProjectLearning = ({ protId }) => {
     <Container maxWidth="md" sx={{ py: { xs: 3, md: 5 } }}>
       <Stack spacing={3}>
         <Box>
-          <Typography variant="h4" fontWeight={800} gutterBottom>
+          <Typography variant="h4" fontWeight={600} gutterBottom>
             Project Learnings
           </Typography>
           <Typography variant="body1" color="text.secondary">

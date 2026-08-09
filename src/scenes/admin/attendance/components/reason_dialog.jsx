@@ -42,7 +42,7 @@ const EnhancedLateReasonDialog = ({
         sx={{
           backgroundColor: theme.palette.primary.main,
           color: theme.palette.common.white,
-          fontWeight: 'bold',
+          fontWeight: 600,
           display: 'flex',
           alignItems: 'center',
           gap: 1,
@@ -67,7 +67,7 @@ const EnhancedLateReasonDialog = ({
           <Typography
             variant="body1"
             sx={{
-              fontWeight: 'medium',
+              fontWeight: 500,
               color: theme.palette.text.primary
             }}
           >

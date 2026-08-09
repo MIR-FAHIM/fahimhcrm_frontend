@@ -238,7 +238,7 @@ const ProjectTask = ({ projectID }) => {
                                     mb: 1
                                   }}>
                                     <Typography
-                                      fontWeight="bold"
+                                      fontWeight={600}
                                       sx={{
                                         fontSize: "0.9rem",
                                         overflow: "hidden",

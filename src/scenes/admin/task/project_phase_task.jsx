@@ -108,7 +108,7 @@ const ProjectPhaseTask = () => {
       ) : (
         <DragDropContext onDragEnd={onDragEnd}>
           <Box sx={{ mb: 3 }}>
-            <Typography variant="h4" fontWeight="bold" sx={{ color: colors.primary[100] }}>
+            <Typography variant="h4" fontWeight={600} sx={{ color: colors.primary[100] }}>
               {phaseDetail.project?.project_name || "Project Name"}
             </Typography>
             <Typography variant="h6" sx={{ color: colors.gray[400] }}>

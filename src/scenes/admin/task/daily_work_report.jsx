@@ -108,7 +108,7 @@ const DailyWorkReport = () => {
 
   return (
     <Box sx={{ p: 4, backgroundColor: theme.palette.background.default, minHeight: '100vh' }}>
-      <Typography variant="h4" fontWeight="bold" gutterBottom color="text.primary">
+      <Typography variant="h4" fontWeight={600} gutterBottom color="text.primary">
         Daily Work Report
       </Typography>
 
@@ -151,12 +151,12 @@ const DailyWorkReport = () => {
                     {entry.text}
                   </Typography>
                   {entry.status === 'completed' && (
-                    <Typography variant="body2" sx={{ ml: 1, color: theme.palette.success.main, fontWeight: 'bold' }}>
+                    <Typography variant="body2" sx={{ ml: 1, color: theme.palette.success.main, fontWeight: 600 }}>
                       (Completed)
                     </Typography>
                   )}
                   {entry.status === 'ongoing' && (
-                    <Typography variant="body2" sx={{ ml: 1, color: theme.palette.warning.main, fontWeight: 'bold' }}>
+                    <Typography variant="body2" sx={{ ml: 1, color: theme.palette.warning.main, fontWeight: 600 }}>
                       (Ongoing)
                     </Typography>
                   )}
@@ -181,7 +181,7 @@ const DailyWorkReport = () => {
       ---
 
       <Box sx={{ mt: 4 }}>
-        <Typography variant="h5" fontWeight="bold" gutterBottom color="text.primary">
+        <Typography variant="h5" fontWeight={600} gutterBottom color="text.primary">
           Previous Reports
         </Typography>
         {loading ? (
@@ -191,7 +191,7 @@ const DailyWorkReport = () => {
         ) : (
           previousReports && Object.entries(previousReports).map(([date, reports]) => (
             <Box key={date} sx={{ mb: 4 }}>
-              <Typography variant="h6" fontWeight="bold" color="text.secondary">
+              <Typography variant="h6" fontWeight={600} color="text.secondary">
                 {dayjs(date).format('MMMM D, YYYY')}
               </Typography>
               <List sx={{ ml: 2 }}>

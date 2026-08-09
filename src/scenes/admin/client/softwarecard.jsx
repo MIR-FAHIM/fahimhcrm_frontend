@@ -50,7 +50,7 @@ const SoftwareCard = ({ software }) => {
 
       {/* Content Section */}
       <CardContent sx={{ flex: 1 }}>
-        <Typography variant="h6" fontWeight="bold" gutterBottom>
+        <Typography variant="h6" fontWeight={600} gutterBottom>
           {software.title}
         </Typography>
         <Typography variant="caption" color="text.secondary" gutterBottom>
@@ -66,7 +66,7 @@ const SoftwareCard = ({ software }) => {
           </Typography>
 
           <Box>
-            <Typography variant="body2" fontWeight="bold" gutterBottom>
+            <Typography variant="body2" fontWeight={600} gutterBottom>
               File Types Included:
             </Typography>
             <Stack direction="row" spacing={1} flexWrap="wrap">
@@ -89,7 +89,7 @@ const SoftwareCard = ({ software }) => {
           justifyContent: "space-between",
         }}
       >
-        <Typography variant="h6" fontWeight="bold" color="primary">
+        <Typography variant="h6" fontWeight={600} color="primary">
           {software.price}
         </Typography>
 

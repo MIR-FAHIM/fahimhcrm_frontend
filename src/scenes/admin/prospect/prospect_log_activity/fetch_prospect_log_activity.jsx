@@ -95,7 +95,7 @@ export default function LogActivityList({ logActivityListData = [] }) {
             <HistoryRounded />
           </Avatar>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 900, color: theme.palette.text.primary }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
               Activity Timeline
             </Typography>
             <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
@@ -114,7 +114,7 @@ export default function LogActivityList({ logActivityListData = [] }) {
           mb: 2,
           borderBottom: `1px solid ${theme.palette.divider}`,
           "& .MuiTabs-indicator": { display: "none" },
-          "& .MuiTab-root": { minHeight: 38, textTransform: "none", fontWeight: 900 },
+          "& .MuiTab-root": { minHeight: 38, textTransform: "none", fontWeight: 700 },
         }}
       >
         {LOG_TYPES.map((type) => {
@@ -155,14 +155,14 @@ export default function LogActivityList({ logActivityListData = [] }) {
                   <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: theme.palette.background.default, border: `1px solid ${theme.palette.divider}` }}>
                     <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", md: "center" }} spacing={1}>
                       <Box sx={{ minWidth: 0 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 900, color: theme.palette.text.primary }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
                           {activity.title || "Prospect activity"}
                         </Typography>
                         <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 0.5, whiteSpace: "pre-line" }}>
                           {activity.notes || "No notes recorded."}
                         </Typography>
                       </Box>
-                      <Chip size="small" label={activity.activity_type || "general"} sx={{ textTransform: "capitalize", bgcolor: alpha(color, 0.12), color, fontWeight: 900 }} />
+                      <Chip size="small" label={activity.activity_type || "general"} sx={{ textTransform: "capitalize", bgcolor: alpha(color, 0.12), color, fontWeight: 700 }} />
                     </Stack>
                     <Divider sx={{ my: 1.25 }} />
                     <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>

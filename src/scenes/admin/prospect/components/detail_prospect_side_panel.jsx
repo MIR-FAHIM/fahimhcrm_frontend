@@ -54,7 +54,7 @@ const SectionCard = ({ icon, title, subtitle, children }) => {
           {icon}
         </Avatar>
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+          <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
             {title}
           </Typography>
           {subtitle && (
@@ -141,7 +141,7 @@ const ProspectSidebar = ({
               ) : (
                 <Stack direction="row" alignItems="flex-start" spacing={1}>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1.15 }}>
+                    <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1.15 }}>
                       {details.prospect_name || "Untitled prospect"}
                     </Typography>
                     <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
@@ -159,8 +159,8 @@ const ProspectSidebar = ({
           </Stack>
 
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <Chip label={isIndividual ? "Individual" : "Organization"} icon={isIndividual ? <PersonRounded /> : <BusinessRounded />} sx={{ fontWeight: 800 }} />
-            {isTrue(details.is_opportunity) && <Chip color="success" icon={<StarRounded />} label="Opportunity" sx={{ fontWeight: 800 }} />}
+            <Chip label={isIndividual ? "Individual" : "Organization"} icon={isIndividual ? <PersonRounded /> : <BusinessRounded />} sx={{ fontWeight: 600 }} />
+            {isTrue(details.is_opportunity) && <Chip color="success" icon={<StarRounded />} label="Opportunity" sx={{ fontWeight: 600 }} />}
           </Stack>
 
           <OpportunityComponent details={details} onToggleOpportunity={onToggleOpportunityController} onSubmitOpportunity={onSubmitOpportunity} />
@@ -171,7 +171,7 @@ const ProspectSidebar = ({
         <SectionCard icon={<LocationOnRounded fontSize="small" />} title="Location" subtitle="Address and map context">
           <AdressProspect details={details} onAddressUpdate={updateProspectInfo} />
           {canShowMap && (
-            <Button fullWidth variant="outlined" startIcon={<MapRounded />} onClick={goToMap} sx={{ mt: 1.25, borderRadius: 2, fontWeight: 900 }}>
+            <Button fullWidth variant="outlined" startIcon={<MapRounded />} onClick={goToMap} sx={{ mt: 1.25, borderRadius: 2, fontWeight: 700 }}>
               View Map
             </Button>
           )}
@@ -227,7 +227,7 @@ const ProspectSidebar = ({
               })}
             </Select>
           </FormControl>
-          <Button fullWidth variant="contained" onClick={addMultipleConernPersons} sx={{ borderRadius: 2, fontWeight: 900 }}>
+          <Button fullWidth variant="contained" onClick={addMultipleConernPersons} sx={{ borderRadius: 2, fontWeight: 700 }}>
             Add Assigned Person
           </Button>
 
@@ -249,7 +249,7 @@ const ProspectSidebar = ({
                       {person.employee?.name?.charAt(0) || "U"}
                     </Avatar>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                      <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                         {person.employee?.name || "Unknown employee"}
                       </Typography>
                       <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap sx={{ mt: 0.5 }}>

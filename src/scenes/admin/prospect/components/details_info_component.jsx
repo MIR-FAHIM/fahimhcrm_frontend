@@ -35,6 +35,14 @@ import { format } from "date-fns";
 
 const valueOrDash = (value) => value || "-";
 const isTrue = (value) => value === true || value === 1 || value === "1";
+const getLocationName = (relation, directValue) =>
+  relation?.name ||
+  relation?.division_name ||
+  relation?.district_name ||
+  relation?.thana_name ||
+  relation?.upazila_name ||
+  directValue ||
+  "";
 
 const formatDate = (dateString) => {
   if (!dateString) return "-";
@@ -58,14 +66,16 @@ const InfoRow = ({ icon, label, value, action }) => {
       }}
     >
       <Stack direction="row" spacing={1.25} alignItems="flex-start">
-        <Avatar variant="rounded" sx={{ width: 32, height: 32, bgcolor: alpha(theme.palette.primary.main, 0.12), color: theme.palette.primary.main }}>
-          {icon}
-        </Avatar>
+        {icon && (
+          <Avatar variant="rounded" sx={{ width: 32, height: 32, bgcolor: alpha(theme.palette.primary.main, 0.12), color: theme.palette.primary.main }}>
+            {icon}
+          </Avatar>
+        )}
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
             {label}
           </Typography>
-          <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 800, wordBreak: "break-word" }}>
+          <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 600, wordBreak: "break-word" }}>
             {valueOrDash(value)}
           </Typography>
         </Box>
@@ -80,6 +90,9 @@ const DetailsProspectInfo = ({ details = {}, onAddressUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedAddress, setEditedAddress] = useState(details.address || "");
   const isIndividual = isTrue(details.is_individual);
+  const divisionName = getLocationName(details.division, details.division_name);
+  const districtName = getLocationName(details.district, details.district_name);
+  const thanaName = getLocationName(details.thana || details.upazila, details.thana_name || details.upazila_name);
 
   useEffect(() => {
     setEditedAddress(details.address || "");
@@ -117,7 +130,7 @@ const DetailsProspectInfo = ({ details = {}, onAddressUpdate }) => {
           {isIndividual ? <PersonRounded /> : <BusinessRounded />}
         </Avatar>
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+          <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
             Prospect Details
           </Typography>
           <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
@@ -164,13 +177,13 @@ const DetailsProspectInfo = ({ details = {}, onAddressUpdate }) => {
                       <Button size="small" variant="outlined" startIcon={<CancelRounded />} onClick={handleCancelClick} sx={{ borderRadius: 2 }}>
                         Cancel
                       </Button>
-                      <Button size="small" variant="contained" startIcon={<SaveRounded />} onClick={handleSaveClick} sx={{ borderRadius: 2, fontWeight: 900 }}>
+                      <Button size="small" variant="contained" startIcon={<SaveRounded />} onClick={handleSaveClick} sx={{ borderRadius: 2, fontWeight: 700 }}>
                         Save
                       </Button>
                     </Stack>
                   </Stack>
                 ) : (
-                  <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 800, whiteSpace: "pre-line" }}>
+                  <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 600, whiteSpace: "pre-line" }}>
                     {details.address || "No address available"}
                   </Typography>
                 )}
@@ -191,10 +204,25 @@ const DetailsProspectInfo = ({ details = {}, onAddressUpdate }) => {
         <Grid item xs={12} sm={6}>
           <InfoRow icon={<LocationOnRounded fontSize="small" />} label="Coordinates" value={details.latitude && details.longitude ? `${details.latitude}, ${details.longitude}` : "-"} />
         </Grid>
+        {divisionName && (
+          <Grid item xs={12} sm={4}>
+            <InfoRow label="Division" value={divisionName} />
+          </Grid>
+        )}
+        {districtName && (
+          <Grid item xs={12} sm={4}>
+            <InfoRow label="District" value={districtName} />
+          </Grid>
+        )}
+        {thanaName && (
+          <Grid item xs={12} sm={4}>
+            <InfoRow label="Upazila / Thana" value={thanaName} />
+          </Grid>
+        )}
       </Grid>
 
       <Box sx={{ mt: 2 }}>
-        <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 900, mb: 1 }}>
+        <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 700, mb: 1 }}>
           Online Presence
         </Typography>
         {socialLinks.length ? (
@@ -209,7 +237,7 @@ const DetailsProspectInfo = ({ details = {}, onAddressUpdate }) => {
                 href={details[item.key]}
                 target="_blank"
                 rel="noopener"
-                sx={{ fontWeight: 800 }}
+                sx={{ fontWeight: 600 }}
               />
             ))}
           </Stack>
@@ -221,7 +249,7 @@ const DetailsProspectInfo = ({ details = {}, onAddressUpdate }) => {
       </Box>
 
       <Box sx={{ mt: 2 }}>
-        <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 900, mb: 1 }}>
+        <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 700, mb: 1 }}>
           Notes
         </Typography>
         <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: theme.palette.background.default, border: `1px solid ${theme.palette.divider}` }}>

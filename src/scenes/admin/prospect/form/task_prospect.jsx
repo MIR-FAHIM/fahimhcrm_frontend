@@ -93,7 +93,7 @@ const AddTaskFormProspect = ({ prospect_id }) => {
         margin: "auto",
       }}
     >
-      <Typography variant="h5" fontWeight="bold" mb={3} color={colors.primary[100]}>
+      <Typography variant="h5" fontWeight={600} mb={3} color={colors.primary[100]}>
         Add New Task
       </Typography>
 

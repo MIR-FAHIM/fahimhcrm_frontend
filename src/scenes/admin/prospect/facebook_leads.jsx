@@ -45,7 +45,7 @@ const StatusChip = ({ status, colors }) => {
 
 const Toolbar = ({ query, setQuery, onRefresh, colors, selectionCount, filter, setFilter, reports }) => (
   <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap", p: 1, borderBottom: `1px solid ${colors.gray[700]}` }}>
-    <Typography variant="h6" sx={{ fontWeight: 800, color: colors.gray[100] }}>Facebook Leads</Typography>
+    <Typography variant="h6" sx={{ fontWeight: 600, color: colors.gray[100] }}>Facebook Leads</Typography>
 
     <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: { xs: 0, md: 2 }, flexWrap: "wrap", width: { xs: "100%", md: "auto" } }}>
       <TextField

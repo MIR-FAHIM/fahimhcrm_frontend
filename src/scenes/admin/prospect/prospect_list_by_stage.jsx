@@ -148,7 +148,7 @@ const ActivityChip = ({ icon, label, count, type }) => {
         bgcolor: alpha(color, 0.08),
         borderColor: alpha(color, 0.26),
         color,
-        fontWeight: 800,
+        fontWeight: 600,
         "& .MuiChip-icon": { color },
       }}
     />
@@ -176,7 +176,7 @@ const StatTile = ({ icon, label, value, tone = "primary" }) => {
           <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
             {label}
           </Typography>
-          <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+          <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
             {value}
           </Typography>
         </Box>
@@ -239,13 +239,13 @@ const ProspectCard = ({ prospect, stageColor, onDetails }) => {
           <Stack direction="row" alignItems="flex-start" spacing={1.25}>
             <Avatar
               variant="rounded"
-              sx={{ bgcolor: alpha(stageColor, 0.12), color: stageColor, width: 42, height: 42, fontWeight: 900 }}
+              sx={{ bgcolor: alpha(stageColor, 0.12), color: stageColor, width: 42, height: 42, fontWeight: 700 }}
             >
               {getInitials(prospect.prospect_name)}
             </Avatar>
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Stack direction="row" alignItems="center" spacing={0.75} sx={{ minWidth: 0 }}>
-                <Typography variant="subtitle2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                <Typography variant="subtitle2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                   {prospect.prospect_name || "Untitled prospect"}
                 </Typography>
                 {isOpportunity && (
@@ -261,8 +261,8 @@ const ProspectCard = ({ prospect, stageColor, onDetails }) => {
           </Stack>
 
           <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
-            <Chip size="small" label={industry} icon={<BusinessRounded />} sx={{ fontWeight: 800 }} />
-            <Chip size="small" label={interest} variant="outlined" sx={{ fontWeight: 800 }} />
+            <Chip size="small" label={industry} icon={<BusinessRounded />} sx={{ fontWeight: 600 }} />
+            <Chip size="small" label={interest} variant="outlined" sx={{ fontWeight: 600 }} />
           </Stack>
 
           {prospect.address && (
@@ -288,7 +288,7 @@ const ProspectCard = ({ prospect, stageColor, onDetails }) => {
               <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
                 Zone
               </Typography>
-              <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+              <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                 {zone}
               </Typography>
             </Paper>
@@ -296,7 +296,7 @@ const ProspectCard = ({ prospect, stageColor, onDetails }) => {
               <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
                 Last Activity
               </Typography>
-              <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+              <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                 {formatDate(prospect.last_activity)}
               </Typography>
             </Paper>
@@ -314,7 +314,7 @@ const ProspectCard = ({ prospect, stageColor, onDetails }) => {
             <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 0 }}>
               <Avatar
                 src={firstPerson?.photo ? `${base_url}/storage/${firstPerson.photo}` : undefined}
-                sx={{ width: 30, height: 30, bgcolor: alpha(stageColor, 0.16), color: stageColor, fontSize: 13, fontWeight: 900 }}
+                sx={{ width: 30, height: 30, bgcolor: alpha(stageColor, 0.16), color: stageColor, fontSize: 13, fontWeight: 700 }}
               >
                 {getInitials(firstPerson?.person_name)}
               </Avatar>
@@ -322,7 +322,7 @@ const ProspectCard = ({ prospect, stageColor, onDetails }) => {
                 <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
                   Initial Contact
                 </Typography>
-                <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                   {firstPerson?.person_name || "No contact person"}
                 </Typography>
               </Box>
@@ -347,7 +347,7 @@ const ProspectCard = ({ prospect, stageColor, onDetails }) => {
                   href={ensureUrl(prospect.website_link)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  sx={{ fontWeight: 800 }}
+                  sx={{ fontWeight: 600 }}
                 />
               )}
               {prospect.linkedin_link && (
@@ -360,7 +360,7 @@ const ProspectCard = ({ prospect, stageColor, onDetails }) => {
                   href={ensureUrl(prospect.linkedin_link)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  sx={{ fontWeight: 800 }}
+                  sx={{ fontWeight: 600 }}
                 />
               )}
             </Stack>
@@ -371,7 +371,7 @@ const ProspectCard = ({ prospect, stageColor, onDetails }) => {
             fullWidth
             endIcon={<OpenInNewRounded />}
             onClick={() => onDetails(prospect.id)}
-            sx={{ borderRadius: 2, fontWeight: 900 }}
+            sx={{ borderRadius: 2, fontWeight: 700 }}
           >
             View Details
           </Button>
@@ -520,7 +520,7 @@ const ProspectListByStage = () => {
             <ViewKanbanRounded />
           </Avatar>
           <Box>
-            <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1 }}>
+            <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1 }}>
               Prospect Pipeline
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
@@ -529,10 +529,10 @@ const ProspectListByStage = () => {
           </Box>
         </Stack>
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-          <Button variant="contained" startIcon={<AddRounded />} onClick={() => navigate("/add-prospect")} sx={{ borderRadius: 2, fontWeight: 900 }}>
+          <Button variant="contained" startIcon={<AddRounded />} onClick={() => navigate("/add-prospect")} sx={{ borderRadius: 2, fontWeight: 700 }}>
             Add Prospect
           </Button>
-          <Button variant="outlined" startIcon={<TableRowsRounded />} onClick={() => navigate("/prospect-list")} sx={{ borderRadius: 2, fontWeight: 900 }}>
+          <Button variant="outlined" startIcon={<TableRowsRounded />} onClick={() => navigate("/prospect-list")} sx={{ borderRadius: 2, fontWeight: 700 }}>
             Table View
           </Button>
           <Button
@@ -540,7 +540,7 @@ const ProspectListByStage = () => {
             startIcon={refreshing ? <CircularProgress size={16} /> : <RefreshRounded />}
             disabled={refreshing || loading}
             onClick={() => loadProspects({ silent: true })}
-            sx={{ borderRadius: 2, fontWeight: 900 }}
+            sx={{ borderRadius: 2, fontWeight: 700 }}
           >
             Refresh
           </Button>
@@ -647,7 +647,7 @@ const ProspectListByStage = () => {
             color={stageFilter === "all" ? "primary" : "default"}
             variant={stageFilter === "all" ? "filled" : "outlined"}
             onClick={() => setStageFilter("all")}
-            sx={{ fontWeight: 800 }}
+            sx={{ fontWeight: 600 }}
           />
           {boardStages.map((stage) => {
             const count = filteredMap[stage.stage_name]?.length || 0;
@@ -659,7 +659,7 @@ const ProspectListByStage = () => {
                 color={stageFilter === stage.stage_name ? "primary" : "default"}
                 variant={stageFilter === stage.stage_name ? "filled" : "outlined"}
                 onClick={() => setStageFilter(stage.stage_name)}
-                sx={{ fontWeight: 800 }}
+                sx={{ fontWeight: 600 }}
               />
             );
           })}
@@ -712,14 +712,14 @@ const ProspectListByStage = () => {
                   <Box sx={{ p: 1.5, borderTop: `4px solid ${stageColor}` }}>
                     <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1} sx={{ mb: 1 }}>
                       <Box sx={{ minWidth: 0 }}>
-                        <Typography variant="subtitle1" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                        <Typography variant="subtitle1" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                           {status.stage_name}
                         </Typography>
                         <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
                           {list.length} visible | {originalCount} total
                         </Typography>
                       </Box>
-                      <Chip label={list.length} sx={{ bgcolor: alpha(stageColor, 0.12), color: stageColor, fontWeight: 900 }} />
+                      <Chip label={list.length} sx={{ bgcolor: alpha(stageColor, 0.12), color: stageColor, fontWeight: 700 }} />
                     </Stack>
                     <LinearProgress
                       variant="determinate"
@@ -759,7 +759,7 @@ const ProspectListByStage = () => {
           }}
         >
           <SourceRounded color="disabled" />
-          <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900, mt: 1 }}>
+          <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700, mt: 1 }}>
             No prospects found
           </Typography>
           <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>

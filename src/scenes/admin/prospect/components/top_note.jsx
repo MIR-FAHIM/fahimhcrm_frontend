@@ -39,7 +39,7 @@ const NoteComponent = ({ details = {}, onSaveNote }) => {
             <NotesRounded fontSize="small" />
           </Box>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 800 }}>
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
               Keep in mind
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.primary, whiteSpace: "pre-line", fontWeight: 700 }}>
@@ -65,7 +65,7 @@ const NoteComponent = ({ details = {}, onSaveNote }) => {
             <Button size="small" variant="outlined" startIcon={<CancelRounded />} onClick={handleCancel} sx={{ borderRadius: 2 }}>
               Cancel
             </Button>
-            <Button size="small" variant="contained" startIcon={<SaveRounded />} onClick={handleSave} sx={{ borderRadius: 2, fontWeight: 900 }}>
+            <Button size="small" variant="contained" startIcon={<SaveRounded />} onClick={handleSave} sx={{ borderRadius: 2, fontWeight: 700 }}>
               Save Note
             </Button>
           </Stack>

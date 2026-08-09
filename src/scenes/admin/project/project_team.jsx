@@ -127,7 +127,7 @@ const ProjectTeam = ({projectID}) => {
             sx={{
               padding: "10px 25px",
               borderRadius: "30px",
-              fontWeight: "bold",
+              fontWeight: 600,
               boxShadow: 3,
               textTransform: "none",
             }}
@@ -164,7 +164,7 @@ const ProjectTeam = ({projectID}) => {
                     sx={{ width: 56, height: 56, mr: 2 }}
                   />
                   <Box>
-                    <Typography variant="h6" fontWeight="bold">{employee.employee.name}</Typography>
+                    <Typography variant="h6" fontWeight={600}>{employee.employee.name}</Typography>
                     <Typography variant="body2" color="text.secondary">
                       {employee.employee.role?.role_name || "No Role"}
                     </Typography>
@@ -186,7 +186,7 @@ const ProjectTeam = ({projectID}) => {
                   sx={{
                     borderRadius: "20px",
                     textTransform: "none",
-                    fontWeight: "bold",
+                    fontWeight: 600,
                   }}
                   onClick={() => handleViewDetails(employee.employee.id)}
                 >

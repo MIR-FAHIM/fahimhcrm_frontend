@@ -28,6 +28,7 @@ import {
   MenuOutlined,
   NewReleasesOutlined,
   PieChartOutlined,
+  PeopleAltOutlined,
   SearchOutlined,
   SettingsOutlined,
   SourceOutlined,
@@ -311,6 +312,19 @@ const SideBar = () => {
         ],
       },
       {
+        id: "clients",
+        label: "Clients",
+        show: permissions.prospect,
+        icon: <PeopleAltOutlined sx={{ ...muiIconSx, fontSize: 26 }} />,
+        items: [
+          {
+            title: "Client List",
+            path: "/client-list",
+            icon: <PeopleAltOutlined sx={muiIconSx} />,
+          },
+        ],
+      },
+      {
         id: "products",
         label: "Products",
         show: permissions.setting || isAdmin === 1 || isAdmin === 2,
@@ -577,7 +591,7 @@ const SideBar = () => {
 
           {!collapsed && (
             <Box minWidth={0}>
-              <Typography variant="subtitle2" noWrap sx={{ fontWeight: 800 }}>
+              <Typography variant="subtitle2" noWrap sx={{ fontWeight: 600 }}>
                 {group.label}
               </Typography>
               {normalizedSearch && (
@@ -681,7 +695,7 @@ const SideBar = () => {
                     noWrap
                     sx={{
                       color: textPrimary,
-                      fontWeight: 900,
+                      fontWeight: 700,
                       lineHeight: 1.1,
                     }}
                   >
@@ -822,7 +836,7 @@ const SideBar = () => {
                         variant="body2"
                         noWrap
                         title={user.name}
-                        sx={{ fontWeight: 800, color: textPrimary }}
+                        sx={{ fontWeight: 600, color: textPrimary }}
                       >
                         {user.name}
                       </Typography>
@@ -844,7 +858,7 @@ const SideBar = () => {
                     label="Profile"
                     sx={{
                       height: 24,
-                      fontWeight: 800,
+                      fontWeight: 600,
                       color: textPrimary,
                       bgcolor: alpha(iconColor, isDark ? 0.18 : 0.12),
                     }}
@@ -882,7 +896,7 @@ const SideBar = () => {
                 color: textSecondary,
               }}
             >
-              <Typography variant="caption" sx={{ fontWeight: 800 }}>
+              <Typography variant="caption" sx={{ fontWeight: 600 }}>
                 Results
               </Typography>
               <Chip
@@ -952,7 +966,7 @@ const SideBar = () => {
               }}
             >
               <MenuOutlined sx={{ mb: 0.5, color: alpha(textSecondary, 0.8) }} />
-              <Typography variant="body2" sx={{ fontWeight: 800 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
                 No menu items found
               </Typography>
             </Box>

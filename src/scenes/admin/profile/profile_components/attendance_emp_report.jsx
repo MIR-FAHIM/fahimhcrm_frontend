@@ -36,23 +36,23 @@ const calculateDuration = (checkIn, checkOut) => {
 const renderStatus = (value) => {
   if (value === null || value === undefined || value === "") {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.secondary', fontSize: '0.875rem', fontWeight: 'medium' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'text.secondary', fontSize: '0.875rem', fontWeight: 500 }}>
         <PriorityHigh sx={{ fontSize: '1rem', mr: 0.5, color: 'text.disabled' }} /> No data
       </Box>
     );
   }
   if (typeof value === 'boolean') {
     return value ? (
-      <Box sx={{ display: 'inline-flex', alignItems: 'center', bgcolor: 'success.light', color: 'success.dark', px: 1.5, py: 0.5, borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 'semibold', minWidth: '60px', justifyContent: 'center' }}>
+      <Box sx={{ display: 'inline-flex', alignItems: 'center', bgcolor: 'success.light', color: 'success.dark', px: 1.5, py: 0.5, borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600, minWidth: '60px', justifyContent: 'center' }}>
         <CheckCircle sx={{ fontSize: '0.875rem', mr: 0.5 }} /> Yes
       </Box>
     ) : (
-      <Box sx={{ display: 'inline-flex', alignItems: 'center', bgcolor: 'error.light', color: 'error.dark', px: 1.5, py: 0.5, borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 'semibold', minWidth: '60px', justifyContent: 'center' }}>
+      <Box sx={{ display: 'inline-flex', alignItems: 'center', bgcolor: 'error.light', color: 'error.dark', px: 1.5, py: 0.5, borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 600, minWidth: '60px', justifyContent: 'center' }}>
         <Warning sx={{ fontSize: '0.875rem', mr: 0.5 }} /> No
       </Box>
     );
   }
-  return <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 'medium' }}>{value}</Typography>;
+  return <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 500 }}>{value}</Typography>;
 };
 
 const AttendanceReport = ({
@@ -80,7 +80,7 @@ const AttendanceReport = ({
           variant="h4"
           component="h2"
           sx={{
-            fontWeight: 'extrabold',
+            fontWeight: 700,
             color: 'primary.main',
             mb: 4,
             textAlign: 'center',
@@ -144,12 +144,12 @@ const AttendanceReport = ({
         {loading ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '200px', bgcolor: 'background.default', borderRadius: '12px', p: 3, boxShadow: 1 }}>
             <CircularProgress color="primary" size={60} />
-            <Typography variant="h6" sx={{ mt: 2, color: 'text.primary', fontWeight: 'bold' }}>Loading attendance data...</Typography>
+            <Typography variant="h6" sx={{ mt: 2, color: 'text.primary', fontWeight: 600 }}>Loading attendance data...</Typography>
           </Box>
         ) : attendanceData.length === 0 ? (
           <Box sx={{ bgcolor: theme.palette.mode === 'dark' ? 'warning.dark' : 'warning.light', border: '1px solid', borderColor: 'warning.main', color: 'text.primary', p: 3, borderRadius: '12px', textAlign: 'center', boxShadow: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Warning sx={{ fontSize: '3rem', mb: 1, color: 'warning.main' }} />
-            <Typography variant="h6" fontWeight="semibold">No attendance records found for the selected period.</Typography>
+            <Typography variant="h6" fontWeight={600}>No attendance records found for the selected period.</Typography>
             <Typography variant="body2" sx={{ mt: 0.5 }}>Please select a different month or year to view attendance.</Typography>
           </Box>
         ) : (
@@ -158,7 +158,7 @@ const AttendanceReport = ({
               <TableHead>
                 <TableRow sx={{ bgcolor: 'primary.dark' }}>
                   {['Date', 'Weekday', 'Check-in Time', 'Check-out Time', 'Check-in Location', 'Check-out Location', 'Is Late', 'Is Early Leave', 'Work From Home', 'From Field', 'Total Duration'].map(h => (
-                    <TableCell key={h} align="center" sx={{ fontWeight: 'bold',  color: '#000000', fontSize: '0.9rem', py: 2 }}>
+                    <TableCell key={h} align="center" sx={{ fontWeight: 600,  color: '#000000', fontSize: '0.9rem', py: 2 }}>
                       {h}
                     </TableCell>
                   ))}
@@ -173,12 +173,12 @@ const AttendanceReport = ({
                       key={day.date}
                       sx={{
                         backgroundColor: isWeekend ? (theme.palette.mode === 'dark' ? '#1a237e' : '#e3f2fd') : (index % 2 === 0 ? 'background.paper' : theme.palette.action.hover),
-                        fontWeight: isWeekend ? 'bold' : 'normal',
+                        fontWeight: isWeekend ? 600 : 400,
                         '&:last-child td, &:last-child th': { border: 0 },
                         '&:hover': { bgcolor: 'action.selected', cursor: 'pointer' },
                       }}
                     >
-                      <TableCell align="center" sx={{ fontWeight: 'medium', color: 'text.primary', whiteSpace: 'nowrap' }}>
+                      <TableCell align="center" sx={{ fontWeight: 500, color: 'text.primary', whiteSpace: 'nowrap' }}>
                         {day.date}
                       </TableCell>
                       <TableCell align="center">{renderStatus(day.weekday)}</TableCell>
@@ -190,7 +190,7 @@ const AttendanceReport = ({
                             component="button"
                             variant="body2"
                             onClick={() => handleNavigationMap(day.attendance?.check_in_lat, day.attendance?.check_in_lon)}
-                            sx={{ color: 'info.main', '&:hover': { textDecoration: 'underline' }, fontWeight: 'medium' }}
+                            sx={{ color: 'info.main', '&:hover': { textDecoration: 'underline' }, fontWeight: 500 }}
                           >
                             {day.attendance.check_in_location}
                           </Link>
@@ -202,7 +202,7 @@ const AttendanceReport = ({
                             component="button"
                             variant="body2"
                             onClick={() => handleNavigationMap(day.attendance?.check_out_lat, day.attendance?.check_out_lon)}
-                            sx={{ color: 'info.main', '&:hover': { textDecoration: 'underline' }, fontWeight: 'medium' }}
+                            sx={{ color: 'info.main', '&:hover': { textDecoration: 'underline' }, fontWeight: 500 }}
                           >
                             {day.attendance.check_out_location}
                           </Link>
@@ -212,9 +212,9 @@ const AttendanceReport = ({
                         {!day.attendance?.check_in_time ? (
                           renderStatus(null)
                         ) : day.attendance?.is_late ? (
-                          <Chip label="Late" size="small" color="warning" sx={{ fontWeight: 'bold' }} />
+                          <Chip label="Late" size="small" color="warning" sx={{ fontWeight: 600 }} />
                         ) : (
-                          <Chip label="On Time" size="small" color="success" sx={{ fontWeight: 'bold' }} />
+                          <Chip label="On Time" size="small" color="success" sx={{ fontWeight: 600 }} />
                         )}
                       </TableCell>
                       <TableCell align="center">{renderStatus(day.attendance?.is_early_leave)}</TableCell>

@@ -140,7 +140,7 @@ const OpportunityByStage = () => {
                     p: 2,
                     mb: 2,
                   }}>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: colors.gray[500] }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: colors.gray[500] }}>
                       {stageName} ({stageCounts[stageName] || 0})
                     </Typography>
                   </Box>
@@ -170,7 +170,7 @@ const OpportunityByStage = () => {
                       >
                         <CardContent>
                           <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                            <Typography variant="h6" fontWeight={800} sx={{ color: colors.gray[100] }}>
+                            <Typography variant="h6" fontWeight={600} sx={{ color: colors.gray[100] }}>
                               #{o.id}: {o?.prospect?.prospect_name || "Unnamed"}
                             </Typography>
                             {o?.prospect_id && (

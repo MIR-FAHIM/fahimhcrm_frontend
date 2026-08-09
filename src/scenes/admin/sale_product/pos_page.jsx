@@ -225,7 +225,7 @@ const cartResponse = await createMultipleCart(payloadToSendToCartAPI);
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
+      <Typography variant="h4" gutterBottom sx={{ mb: 3, fontWeight: 600 }}>
         Point of Sale System
       </Typography>
 
@@ -414,7 +414,7 @@ const cartResponse = await createMultipleCart(payloadToSendToCartAPI);
         <Grid item xs={12} md={4}>
           <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-              <Typography variant="h6" fontWeight="bold">
+              <Typography variant="h6" fontWeight={600}>
                 Cart
               </Typography>
               <FormControl sx={{ minWidth: 150 }}>
@@ -490,8 +490,8 @@ const cartResponse = await createMultipleCart(payloadToSendToCartAPI);
                 <Divider sx={{ my: 2 }} />
 
                 <Box display="flex" justifyContent="space-between" mb={3}>
-                  <Typography variant="h6" fontWeight="bold">Total:</Typography>
-                  <Typography variant="h6" fontWeight="bold">
+                  <Typography variant="h6" fontWeight={600}>Total:</Typography>
+                  <Typography variant="h6" fontWeight={600}>
                     ৳{calculateTotal().toFixed(2)}
                   </Typography>
                 </Box>
@@ -524,7 +524,7 @@ const cartResponse = await createMultipleCart(payloadToSendToCartAPI);
                     mt: 2,
                     borderRadius: '8px',
                     py: 1.5,
-                    fontWeight: 'bold'
+                    fontWeight: 600
                   }}
                   onClick={initiateOrder} // Call the new initiateOrder function
                   disabled={loading}

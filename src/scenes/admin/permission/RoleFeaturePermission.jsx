@@ -201,10 +201,10 @@ const SummaryTile = ({ icon, label, value, tone = "primary" }) => {
             {icon}
           </Box>
           <Box minWidth={0}>
-            <Typography variant="caption" color="text.secondary" fontWeight={800}>
+            <Typography variant="caption" color="text.secondary" fontWeight={600}>
               {label}
             </Typography>
-            <Typography variant="h5" fontWeight={900} lineHeight={1.1}>
+            <Typography variant="h5" fontWeight={700} lineHeight={1.1}>
               {value}
             </Typography>
           </Box>
@@ -447,7 +447,7 @@ const RoleFeaturePermission = () => {
       renderOption={(props, option) => (
         <Box component="li" {...props} key={option.id}>
           <Box minWidth={0}>
-            <Typography variant="body2" fontWeight={800} noWrap>
+            <Typography variant="body2" fontWeight={600} noWrap>
               {getRoleLabel(option)}
             </Typography>
             <Typography variant="caption" color="text.secondary" noWrap>
@@ -521,7 +521,7 @@ const RoleFeaturePermission = () => {
                   {group.icon}
                 </Box>
                 <Box minWidth={0}>
-                  <Typography variant="h6" fontWeight={950} lineHeight={1.1}>
+                  <Typography variant="h6" fontWeight={700} lineHeight={1.1}>
                     {group.label}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" mt={0.25}>
@@ -598,21 +598,21 @@ const RoleFeaturePermission = () => {
                 >
                   <Box minWidth={0}>
                     <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-                      <Typography variant="subtitle2" fontWeight={900}>
+                      <Typography variant="subtitle2" fontWeight={700}>
                         {formatFeatureName(feature.feature_name || featureKey)}
                       </Typography>
                       <Chip
                         size="small"
                         label={featureKey}
                         variant="outlined"
-                        sx={{ height: 22, fontFamily: "monospace", fontWeight: 800 }}
+                        sx={{ height: 22, fontFamily: "monospace", fontWeight: 600 }}
                       />
                       <Chip
                         size="small"
                         label={feature.is_active ? "Active" : "Inactive"}
                         color={feature.is_active ? "success" : "default"}
                         variant={feature.is_active ? "filled" : "outlined"}
-                        sx={{ height: 22, fontWeight: 800 }}
+                        sx={{ height: 22, fontWeight: 600 }}
                       />
                       {isChanged && (
                         <Chip
@@ -620,7 +620,7 @@ const RoleFeaturePermission = () => {
                           label="Unsaved"
                           color="warning"
                           variant="outlined"
-                          sx={{ height: 22, fontWeight: 800 }}
+                          sx={{ height: 22, fontWeight: 600 }}
                         />
                       )}
                     </Stack>
@@ -642,7 +642,7 @@ const RoleFeaturePermission = () => {
                       label={feature.has_permission ? "Allowed" : "Blocked"}
                       color={feature.has_permission ? "success" : "default"}
                       variant={feature.has_permission ? "filled" : "outlined"}
-                      sx={{ fontWeight: 900 }}
+                      sx={{ fontWeight: 700 }}
                     />
                     <Tooltip
                       title={
@@ -692,7 +692,7 @@ const RoleFeaturePermission = () => {
       >
         <Stack direction={{ xs: "column", lg: "row" }} justifyContent="space-between" gap={2}>
           <Box minWidth={0}>
-            <Typography variant="h4" fontWeight={950} lineHeight={1.05}>
+            <Typography variant="h4" fontWeight={700} lineHeight={1.05}>
               Role Permission Management
             </Typography>
             <Typography variant="body2" color="text.secondary" mt={1}>
@@ -722,7 +722,7 @@ const RoleFeaturePermission = () => {
             <Button variant="outlined" startIcon={<RefreshRounded />} onClick={() => loadPermissions(selectedRoleId, { silent: true })} disabled={refreshing || permissionsLoading || !selectedRoleId} sx={{ borderRadius: 2 }}>
               Refresh
             </Button>
-            <Button variant="contained" startIcon={<SaveRounded />} onClick={handleSave} disabled={saving || permissionsLoading || !selectedRoleId || !summary.total} sx={{ borderRadius: 2, fontWeight: 900 }}>
+            <Button variant="contained" startIcon={<SaveRounded />} onClick={handleSave} disabled={saving || permissionsLoading || !selectedRoleId || !summary.total} sx={{ borderRadius: 2, fontWeight: 700 }}>
               Save
             </Button>
           </Stack>
@@ -767,7 +767,7 @@ const RoleFeaturePermission = () => {
               size="small"
               onClick={() => setSelectedModule("all")}
               disabled={!selectedRoleId}
-              sx={{ borderRadius: 2, fontWeight: 900 }}
+              sx={{ borderRadius: 2, fontWeight: 700 }}
             >
               All modules
               <Chip size="small" label={summary.modules} sx={{ ml: 1, height: 20, fontSize: 11 }} />
@@ -779,7 +779,7 @@ const RoleFeaturePermission = () => {
                 size="small"
                 onClick={() => setSelectedModule(group.moduleName)}
                 disabled={!selectedRoleId}
-                sx={{ borderRadius: 2, fontWeight: 900 }}
+                sx={{ borderRadius: 2, fontWeight: 700 }}
               >
                 {group.label}
                 <Chip
@@ -808,7 +808,7 @@ const RoleFeaturePermission = () => {
         >
           <CardContent sx={{ py: 5, textAlign: "center" }}>
             <SearchRounded sx={{ fontSize: 36, color: "text.secondary", mb: 1 }} />
-            <Typography variant="h6" fontWeight={900}>
+            <Typography variant="h6" fontWeight={700}>
               {selectedRoleId ? "No matching permissions" : "No role selected"}
             </Typography>
             <Typography variant="body2" color="text.secondary">

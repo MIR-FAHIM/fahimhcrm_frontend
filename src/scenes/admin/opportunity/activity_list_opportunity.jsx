@@ -25,7 +25,7 @@ export default function OpportunityActivity() {
 
   return (
     <Box sx={{ p: 3, backgroundColor: "#eef2f7", minHeight: "100vh" }}>
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold", color: "#1e293b" }}>
+      <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, color: "#1e293b" }}>
         Opportunity Log Activities
       </Typography>
       <LogActivityList id={id} logActivityListData={logActivityList} />

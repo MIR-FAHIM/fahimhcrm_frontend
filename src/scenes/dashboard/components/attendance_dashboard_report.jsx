@@ -34,7 +34,7 @@ const Tile = ({ icon, label, value, color }) => {
               {label}
             </Typography>
           </Stack>
-          <Typography variant="h5" sx={{ fontWeight: 800 }}>{value ?? 0}</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 600 }}>{value ?? 0}</Typography>
         </Stack>
       </CardContent>
     </Card>
@@ -88,7 +88,7 @@ function DashboardAttendanceReport({ dashboardReport }) {
 
   return (
     <Box sx={{ mt: 3 }}>
-      <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
+      <Typography variant="h6" fontWeight={600} sx={{ mb: 1 }}>
         Today’s Attendance • {today}
       </Typography>
       <Box

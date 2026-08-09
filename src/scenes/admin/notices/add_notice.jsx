@@ -120,11 +120,11 @@ const AddNotice = () => {
           sx={{
             '& .MuiInputBase-input': {
               fontSize: '1.5rem', // Larger font for title
-              fontWeight: 'bold',
+              fontWeight: 600,
             },
             '& .MuiInputLabel-root': {
               fontSize: '1.2rem',
-              fontWeight: 'bold',
+              fontWeight: 600,
             },
           }}
         />

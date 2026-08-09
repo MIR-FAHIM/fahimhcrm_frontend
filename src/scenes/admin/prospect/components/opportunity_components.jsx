@@ -101,7 +101,7 @@ const OpportunityComponent = ({ details, onToggleOpportunity, onSubmitOpportunit
               ? theme.palette.info.contrastText
               : theme.palette.primary.contrastText,
             fontSize: '0.75rem',
-            fontWeight: 'bold',
+            fontWeight: 600,
             display: 'flex',
             alignItems: 'center'
           }}
@@ -140,7 +140,7 @@ const OpportunityComponent = ({ details, onToggleOpportunity, onSubmitOpportunit
                     : theme.palette.grey[500]
                 }}
               />
-              <Typography variant="caption" fontWeight="bold">
+              <Typography variant="caption" fontWeight={600}>
                 {isOpportunity ? 'Opportunity' : 'Mark as Opportunity'}
               </Typography>
             </Box>

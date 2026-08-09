@@ -56,7 +56,7 @@ const ProductList = () => {
         <Button
           variant="contained"
           color="primary"
-          sx={{ borderRadius: "20px", textTransform: "none", fontSize: "14px", fontWeight: "bold" }}
+          sx={{ borderRadius: "20px", textTransform: "none", fontSize: "14px", fontWeight: 600 }}
           onClick={() => handleViewDetails(params.row.id)}
         >
           Variants
@@ -91,7 +91,7 @@ const ProductList = () => {
           boxShadow: 2,
           "& .MuiDataGrid-root": { border: "none" },
           "& .MuiDataGrid-cell": { borderBottom: "1px solid rgba(224, 224, 224, 1)" },
-          "& .MuiDataGrid-columnHeaders": { backgroundColor: colors.gray[10], fontSize: "16px", fontWeight: "bold" },
+          "& .MuiDataGrid-columnHeaders": { backgroundColor: colors.gray[10], fontSize: "16px", fontWeight: 600 },
           "& .MuiDataGrid-virtualScroller": { backgroundColor: colors.primary[400] },
           "& .MuiDataGrid-footerContainer": { backgroundColor: colors.gray[10], borderTop: "1px solid rgba(224, 224, 224, 1)" },
           "& .MuiCheckbox-root": { color: `${colors.greenAccent[200]} !important` },

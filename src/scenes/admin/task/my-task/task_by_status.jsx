@@ -170,7 +170,7 @@ const AllTaskByStatus = () => {
                           justifyContent: "space-between",
                         }}
                       >
-                        <Typography variant="h6" sx={{ fontWeight: 800, color: colors.gray[100] }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: colors.gray[100] }}>
                           {status.status_name}
                         </Typography>
                         <Typography

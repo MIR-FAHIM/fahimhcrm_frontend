@@ -111,7 +111,7 @@ const AddTaskFormChat = ({ title, related_id, type }) => {
     margin: "auto",
       }}
     >
-      <Typography variant="h5" fontWeight="bold" mb={3}>
+      <Typography variant="h5" fontWeight={600} mb={3}>
         Add New Task {type} {related_id}
       </Typography>
 

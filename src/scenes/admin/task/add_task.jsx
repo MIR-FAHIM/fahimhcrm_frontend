@@ -244,7 +244,7 @@ export default function AddTaskForm() {
         <Card sx={{ bgcolor: theme.palette.background.paper, borderRadius: 3, boxShadow: 3 }}>
           <CardContent sx={{ p: { xs: 2, md: 3 } }}>
             <Stack direction="row" alignItems="center" spacing={1} mb={1}>
-              <Typography variant="h5" fontWeight={800} sx={{ color: colors.gray[100] }}>
+              <Typography variant="h5" fontWeight={600} sx={{ color: colors.gray[100] }}>
                 Create Task
               </Typography>
               <Tooltip title="A concise title & clear details get tasks done faster.">
@@ -528,7 +528,7 @@ export default function AddTaskForm() {
               Preview
             </Typography>
 
-            <Typography variant="h6" fontWeight={800} sx={{ color: colors.gray[100] }}>
+            <Typography variant="h6" fontWeight={600} sx={{ color: colors.gray[100] }}>
               {w.title || "Untitled task"}
             </Typography>
 

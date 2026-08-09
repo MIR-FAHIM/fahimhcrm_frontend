@@ -97,7 +97,7 @@ const Attendance = () => {
     <Box p={4} sx={{ backgroundColor: theme.palette.background.default }}>
       <Typography
         variant="h4"
-        fontWeight="bold"
+        fontWeight={600}
         mb={3}
         textAlign="center"
         sx={{ color: colors.gray[100] }}
@@ -174,7 +174,7 @@ const Attendance = () => {
                 <Box flexGrow={1}>
                   <Typography
                     variant="subtitle1"
-                    fontWeight="bold"
+                    fontWeight={600}
                     sx={{ color: colors.gray[100] }}
                   >
                     {employee.name}
@@ -417,7 +417,7 @@ const Attendance = () => {
                     key={h}
                     align="center"
                     sx={{
-                      fontWeight: "bold",
+                      fontWeight: 600,
                       color: colors.gray[100],
                       fontSize: ".9rem",
                     }}
@@ -459,7 +459,7 @@ const Attendance = () => {
                     </Tooltip>
                     <Typography
                       variant="body2"
-                      fontWeight="bold"
+                      fontWeight={600}
                       sx={{ color: colors.gray[100] }}
                     >
                       {employee.name}

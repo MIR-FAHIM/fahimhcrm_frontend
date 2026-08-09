@@ -42,7 +42,7 @@ const AddressProspect = ({ details, onAddressUpdate }) => {
 
   return (
     <Box sx={{ width: '100%', mt: 2 }}>
-      <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 'bold' }}>
+      <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
         Address Information
       </Typography>
 

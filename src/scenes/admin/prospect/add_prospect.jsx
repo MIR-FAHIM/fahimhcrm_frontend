@@ -99,10 +99,10 @@ const AddProspectTabs = () => {
                   mb: 1.2,
                   bgcolor: alpha(brand, 0.12),
                   color: brand,
-                  fontWeight: 900,
+                  fontWeight: 700,
                 }}
               />
-              <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 950, letterSpacing: 0 }}>
+              <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 700, letterSpacing: 0 }}>
                 Add New Prospect
               </Typography>
               <Typography sx={{ color: theme.palette.text.secondary, mt: 0.6, maxWidth: 720 }}>
@@ -110,9 +110,9 @@ const AddProspectTabs = () => {
               </Typography>
             </Box>
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              <Chip icon={<CheckCircleRounded />} label="Core details" variant="outlined" sx={{ fontWeight: 850 }} />
-              <Chip icon={<GroupsRounded />} label="Contacts" variant="outlined" sx={{ fontWeight: 850 }} />
-              <Chip icon={<TrendingUpRounded />} label="Sales pipeline" variant="outlined" sx={{ fontWeight: 850 }} />
+              <Chip icon={<CheckCircleRounded />} label="Core details" variant="outlined" sx={{ fontWeight: 650 }} />
+              <Chip icon={<GroupsRounded />} label="Contacts" variant="outlined" sx={{ fontWeight: 650 }} />
+              <Chip icon={<TrendingUpRounded />} label="Sales pipeline" variant="outlined" sx={{ fontWeight: 650 }} />
             </Stack>
           </Stack>
         </Paper>
@@ -164,7 +164,7 @@ const AddProspectTabs = () => {
                         <Icon />
                       </Box>
                       <Box>
-                        <Typography sx={{ color: theme.palette.text.primary, fontWeight: 950, fontSize: 20 }}>
+                        <Typography sx={{ color: theme.palette.text.primary, fontWeight: 700, fontSize: 20 }}>
                           {lead.title}
                         </Typography>
                         <Typography sx={{ color: theme.palette.text.secondary, mt: 0.6, lineHeight: 1.6 }}>
@@ -172,7 +172,7 @@ const AddProspectTabs = () => {
                         </Typography>
                         <Stack direction="row" spacing={0.8} useFlexGap flexWrap="wrap" sx={{ mt: 1.4 }}>
                           {lead.chips.map((chip) => (
-                            <Chip key={chip} label={chip} size="small" sx={{ fontWeight: 800 }} />
+                            <Chip key={chip} label={chip} size="small" sx={{ fontWeight: 600 }} />
                           ))}
                         </Stack>
                       </Box>
@@ -201,7 +201,7 @@ const AddProspectTabs = () => {
             sx={{ px: { xs: 2, md: 2.5 }, pt: 2, pb: 1, borderBottom: `1px solid ${theme.palette.divider}` }}
           >
             <Box>
-              <Typography sx={{ color: theme.palette.text.primary, fontWeight: 950 }}>
+              <Typography sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                 {selectedLead.title} Form
               </Typography>
               <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
@@ -220,7 +220,7 @@ const AddProspectTabs = () => {
                 "& .MuiTab-root": {
                   minHeight: 44,
                   textTransform: "none",
-                  fontWeight: 900,
+                  fontWeight: 700,
                 },
               }}
             >

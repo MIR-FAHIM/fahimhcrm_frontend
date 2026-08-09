@@ -225,7 +225,7 @@ export default function VisitPlanner() {
           <Card variant="outlined" sx={{ borderRadius: 3 }}>
             <CardHeader
               title={
-                <Typography variant="h6" fontWeight={800}>
+                <Typography variant="h6" fontWeight={600}>
                   Add a Visit Plan
                 </Typography>
               }
@@ -364,7 +364,7 @@ export default function VisitPlanner() {
           <Card variant="outlined" sx={{ borderRadius: 3, mt: 3 }}>
             <CardHeader
               title={
-                <Typography variant="h6" fontWeight={800}>
+                <Typography variant="h6" fontWeight={600}>
                   Planned Visits
                 </Typography>
               }
@@ -493,7 +493,7 @@ export default function VisitPlanner() {
             }}
           >
             <CardHeader
-              title={<Typography variant="h6" fontWeight={800}>Select a Destination</Typography>}
+              title={<Typography variant="h6" fontWeight={600}>Select a Destination</Typography>}
               subheader="Choose either a lead or a zone for this visit."
             />
             <CardContent>

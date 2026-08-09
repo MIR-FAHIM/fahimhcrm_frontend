@@ -17,7 +17,7 @@ const FollowUpList = ({ followUps, taskID }) => {
                         <Avatar sx={{ marginRight: 2 }} alt="Follow-up Avatar" src="/static/images/avatar/1.jpg" />
                         <ListItemText
                             primary={
-                                <Typography variant="body1" fontWeight="bold">
+                                <Typography variant="body1" fontWeight={600}>
                                     {followUp.followup_title}
                                 </Typography>
                             }

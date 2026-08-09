@@ -228,7 +228,7 @@ export default function MyVisits() {
             borderBottom: `1px solid ${theme.palette.divider}`,
           }}
         >
-          <Typography variant="h6" fontWeight={800} sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" fontWeight={600} sx={{ flexGrow: 1 }}>
             My Visits
           </Typography>
 
@@ -305,7 +305,7 @@ export default function MyVisits() {
                   <Paper key={v.id} variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
                     <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={1.5}>
                       <Box sx={{ minWidth: 0 }}>
-                        <Typography variant="subtitle2" fontWeight={800} noWrap>
+                        <Typography variant="subtitle2" fontWeight={600} noWrap>
                           {v.lead?.prospect_name || "Visit"}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">

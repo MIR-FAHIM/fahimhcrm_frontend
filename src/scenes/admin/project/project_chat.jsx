@@ -162,7 +162,7 @@ const ProjectChat = ({ projectID, project }) => {
         
                     <Box>
                       {!isCurrentUser && (
-                        <Typography variant="caption" fontWeight="bold">
+                        <Typography variant="caption" fontWeight={600}>
                           {message.sender?.name}
                         </Typography>
                       )}

@@ -186,7 +186,7 @@ console.log("Calling getCartsByOrder with ID +++++++++:", id); // Added for debu
     <Box m="20px">
       <Box display="flex" justifyContent="space-between" alignItems="center">
        
-        <Typography variant="h4" color={colors.gray[100]} fontWeight="bold">
+        <Typography variant="h4" color={colors.gray[100]} fontWeight={600}>
           Order Details (Order ID: {orderData.id})
         </Typography>
         <Box>
@@ -219,57 +219,57 @@ console.log("Calling getCartsByOrder with ID +++++++++:", id); // Added for debu
               backgroundColor: colors.primary[400],
             }}
           >
-            <Typography variant="h6" fontWeight="bold" mb={2}>
+            <Typography variant="h6" fontWeight={600} mb={2}>
               Order Summary
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <List dense>
               <ListItem disablePadding>
                 <ListItemText
-                  primary={<Typography variant="body1" fontWeight="bold">Customer:</Typography>}
+                  primary={<Typography variant="body1" fontWeight={600}>Customer:</Typography>}
                   secondary={<Typography variant="body1">{orderData.customer_id === 1 ? 'Walk-in Customer' : `Customer ID: ${orderData.customer_id}`}</Typography>}
                 />
               </ListItem>
               <ListItem disablePadding>
                 <ListItemText
-                  primary={<Typography variant="body1" fontWeight="bold">Address:</Typography>}
+                  primary={<Typography variant="body1" fontWeight={600}>Address:</Typography>}
                   secondary={<Typography variant="body1">{orderData.address}</Typography>}
                 />
               </ListItem>
               <ListItem disablePadding>
                 <ListItemText
-                  primary={<Typography variant="body1" fontWeight="bold">Phone:</Typography>}
+                  primary={<Typography variant="body1" fontWeight={600}>Phone:</Typography>}
                   secondary={<Typography variant="body1">{orderData.phone}</Typography>}
                 />
               </ListItem>
               <ListItem disablePadding>
                 <ListItemText
-                  primary={<Typography variant="body1" fontWeight="bold">Order Date:</Typography>}
+                  primary={<Typography variant="body1" fontWeight={600}>Order Date:</Typography>}
                   secondary={<Typography variant="body1">{new Date(orderData.created_at).toLocaleString()}</Typography>}
                 />
               </ListItem>
               <ListItem disablePadding>
                 <ListItemText
-                  primary={<Typography variant="body1" fontWeight="bold">Status:</Typography>}
+                  primary={<Typography variant="body1" fontWeight={600}>Status:</Typography>}
                   secondary={<Typography variant="body1">{orderData.status === "1" ? "Placed" : orderData.status}</Typography>}
                 />
               </ListItem>
               <ListItem disablePadding>
                 <ListItemText
-                  primary={<Typography variant="body1" fontWeight="bold">Payment Status:</Typography>}
+                  primary={<Typography variant="body1" fontWeight={600}>Payment Status:</Typography>}
                   secondary={<Typography variant="body1">{orderData.isPaid ? "Paid" : "Unpaid"}</Typography>}
                 />
               </ListItem>
               <ListItem disablePadding>
                 <ListItemText
-                  primary={<Typography variant="body1" fontWeight="bold">Payment Method:</Typography>}
+                  primary={<Typography variant="body1" fontWeight={600}>Payment Method:</Typography>}
                   secondary={<Typography variant="body1">{orderData.is_cod ? "Cash on Delivery" : "Online Payment"}</Typography>}
                 />
               </ListItem>
               {orderData.note && (
                 <ListItem disablePadding>
                   <ListItemText
-                    primary={<Typography variant="body1" fontWeight="bold">Note:</Typography>}
+                    primary={<Typography variant="body1" fontWeight={600}>Note:</Typography>}
                     secondary={<Typography variant="body1">{orderData.note}</Typography>}
                   />
                 </ListItem>
@@ -288,7 +288,7 @@ console.log("Calling getCartsByOrder with ID +++++++++:", id); // Added for debu
               backgroundColor: colors.primary[400],
             }}
           >
-            <Typography variant="h6" fontWeight="bold" mb={2}>
+            <Typography variant="h6" fontWeight={600} mb={2}>
               Billing Summary
             </Typography>
             <Divider sx={{ mb: 2 }} />
@@ -311,8 +311,8 @@ console.log("Calling getCartsByOrder with ID +++++++++:", id); // Added for debu
               </ListItem>
               <Divider sx={{ my: 1 }} />
               <ListItem disablePadding sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <ListItemText primary={<Typography variant="h6" fontWeight="bold">Grand Total:</Typography>} />
-                <Typography variant="h6" fontWeight="bold">৳{parseFloat(orderData.amount).toFixed(2)}</Typography>
+                <ListItemText primary={<Typography variant="h6" fontWeight={600}>Grand Total:</Typography>} />
+                <Typography variant="h6" fontWeight={600}>৳{parseFloat(orderData.amount).toFixed(2)}</Typography>
               </ListItem>
             </List>
           </Paper>
@@ -329,32 +329,32 @@ console.log("Calling getCartsByOrder with ID +++++++++:", id); // Added for debu
                         backgroundColor: colors.primary[400],
                     }}
                 >
-                    <Typography variant="h6" fontWeight="bold" mb={2}>
+                    <Typography variant="h6" fontWeight={600} mb={2}>
                         Processed By
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
                     <List dense>
                         <ListItem disablePadding>
                             <ListItemText
-                                primary={<Typography variant="body1" fontWeight="bold">Name:</Typography>}
+                                primary={<Typography variant="body1" fontWeight={600}>Name:</Typography>}
                                 secondary={<Typography variant="body1">{orderItems[0].user.name}</Typography>}
                             />
                         </ListItem>
                         <ListItem disablePadding>
                             <ListItemText
-                                primary={<Typography variant="body1" fontWeight="bold">Email:</Typography>}
+                                primary={<Typography variant="body1" fontWeight={600}>Email:</Typography>}
                                 secondary={<Typography variant="body1">{orderItems[0].user.email}</Typography>}
                             />
                         </ListItem>
                         <ListItem disablePadding>
                             <ListItemText
-                                primary={<Typography variant="body1" fontWeight="bold">Phone:</Typography>}
+                                primary={<Typography variant="body1" fontWeight={600}>Phone:</Typography>}
                                 secondary={<Typography variant="body1">{orderItems[0].user.phone}</Typography>}
                             />
                         </ListItem>
                         <ListItem disablePadding>
                             <ListItemText
-                                primary={<Typography variant="body1" fontWeight="bold">Role:</Typography>}
+                                primary={<Typography variant="body1" fontWeight={600}>Role:</Typography>}
                                 secondary={<Typography variant="body1">{orderItems[0].user.role_id === 1 ? 'Admin' : 'Staff'}</Typography>} 
                             />
                         </ListItem>
@@ -399,7 +399,7 @@ console.log("Calling getCartsByOrder with ID +++++++++:", id); // Added for debu
           overflow: "hidden", // Ensure border radius applies
         }}
       >
-        <Typography variant="h6" fontWeight="bold" p={2} backgroundColor={colors.primary[500]} borderRadius="8px 8px 0 0">
+        <Typography variant="h6" fontWeight={600} p={2} backgroundColor={colors.primary[500]} borderRadius="8px 8px 0 0">
           Order Items
         </Typography>
         <DataGrid

@@ -261,7 +261,7 @@ const EmployeesList = () => {
         mb={2}
       >
         <Box>
-          <Typography variant="h4" fontWeight={800} sx={{ color: theme.palette.text.primary, lineHeight: 1 }}>
+          <Typography variant="h4" fontWeight={600} sx={{ color: theme.palette.text.primary, lineHeight: 1 }}>
             Employees
           </Typography>
           <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>

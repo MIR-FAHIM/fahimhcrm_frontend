@@ -235,7 +235,7 @@ const WarehouseDetailsInfo = ({ onDelete }) => {
                 <Typography
                   variant="h6"
                   sx={{
-                    fontWeight: 800,
+                    fontWeight: 600,
                     color: colors.gray[100],
                     flex: 1,
                     overflow: "hidden",
@@ -337,7 +337,7 @@ const WarehouseDetailsInfo = ({ onDelete }) => {
                 height: "100%",
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 800, color: colors.blueAccent[300], mb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: colors.blueAccent[300], mb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
                 <LocationIcon fontSize="small" /> Contact Information
               </Typography>
 
@@ -440,7 +440,7 @@ const WarehouseDetailsInfo = ({ onDelete }) => {
                 height: "100%",
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 800, color: colors.blueAccent[300], mb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: colors.blueAccent[300], mb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
                 <InfoIcon fontSize="small" /> Business Details
               </Typography>
 
@@ -485,7 +485,7 @@ const WarehouseDetailsInfo = ({ onDelete }) => {
                 height: "100%",
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 800, color: colors.blueAccent[300], mb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: colors.blueAccent[300], mb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
                 <WebIcon fontSize="small" /> Online Presence
               </Typography>
               {details.website_link || details.facebook_page || details.linkedin ? (
@@ -535,7 +535,7 @@ const WarehouseDetailsInfo = ({ onDelete }) => {
                 height: "100%",
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 800, color: colors.blueAccent[300], mb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: colors.blueAccent[300], mb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
                 <InfoIcon fontSize="small" /> Notes
               </Typography>
               <Typography variant="body1" sx={{ whiteSpace: "pre-line", color: colors.gray[100] }}>

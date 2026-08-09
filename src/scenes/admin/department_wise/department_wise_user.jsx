@@ -143,7 +143,7 @@ const DepartmentWiseEmp = () => {
     <Box p={3} sx={{ bgcolor: theme.palette.background.default, minHeight: "100vh" }}>
       {/* Header Bar */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap", mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, color: colors.gray[100] }}>Departments & Teams</Typography>
+        <Typography variant="h4" sx={{ fontWeight: 600, color: colors.gray[100] }}>Departments & Teams</Typography>
         <Box sx={{ ml: { xs: 0, md: "auto" }, display: "flex", gap: 1, alignItems: "center" }}>
           <TextField
             size="small"
@@ -204,7 +204,7 @@ const DepartmentWiseEmp = () => {
                 >
                   {/* Title & Metrics */}
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: colors.greenAccent[400], mr: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: colors.greenAccent[400], mr: 1 }}>
                       {department.department_name}
                     </Typography>
                     <Tooltip title="Department insights" placement="right">

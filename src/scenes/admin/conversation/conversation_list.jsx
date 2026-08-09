@@ -111,7 +111,7 @@ const ConversationRoomList = () => {
       {/* Chat List */}
       <Box sx={{ width: 320, borderRight: '1px solid #e0e0e0', overflowY: 'auto' }}>
         <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}>
-          <Typography variant="h6" fontWeight="bold">
+          <Typography variant="h6" fontWeight={600}>
             Conversations
           </Typography>
         </Box>

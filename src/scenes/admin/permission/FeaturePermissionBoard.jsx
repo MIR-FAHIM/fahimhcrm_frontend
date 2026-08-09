@@ -166,10 +166,10 @@ const SummaryTile = ({ icon, label, value, tone = "primary" }) => {
             {icon}
           </Box>
           <Box minWidth={0}>
-            <Typography variant="caption" color="text.secondary" fontWeight={800}>
+            <Typography variant="caption" color="text.secondary" fontWeight={600}>
               {label}
             </Typography>
-            <Typography variant="h5" fontWeight={900} lineHeight={1.1}>
+            <Typography variant="h5" fontWeight={700} lineHeight={1.1}>
               {value}
             </Typography>
           </Box>
@@ -442,7 +442,7 @@ const FeaturePermissionBoard = ({
                   {group.icon}
                 </Box>
                 <Box minWidth={0}>
-                  <Typography variant="h6" fontWeight={950} lineHeight={1.1}>
+                  <Typography variant="h6" fontWeight={700} lineHeight={1.1}>
                     {group.label}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -518,7 +518,7 @@ const FeaturePermissionBoard = ({
                   >
                     <Box minWidth={0} flex={1}>
                       <Stack direction="row" alignItems="center" spacing={1} flexWrap="wrap">
-                        <Typography variant="subtitle2" fontWeight={900}>
+                        <Typography variant="subtitle2" fontWeight={700}>
                           {formatFeatureName(feature.feature_name)}
                         </Typography>
                         <Chip
@@ -526,7 +526,7 @@ const FeaturePermissionBoard = ({
                           label={feature.is_active ? "Active" : "Inactive"}
                           color={feature.is_active ? "success" : "default"}
                           variant={feature.is_active ? "filled" : "outlined"}
-                          sx={{ height: 22, fontWeight: 800 }}
+                          sx={{ height: 22, fontWeight: 600 }}
                         />
                       </Stack>
                       <Typography variant="body2" color="text.secondary" mt={0.5}>
@@ -547,7 +547,7 @@ const FeaturePermissionBoard = ({
                         label={feature.has_permission ? "Allowed" : "Blocked"}
                         color={feature.has_permission ? "success" : "default"}
                         variant={feature.has_permission ? "filled" : "outlined"}
-                        sx={{ fontWeight: 900 }}
+                        sx={{ fontWeight: 700 }}
                       />
                       <Tooltip
                         title={
@@ -628,7 +628,7 @@ const FeaturePermissionBoard = ({
           gap={2}
         >
           <Box>
-            <Typography variant="h4" fontWeight={950} lineHeight={1}>
+            <Typography variant="h4" fontWeight={700} lineHeight={1}>
               {title}
             </Typography>
             <Typography variant="body2" color="text.secondary" mt={1}>
@@ -789,7 +789,7 @@ const FeaturePermissionBoard = ({
         >
           <CardContent sx={{ py: 5, textAlign: "center" }}>
             <SearchRounded sx={{ fontSize: 36, color: "text.secondary", mb: 1 }} />
-            <Typography variant="subtitle1" fontWeight={900}>
+            <Typography variant="subtitle1" fontWeight={700}>
               {userId ? "No matching permissions" : "No user selected"}
             </Typography>
             <Typography variant="body2" color="text.secondary">

@@ -55,7 +55,7 @@ const ActivityList = ({ followUps = [] }) => {
                   height: 34,
                   bgcolor: alpha(tone, 0.14),
                   color: tone,
-                  fontWeight: 900,
+                  fontWeight: 700,
                   fontSize: 14,
                 }}
               >
@@ -80,7 +80,7 @@ const ActivityList = ({ followUps = [] }) => {
                 }}
               >
                 <Stack direction={{ xs: "column", sm: "row" }} spacing={1} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "center" }}>
-                  <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                  <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                     {followUp.activity_title || "Task activity"}
                   </Typography>
                   <Chip
@@ -88,7 +88,7 @@ const ActivityList = ({ followUps = [] }) => {
                     label={active ? "Active" : "Completed"}
                     color={active ? "success" : "default"}
                     variant={active ? "filled" : "outlined"}
-                    sx={{ fontWeight: 800 }}
+                    sx={{ fontWeight: 600 }}
                   />
                 </Stack>
 

@@ -396,7 +396,7 @@ const DashBetterRead = ({ details, loadReport }) => {
   />
   <Typography
     variant="h5"
-    fontWeight="bold"
+    fontWeight={600}
     sx={{
       flexGrow: 1,
       transition: 'color 0.3s ease',
@@ -474,7 +474,7 @@ const DashBetterRead = ({ details, loadReport }) => {
             >
               <Box display="flex" alignItems="center" gap={1}>
                 {section.icon}
-                <Typography variant="h6" fontWeight="bold">
+                <Typography variant="h6" fontWeight={600}>
                   {section.title}
                 </Typography>
               </Box>

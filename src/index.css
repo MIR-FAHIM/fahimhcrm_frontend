@@ -1,5 +1,5 @@
 /* Font Family Import */
-@import url("https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap");
 @import "react-quill/dist/quill.snow.css";
 
 /* Global Style */
@@ -8,7 +8,17 @@ body,
 #root {
   height: 100%;
   width: 100%;
-  font-family: "Source Sans 3", sans-serif;
+  font-family: "Inter", "Noto Sans Bengali", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 450;
+  letter-spacing: 0;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
 }
 
 ::-webkit-scrollbar {

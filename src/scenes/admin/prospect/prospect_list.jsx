@@ -110,8 +110,8 @@ const Kpi = ({ icon, label, value, helper, tone = "primary" }) => {
     <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: `1px solid ${theme.palette.divider}`, flex: "1 1 165px", bgcolor: theme.palette.background.paper }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1.25}>
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 800 }}>{label}</Typography>
-          <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>{value}</Typography>
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>{label}</Typography>
+          <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>{value}</Typography>
           {helper && <Typography variant="caption" noWrap sx={{ color: theme.palette.text.secondary }}>{helper}</Typography>}
         </Box>
         <Avatar variant="rounded" sx={{ bgcolor: alpha(color, 0.12), color }}>{icon}</Avatar>
@@ -123,7 +123,7 @@ const Kpi = ({ icon, label, value, helper, tone = "primary" }) => {
 const StageChip = ({ stage }) => {
   const theme = useTheme();
   const color = safeColor(theme, stage?.color_code);
-  return <Chip size="small" label={stage?.stage_name || "No stage"} sx={{ bgcolor: color, color: theme.palette.getContrastText(color), fontWeight: 900 }} />;
+  return <Chip size="small" label={stage?.stage_name || "No stage"} sx={{ bgcolor: color, color: theme.palette.getContrastText(color), fontWeight: 700 }} />;
 };
 
 const ActivityChips = ({ row }) => {
@@ -140,7 +140,7 @@ const ActivityChips = ({ row }) => {
               icon={<Icon fontSize="small" />}
               label={data[key] || 0}
               variant="outlined"
-              sx={{ height: 24, bgcolor: alpha(color, 0.08), borderColor: alpha(color, 0.24), color, fontWeight: 800, "& .MuiChip-icon": { color } }}
+              sx={{ height: 24, bgcolor: alpha(color, 0.08), borderColor: alpha(color, 0.24), color, fontWeight: 600, "& .MuiChip-icon": { color } }}
             />
           </Tooltip>
         );
@@ -247,14 +247,14 @@ const ProspectListPage = () => {
         const website = href(row.website_link);
         return (
           <Stack direction="row" spacing={1.2} alignItems="flex-start" sx={{ py: 1.25, width: "100%", minWidth: 0 }}>
-            <Avatar variant="rounded" sx={{ bgcolor: alpha(color, 0.14), color, fontWeight: 900 }}>{initials(row.prospect_name)}</Avatar>
+            <Avatar variant="rounded" sx={{ bgcolor: alpha(color, 0.14), color, fontWeight: 700 }}>{initials(row.prospect_name)}</Avatar>
             <Box sx={{ minWidth: 0, flex: 1 }}>
               <Stack direction="row" spacing={0.75} alignItems="center" sx={{ minWidth: 0 }}>
-                <Typography noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>{row.prospect_name || "Untitled prospect"}</Typography>
+                <Typography noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>{row.prospect_name || "Untitled prospect"}</Typography>
                 {truthy(row.is_opportunity) && <Tooltip title="Qualified opportunity"><Box component="img" src={opportunity} alt="Opportunity" sx={{ width: 18, height: 18 }} /></Tooltip>}
               </Stack>
               <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>Prospect #{row.id}</Typography>
-              {website && <Link href={website} target="_blank" rel="noopener noreferrer" underline="hover" variant="caption" sx={{ display: "block", color: brand, fontWeight: 800 }}><LanguageRounded sx={{ fontSize: 14, mr: 0.4, verticalAlign: "text-bottom" }} />Website</Link>}
+              {website && <Link href={website} target="_blank" rel="noopener noreferrer" underline="hover" variant="caption" sx={{ display: "block", color: brand, fontWeight: 600 }}><LanguageRounded sx={{ fontSize: 14, mr: 0.4, verticalAlign: "text-bottom" }} />Website</Link>}
             </Box>
           </Stack>
         );
@@ -269,7 +269,7 @@ const ProspectListPage = () => {
       sortable: false,
       renderCell: ({ row }) => (
         <Box sx={{ py: 1.25, width: "100%", minWidth: 0 }}>
-          <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 850 }}>{row.industry_type?.industry_type_name || "No industry"}</Typography>
+          <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 650 }}>{row.industry_type?.industry_type_name || "No industry"}</Typography>
           <Typography variant="caption" noWrap sx={{ display: "block", color: theme.palette.text.secondary }}>Source: {row.information_source?.information_source_name || "N/A"}</Typography>
           <Typography variant="caption" noWrap sx={{ display: "block", color: theme.palette.text.secondary }}>Zone: {row.zone?.zone_name || "N/A"} | Product: {row.interested_for?.product_name || "N/A"}</Typography>
           {row.address && <Typography variant="caption" sx={{ color: theme.palette.text.secondary, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}><MapRounded sx={{ fontSize: 14, mr: 0.4, verticalAlign: "text-bottom" }} />{row.address}</Typography>}
@@ -288,7 +288,7 @@ const ProspectListPage = () => {
         return (
           <Tooltip title={persons.length ? persons.map((p) => `${p.person_name || "Unnamed"} - ${p.mobile || p.email || "No contact"}`).join(" | ") : "No contact person"} arrow>
             <Box sx={{ py: 1.25, minWidth: 0 }}>
-              <Typography noWrap sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>{first?.person_name || "No contact person"}</Typography>
+              <Typography noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>{first?.person_name || "No contact person"}</Typography>
               <Typography variant="caption" noWrap sx={{ display: "block", color: theme.palette.text.secondary }}>{first?.mobile || first?.email || "Contact unavailable"}{persons.length > 1 ? ` | +${persons.length - 1} more` : ""}</Typography>
             </Box>
           </Tooltip>
@@ -315,7 +315,7 @@ const ProspectListPage = () => {
       flex: 0.55,
       sortable: false,
       filterable: false,
-      renderCell: ({ row }) => <Box sx={{ py: 1.25 }}><Button variant="contained" endIcon={<OpenInNewRounded />} onClick={() => navigate(`/prospect-detail/${row.id}`)} sx={{ borderRadius: 2, fontWeight: 900, bgcolor: brand, color: brandContrast, "&:hover": { bgcolor: brandHover } }}>View</Button></Box>,
+      renderCell: ({ row }) => <Box sx={{ py: 1.25 }}><Button variant="contained" endIcon={<OpenInNewRounded />} onClick={() => navigate(`/prospect-detail/${row.id}`)} sx={{ borderRadius: 2, fontWeight: 700, bgcolor: brand, color: brandContrast, "&:hover": { bgcolor: brandHover } }}>View</Button></Box>,
     },
   ], [brand, brandContrast, brandHover, navigate, theme]);
 
@@ -332,12 +332,12 @@ const ProspectListPage = () => {
       <Stack direction={{ xs: "column", lg: "row" }} alignItems={{ xs: "stretch", lg: "center" }} justifyContent="space-between" spacing={2} sx={{ mb: 2.5 }}>
         <Stack direction="row" spacing={1.25} alignItems="center">
           <Avatar variant="rounded" sx={{ bgcolor: alpha(brand, 0.12), color: brand }}><TableRowsRounded /></Avatar>
-          <Box><Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 900, lineHeight: 1 }}>Prospects</Typography><Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>Search, filter, compare, and open every prospect from one focused CRM list.</Typography></Box>
+          <Box><Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1 }}>Prospects</Typography><Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>Search, filter, compare, and open every prospect from one focused CRM list.</Typography></Box>
         </Stack>
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
-          <Button variant="contained" startIcon={<AddRounded />} onClick={() => navigate("/add-prospect")} sx={{ borderRadius: 2, fontWeight: 900 }}>Add Prospect</Button>
-          <Button variant="outlined" startIcon={<ViewKanbanRounded />} onClick={() => navigate("/prospect-list-by-stage")} sx={{ borderRadius: 2, fontWeight: 900 }}>Stage View</Button>
-          <Button variant="outlined" startIcon={refreshing ? <CircularProgress size={16} /> : <RefreshRounded />} disabled={loading || refreshing} onClick={() => loadData({ silent: true })} sx={{ borderRadius: 2, fontWeight: 900 }}>Refresh</Button>
+          <Button variant="contained" startIcon={<AddRounded />} onClick={() => navigate("/add-prospect")} sx={{ borderRadius: 2, fontWeight: 700 }}>Add Prospect</Button>
+          <Button variant="outlined" startIcon={<ViewKanbanRounded />} onClick={() => navigate("/prospect-list-by-stage")} sx={{ borderRadius: 2, fontWeight: 700 }}>Stage View</Button>
+          <Button variant="outlined" startIcon={refreshing ? <CircularProgress size={16} /> : <RefreshRounded />} disabled={loading || refreshing} onClick={() => loadData({ silent: true })} sx={{ borderRadius: 2, fontWeight: 700 }}>Refresh</Button>
         </Stack>
       </Stack>
 
@@ -357,21 +357,21 @@ const ProspectListPage = () => {
           <FormControl size="small" sx={{ minWidth: { xs: "100%", xl: 200 } }}><InputLabel>Source</InputLabel><Select label="Source" value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)}>{sourceOptions.map((s) => <MenuItem key={s.id} value={s.id}>{s.name}</MenuItem>)}</Select></FormControl>
           <FormControl size="small" sx={{ minWidth: { xs: "100%", xl: 185 } }}><InputLabel>Type</InputLabel><Select label="Type" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}><MenuItem value="all">All records</MenuItem><MenuItem value="opportunities">Opportunities</MenuItem><MenuItem value="leads">Leads only</MenuItem></Select></FormControl>
           <FormControl size="small" sx={{ minWidth: { xs: "100%", xl: 180 } }}><InputLabel>Sort</InputLabel><Select label="Sort" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>{sortOptions.map(([value, label]) => <MenuItem key={value} value={value}>{label}</MenuItem>)}</Select></FormControl>
-          <Button variant="text" onClick={clearFilters} sx={{ fontWeight: 900, whiteSpace: "nowrap" }}>Clear Filters</Button>
+          <Button variant="text" onClick={clearFilters} sx={{ fontWeight: 700, whiteSpace: "nowrap" }}>Clear Filters</Button>
         </Stack>
         <Divider sx={{ my: 2 }} />
         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-          <Chip icon={<FilterAltRounded />} clickable label={`All stages (${prospects.length})`} color={stageFilter === "all" ? "primary" : "default"} variant={stageFilter === "all" ? "filled" : "outlined"} onClick={() => setStageFilter("all")} sx={{ fontWeight: 850 }} />
+          <Chip icon={<FilterAltRounded />} clickable label={`All stages (${prospects.length})`} color={stageFilter === "all" ? "primary" : "default"} variant={stageFilter === "all" ? "filled" : "outlined"} onClick={() => setStageFilter("all")} sx={{ fontWeight: 650 }} />
           {stageOptions.map((s) => {
             const count = stageCounts.get(String(s.id)) ?? Number(s.prospects_count || 0);
             const color = safeColor(theme, s.color_code);
             const selected = String(stageFilter) === String(s.id);
-            return <Chip key={s.id} clickable label={`${s.stage_name} (${count})`} variant={selected ? "filled" : "outlined"} onClick={() => setStageFilter(String(s.id))} sx={{ fontWeight: 850, bgcolor: selected ? alpha(color, 0.18) : "transparent", color: selected ? color : theme.palette.text.primary, borderColor: selected ? alpha(color, 0.55) : theme.palette.divider, "&:hover": { bgcolor: alpha(color, 0.12) } }} />;
+            return <Chip key={s.id} clickable label={`${s.stage_name} (${count})`} variant={selected ? "filled" : "outlined"} onClick={() => setStageFilter(String(s.id))} sx={{ fontWeight: 650, bgcolor: selected ? alpha(color, 0.18) : "transparent", color: selected ? color : theme.palette.text.primary, borderColor: selected ? alpha(color, 0.55) : theme.palette.divider, "&:hover": { bgcolor: alpha(color, 0.12) } }} />;
           })}
         </Stack>
       </Paper>
 
-      <Paper elevation={0} sx={{ height: "72vh", borderRadius: 2, overflow: "hidden", bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, "& .MuiDataGrid-root": { border: "none", color: theme.palette.text.primary }, "& .MuiDataGrid-columnHeaders": { bgcolor: alpha(brand, 0.1), borderBottom: `1px solid ${theme.palette.divider}` }, "& .MuiDataGrid-columnHeaderTitle": { fontWeight: 900 }, "& .MuiDataGrid-cell": { borderBottom: `1px solid ${theme.palette.divider}`, alignItems: "flex-start" }, "& .MuiDataGrid-row": { cursor: "pointer" }, "& .MuiDataGrid-row:hover": { bgcolor: alpha(brand, 0.06) }, "& .MuiDataGrid-footerContainer": { bgcolor: alpha(brand, 0.08), borderTop: `1px solid ${theme.palette.divider}` }, "& .MuiDataGrid-toolbarContainer": { p: 1, borderBottom: `1px solid ${theme.palette.divider}`, "& .MuiButton-text": { color: theme.palette.text.primary, fontWeight: 800 } } }}>
+      <Paper elevation={0} sx={{ height: "72vh", borderRadius: 2, overflow: "hidden", bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, "& .MuiDataGrid-root": { border: "none", color: theme.palette.text.primary }, "& .MuiDataGrid-columnHeaders": { bgcolor: alpha(brand, 0.1), borderBottom: `1px solid ${theme.palette.divider}` }, "& .MuiDataGrid-columnHeaderTitle": { fontWeight: 700 }, "& .MuiDataGrid-cell": { borderBottom: `1px solid ${theme.palette.divider}`, alignItems: "flex-start" }, "& .MuiDataGrid-row": { cursor: "pointer" }, "& .MuiDataGrid-row:hover": { bgcolor: alpha(brand, 0.06) }, "& .MuiDataGrid-footerContainer": { bgcolor: alpha(brand, 0.08), borderTop: `1px solid ${theme.palette.divider}` }, "& .MuiDataGrid-toolbarContainer": { p: 1, borderBottom: `1px solid ${theme.palette.divider}`, "& .MuiButton-text": { color: theme.palette.text.primary, fontWeight: 600 } } }}>
         <DataGrid rows={filtered} columns={columns} getRowId={(row) => row.id} loading={loading || refreshing} checkboxSelection disableRowSelectionOnClick onRowDoubleClick={(params) => navigate(`/prospect-detail/${params.row.id}`)} slots={{ toolbar: GridToolbar }} getRowHeight={() => "auto"} pageSizeOptions={[10, 25, 50, 100]} initialState={{ pagination: { paginationModel: { pageSize: 10 } } }} />
       </Paper>
 

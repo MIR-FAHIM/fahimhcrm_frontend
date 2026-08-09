@@ -97,8 +97,8 @@ const TaskTitleInfo = ({ task, handleTaskInfoUpdate }) => {
 
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 1 }}>
-              <Chip size="small" label={`Task #${task.id}`} sx={{ fontWeight: 800 }} />
-              {task.is_waiting ? <Chip size="small" color="warning" label="Waiting" sx={{ fontWeight: 800 }} /> : null}
+              <Chip size="small" label={`Task #${task.id}`} sx={{ fontWeight: 600 }} />
+              {task.is_waiting ? <Chip size="small" color="warning" label="Waiting" sx={{ fontWeight: 600 }} /> : null}
             </Stack>
 
             {isEditingTitle ? (
@@ -136,7 +136,7 @@ const TaskTitleInfo = ({ task, handleTaskInfoUpdate }) => {
                   variant="h4"
                   sx={{
                     color: theme.palette.text.primary,
-                    fontWeight: 900,
+                    fontWeight: 700,
                     lineHeight: 1.12,
                     wordBreak: "break-word",
                   }}
@@ -164,7 +164,7 @@ const TaskTitleInfo = ({ task, handleTaskInfoUpdate }) => {
           <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1.5} sx={{ mb: 1 }}>
             <Stack direction="row" alignItems="center" spacing={1}>
               <NotesRounded fontSize="small" color="primary" />
-              <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+              <Typography variant="subtitle2" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                 Details
               </Typography>
             </Stack>
@@ -190,7 +190,7 @@ const TaskTitleInfo = ({ task, handleTaskInfoUpdate }) => {
                 <Button variant="outlined" onClick={handleCancelDetails} sx={{ borderRadius: 2 }}>
                   Cancel
                 </Button>
-                <Button variant="contained" startIcon={<SaveRounded />} onClick={() => handleSave("task_details")} sx={{ borderRadius: 2, fontWeight: 900 }}>
+                <Button variant="contained" startIcon={<SaveRounded />} onClick={() => handleSave("task_details")} sx={{ borderRadius: 2, fontWeight: 700 }}>
                   Save Details
                 </Button>
               </Stack>

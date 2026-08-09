@@ -78,7 +78,7 @@ const AddProject = () => {
         boxShadow: theme.shadows[3],
       }}
     >
-      <Typography variant="h5" fontWeight="bold" color="text.primary">
+      <Typography variant="h5" fontWeight={600} color="text.primary">
         Add New Project
       </Typography>
 

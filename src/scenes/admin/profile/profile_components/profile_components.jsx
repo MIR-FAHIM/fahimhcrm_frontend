@@ -73,7 +73,7 @@ const SectionCard = ({ title, subtitle, icon, action, children, sx }) => {
             </Box>
           )}
           <Box>
-            <Typography variant="subtitle1" fontWeight={900} color={theme.palette.text.primary}>
+            <Typography variant="subtitle1" fontWeight={700} color={theme.palette.text.primary}>
               {title}
             </Typography>
             {subtitle && (
@@ -107,7 +107,7 @@ const InfoTile = ({ icon, label, value }) => {
         <Box sx={{ color: theme.palette.text.secondary, display: "flex", "& svg": { fontSize: 18 } }}>
           {icon}
         </Box>
-        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 800 }}>
+        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
           {label}
         </Typography>
       </Stack>
@@ -115,7 +115,7 @@ const InfoTile = ({ icon, label, value }) => {
         variant="body2"
         noWrap
         title={value || "-"}
-        sx={{ color: theme.palette.text.primary, fontWeight: 900, mt: 0.75 }}
+        sx={{ color: theme.palette.text.primary, fontWeight: 700, mt: 0.75 }}
       >
         {value || "-"}
       </Typography>
@@ -384,7 +384,7 @@ const ProfileComponent = ({
                   bgcolor: brandDark,
                   color: brandContrast,
                   fontSize: 34,
-                  fontWeight: 900,
+                  fontWeight: 700,
                 }}
               >
                 {getInitials(profileData?.name)}
@@ -424,7 +424,7 @@ const ProfileComponent = ({
           <Grid item xs={12} md>
             <Stack spacing={1.5}>
               <Box>
-                <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 950, lineHeight: 1.1 }}>
+                <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1.1 }}>
                   {profileData?.name || "-"}
                 </Typography>
                 <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 0.5 }}>
@@ -440,7 +440,7 @@ const ProfileComponent = ({
                   bgcolor: alpha(brand, 0.10),
                   color: brand,
                   border: `1px solid ${alpha(brand, 0.25)}`,
-                  fontWeight: 800,
+                  fontWeight: 600,
                 }}
               />
               <Chip
@@ -485,7 +485,7 @@ const ProfileComponent = ({
                   textTransform: "none",
                   bgcolor: brand,
                   color: brandContrast,
-                  fontWeight: 900,
+                  fontWeight: 700,
                   whiteSpace: "nowrap",
                   "&:hover": { bgcolor: brandDark },
                 }}
@@ -519,10 +519,10 @@ const ProfileComponent = ({
                 >
                   <Stack spacing={1.25}>
                     <Box>
-                      <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 800 }}>
+                      <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
                         {row.label}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+                      <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
                         {getSelectedOptionLabel(row)}
                       </Typography>
                     </Box>
@@ -556,7 +556,7 @@ const ProfileComponent = ({
                     startIcon={row.saving ? <CircularProgress size={15} color="inherit" /> : <SaveIcon />}
                     sx={{
                       textTransform: "none",
-                      fontWeight: 900,
+                      fontWeight: 700,
                       bgcolor: brand,
                       color: brandContrast,
                       "&:hover": { bgcolor: brandDark },
@@ -596,7 +596,7 @@ const ProfileComponent = ({
                     startIcon={isEditing ? <SaveIcon /> : <EditIcon />}
                     sx={{
                       textTransform: "none",
-                      fontWeight: 900,
+                      fontWeight: 700,
                       ...(isEditing
                         ? {
                             bgcolor: brand,
@@ -705,10 +705,10 @@ const ProfileComponent = ({
               <Stack direction="row" spacing={1.25} alignItems="center">
                 <AccessTimeIcon fontSize="small" sx={{ color: brand }} />
                 <Box>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 800 }}>
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
                     Current Schedule
                   </Typography>
-                  <Typography variant="subtitle1" sx={{ color: theme.palette.text.primary, fontWeight: 950, lineHeight: 1.1 }}>
+                  <Typography variant="subtitle1" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1.1 }}>
                     {officeTimeLabel}
                   </Typography>
                 </Box>
@@ -755,7 +755,7 @@ const ProfileComponent = ({
                       textTransform: "none",
                       bgcolor: brand,
                       color: brandContrast,
-                      fontWeight: 900,
+                      fontWeight: 700,
                       "&:hover": { bgcolor: brandDark },
                     }}
                   >
@@ -820,7 +820,7 @@ const ProfileComponent = ({
                   textTransform: "none",
                   bgcolor: theme.palette.primary.main,
                   color: theme.palette.primary.contrastText,
-                  fontWeight: 900,
+                  fontWeight: 700,
                   "&:hover": { bgcolor: theme.palette.primary.dark },
                 }}
               >

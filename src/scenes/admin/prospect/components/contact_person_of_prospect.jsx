@@ -194,7 +194,7 @@ const ContactPersonsProspect = ({
           mb: 1,
         }}
       >
-        <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
           Contact Persons
         </Typography>
         <Button
@@ -243,7 +243,7 @@ const ContactPersonsProspect = ({
                 <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                   <Typography
                     variant="subtitle1"
-                    fontWeight="bold"
+                    fontWeight={600}
                     noWrap
                     title={person.person_name}
                   >

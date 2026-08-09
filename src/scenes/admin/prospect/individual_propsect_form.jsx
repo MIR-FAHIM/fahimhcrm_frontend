@@ -31,6 +31,7 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import MapComponentSetLocation from "./form/google_map_set_location";
+import ProspectLocationSelector from "./components/prospect_location_selector";
 
 import {
   addProspect,
@@ -45,7 +46,6 @@ import { fetchEmployees } from "../../../api/controller/admin_controller/user_co
 import {
   fetchDesignation,
   fetchInfluenceRoles,
-  fetchZone,
 } from "../../../api/controller/admin_controller/department_controller";
 
 /* Reusable section wrapper */
@@ -69,7 +69,7 @@ const Section = ({ title, subtitle, children, mt = 3 }) => {
           <Box sx={{ width: 4, alignSelf: "stretch", borderRadius: 2, bgcolor: brand }} />
           <Box>
             {title && (
-              <Typography variant="subtitle1" fontWeight={900} color="text.primary">
+              <Typography variant="subtitle1" fontWeight={700} color="text.primary">
                 {title}
               </Typography>
             )}
@@ -119,6 +119,9 @@ const IndividualForm = () => {
     latitude: "23.777176",
     longitude: "90.399452",
     address: "",
+    division_id: "",
+    district_id: "",
+    thana_id: "",
     note: "",
     type: "prospect",
     is_active: "1",
@@ -127,7 +130,6 @@ const IndividualForm = () => {
   });
 
   const [industryList, setIndustry] = useState([]);
-  const [zoneList, setZone] = useState([]);
   const [designationList, setDesignation] = useState([]);
   const [influenceList, setInfluenceList] = useState([]);
   const [sourceList, setSource] = useState([]);
@@ -185,7 +187,6 @@ const IndividualForm = () => {
 
   useEffect(() => {
     getProspectIndustryType().then((res) => setIndustry(res.data || [])).catch((err) => console.error("Industry Error:", err));
-    fetchZone().then((res) => setZone(res.data || [])).catch((err) => console.error("Zone Error:", err));
     fetchDesignation().then((res) => setDesignation(res.data || [])).catch((err) => console.error("Designation Error:", err));
     fetchInfluenceRoles().then((res) => setInfluenceList(res.data || [])).catch((err) => console.error("Influence Error:", err));
     getProspectSource().then((res) => setSource(res.data || [])).catch((err) => console.error("Source Error:", err));
@@ -259,7 +260,7 @@ const IndividualForm = () => {
 
   const handleSubmit = async () => {
     const formData = new FormData();
-    Object.keys(form).forEach((k) => formData.append(k, form[k]));
+    Object.keys(form).forEach((k) => formData.append(k, form[k] || ""));
 
     try {
       const response = await addProspect(formData);
@@ -318,15 +319,15 @@ const IndividualForm = () => {
     <Box sx={{ p: { xs: 2, md: 2.5 }, maxWidth: "none", mx: "auto", bgcolor: "transparent" }}>
       {/* Title */}
       <Box display="flex" alignItems="center" gap={1} mb={1} flexWrap="wrap">
-        <Typography variant="h5" fontWeight={950} color="text.primary">
+        <Typography variant="h5" fontWeight={700} color="text.primary">
           Create Individual Lead
         </Typography>
         <Chip
           size="small"
           label="Person profile"
-          sx={{ bgcolor: alpha(brand, 0.16), color: brand, fontWeight: 850 }}
+          sx={{ bgcolor: alpha(brand, 0.16), color: brand, fontWeight: 650 }}
         />
-        <Chip size="small" label={`${contactPersons.length} contact${contactPersons.length > 1 ? "s" : ""}`} variant="outlined" sx={{ fontWeight: 850 }} />
+        <Chip size="small" label={`${contactPersons.length} contact${contactPersons.length > 1 ? "s" : ""}`} variant="outlined" sx={{ fontWeight: 650 }} />
       </Box>
       <Divider sx={{ mb: 2, borderColor: theme.palette.divider }} />
 
@@ -376,26 +377,7 @@ const IndividualForm = () => {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} md={4}>
-            <FormControl fullWidth>
-              <InputLabel>Zone</InputLabel>
-              <Select
-                name="zone_id"
-                value={form.zone_id}
-                label="Zone"
-                onChange={handleChange}
-                sx={selectSx}
-              >
-                {zoneList.map((option) => (
-                  <MenuItem key={option.id} value={option.id}>
-                    {option.zone_name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={6}>
             <FormControl fullWidth>
               <InputLabel>Information Source</InputLabel>
               <Select
@@ -414,7 +396,7 @@ const IndividualForm = () => {
             </FormControl>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={6}>
             <FormControl fullWidth>
               <InputLabel>Service / Item</InputLabel>
               <Select
@@ -494,8 +476,17 @@ const IndividualForm = () => {
         </Grid>
       </Section>
 
-      {/* Location */}
-      <Section title="Select Location" subtitle="Pin the individual’s location.">
+      <Section title="Location" subtitle="Select optional geographic address details for this prospect.">
+        <ProspectLocationSelector
+          form={form}
+          setForm={setForm}
+          inputSx={inputSx}
+          onError={(message) => handleSnackbar(message, "error")}
+        />
+      </Section>
+
+      {/* Map Location */}
+      <Section title="Map Location" subtitle="Pin the individual’s location on the map.">
         <MapComponentSetLocation
           latitude={form.latitude}
           longitude={form.longitude}
@@ -540,7 +531,7 @@ const IndividualForm = () => {
             }}
           >
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5} gap={1} flexWrap="wrap">
-              <Typography fontWeight={900} color="text.primary">
+              <Typography fontWeight={700} color="text.primary">
                 Contact Person #{index + 1}
               </Typography>
               <Chip
@@ -806,7 +797,7 @@ const IndividualForm = () => {
               sx={{
                 bgcolor: theme.palette.success.main,
                 color: theme.palette.getContrastText(theme.palette.success.main),
-                fontWeight: 900,
+                fontWeight: 700,
                 "&:hover": { bgcolor: theme.palette.success.dark || theme.palette.success.main },
               }}
             >
@@ -819,7 +810,7 @@ const IndividualForm = () => {
       {/* Matched Prospects Dialog */}
       <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth maxWidth="sm">
         <DialogTitle>
-          <Typography variant="h6" fontWeight={800}>Matched Prospects</Typography>
+          <Typography variant="h6" fontWeight={600}>Matched Prospects</Typography>
         </DialogTitle>
         <DialogContent dividers>
           {matchedProspects.length > 0 ? (
@@ -840,7 +831,7 @@ const IndividualForm = () => {
                     bgcolor: theme.palette.background.paper,
                   }}
                 >
-                  <Typography variant="subtitle1" fontWeight={800} color="text.primary">
+                  <Typography variant="subtitle1" fontWeight={600} color="text.primary">
                     {prospect.prospect_name}
                   </Typography>
                   {prospect.address && (

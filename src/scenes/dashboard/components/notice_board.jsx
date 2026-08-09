@@ -55,7 +55,7 @@ const NoticeBoard = ({ notices = [] }) => {
               <CampaignOutlined fontSize="small" />
             </Box>
             <Box>
-              <Typography variant="subtitle1" fontWeight={900}>
+              <Typography variant="subtitle1" fontWeight={700}>
                 Notices
               </Typography>
               <Typography variant="caption" color="text.secondary">
@@ -70,7 +70,7 @@ const NoticeBoard = ({ notices = [] }) => {
               label="Priority"
               icon={<NotificationsActiveOutlined />}
               sx={{
-                fontWeight: 800,
+                fontWeight: 600,
                 color: theme.palette.text.primary,
                 bgcolor: alpha(warning, 0.14),
               }}
@@ -116,7 +116,7 @@ const NoticeBoard = ({ notices = [] }) => {
                         justifyContent="space-between"
                         gap={1}
                       >
-                        <Typography variant="body2" fontWeight={900} noWrap>
+                        <Typography variant="body2" fontWeight={700} noWrap>
                           {notice.title || "Notice"}
                         </Typography>
                         {dateLabel && (
@@ -153,7 +153,7 @@ const NoticeBoard = ({ notices = [] }) => {
             }}
           >
             <NotificationsActiveOutlined sx={{ mb: 1, opacity: 0.5 }} />
-            <Typography variant="body2" fontWeight={800}>
+            <Typography variant="body2" fontWeight={600}>
               No notices available
             </Typography>
           </Box>

@@ -86,7 +86,7 @@ const ProjectList = () => {
     <Box sx={{ p: 4, bgcolor: theme.palette.background.default, minHeight: '100vh' }}>
       {/* Toolbar */}
       <Box display="flex" alignItems="center" gap={1.5} flexWrap="wrap" mb={3}>
-        <Typography variant="h4" fontWeight={800} sx={{ color: colors.gray[100], mr: 1 }}>
+        <Typography variant="h4" fontWeight={600} sx={{ color: colors.gray[100], mr: 1 }}>
           📋 Project Overview
         </Typography>
 
@@ -210,7 +210,7 @@ const ProjectList = () => {
                         <Box minWidth={0}>
                           <Typography
                             variant="h6"
-                            sx={{ color: colors.gray[100], fontWeight: 800, mb: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                            sx={{ color: colors.gray[100], fontWeight: 600, mb: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                             title={project.project_name}
                           >
                             {project.project_name}
@@ -316,7 +316,7 @@ const ProjectList = () => {
                                 top: '50%',
                                 left: '50%',
                                 transform: 'translate(-50%, -50%)',
-                                fontWeight: 800,
+                                fontWeight: 600,
                                 color: colors.gray[100]
                               }}
                             >

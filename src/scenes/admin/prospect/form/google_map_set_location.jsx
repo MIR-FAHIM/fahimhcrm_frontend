@@ -104,7 +104,7 @@ const MapComponentSetLocation = ({onMapClick}) => {
     variant="contained"
     color="primary"
     onClick={handleUpdatePosition}
-    sx={{ fontWeight: 'bold' }}
+    sx={{ fontWeight: 600 }}
   >
     Update Position
   </Button>

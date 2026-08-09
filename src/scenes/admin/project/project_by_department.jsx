@@ -147,7 +147,7 @@ const ProjectListByDepartment = () => {
                                 color: theme.palette.info.contrastText,
                                 padding: '4px 8px',
                                 borderRadius: '4px',
-                                fontWeight: 'bold',
+                                fontWeight: 600,
                                 fontSize: '0.875rem',
                                 display: 'inline-block',
                               }}
@@ -255,7 +255,7 @@ const ProjectListByDepartment = () => {
                                 top: '50%',
                                 left: '50%',
                                 transform: 'translate(-50%, -50%)',
-                                fontWeight: 'bold',
+                                fontWeight: 600,
                                 color: colors.gray[100],
                                 zIndex: 2
                               }}

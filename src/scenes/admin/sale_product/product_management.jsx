@@ -217,7 +217,7 @@ const ProductManagement = () => {
             color="secondary"
             startIcon={<AddRounded />}
             onClick={openCreateDialog}
-            sx={{ borderRadius: 2, textTransform: "none", fontWeight: 800 }}
+            sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
           >
             Add Product
           </Button>
@@ -277,7 +277,7 @@ const ProductManagement = () => {
                   "& th": {
                     bgcolor: colors.gray[10],
                     color: theme.palette.text.primary,
-                    fontWeight: 900,
+                    fontWeight: 700,
                   },
                 }}
               >
@@ -299,7 +299,7 @@ const ProductManagement = () => {
                 <TableRow>
                   <TableCell colSpan={4} align="center" sx={{ py: 8 }}>
                     <Inventory2Rounded sx={{ fontSize: 42, color: "text.secondary", mb: 1 }} />
-                    <Typography fontWeight={800}>No products found</Typography>
+                    <Typography fontWeight={600}>No products found</Typography>
                     <Typography variant="body2" color="text.secondary">
                       Add a product or adjust your search.
                     </Typography>
@@ -309,7 +309,7 @@ const ProductManagement = () => {
                 filteredProducts.map((product) => (
                   <TableRow key={product.id} hover sx={{ "&:last-child td": { borderBottom: 0 } }}>
                     <TableCell>
-                      <Typography fontWeight={900}>{product?.product_name || "Untitled product"}</Typography>
+                      <Typography fontWeight={700}>{product?.product_name || "Untitled product"}</Typography>
                       <Typography variant="caption" color="text.secondary">ID #{product.id}</Typography>
                     </TableCell>
                     <TableCell sx={{ maxWidth: 520 }}>
@@ -355,7 +355,7 @@ const ProductManagement = () => {
       </Paper>
 
       <Dialog open={dialogOpen} onClose={() => !saving && setDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle fontWeight={900}>
+        <DialogTitle fontWeight={700}>
           {editingProduct ? "Edit Product" : "Add Product"}
         </DialogTitle>
         <DialogContent dividers>
@@ -404,7 +404,7 @@ const ProductManagement = () => {
             onClick={handleSubmit}
             disabled={saving}
             startIcon={saving ? <CircularProgress size={18} /> : null}
-            sx={{ textTransform: "none", fontWeight: 800 }}
+            sx={{ textTransform: "none", fontWeight: 600 }}
           >
             {saving ? "Saving..." : editingProduct ? "Update Product" : "Add Product"}
           </Button>
@@ -412,7 +412,7 @@ const ProductManagement = () => {
       </Dialog>
 
       <Dialog open={Boolean(deleteTarget)} onClose={() => !deleting && setDeleteTarget(null)} maxWidth="xs" fullWidth>
-        <DialogTitle fontWeight={900}>Delete Product</DialogTitle>
+        <DialogTitle fontWeight={700}>Delete Product</DialogTitle>
         <DialogContent>
           <Typography>
             Are you sure you want to delete <strong>{deleteTarget?.product_name}</strong>?
@@ -431,7 +431,7 @@ const ProductManagement = () => {
             onClick={handleDelete}
             disabled={deleting}
             startIcon={deleting ? <CircularProgress size={18} /> : <DeleteRounded />}
-            sx={{ textTransform: "none", fontWeight: 800 }}
+            sx={{ textTransform: "none", fontWeight: 600 }}
           >
             {deleting ? "Deleting..." : "Delete"}
           </Button>

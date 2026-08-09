@@ -174,7 +174,7 @@ const TaskImageGallery = ({ taskId }) => {
             <ImageRounded />
           </Box>
           <Box>
-            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
               Task Images
             </Typography>
             <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
@@ -198,7 +198,7 @@ const TaskImageGallery = ({ taskId }) => {
             startIcon={<UploadRounded />}
             onClick={handleUpload}
             disabled={!selectedFiles.length || uploading}
-            sx={{ borderRadius: 2, fontWeight: 900 }}
+            sx={{ borderRadius: 2, fontWeight: 700 }}
           >
             {uploading ? "Uploading" : "Upload"}
           </Button>
@@ -209,7 +209,7 @@ const TaskImageGallery = ({ taskId }) => {
         <Chip
           size="small"
           label={`${selectedFiles.length} file${selectedFiles.length === 1 ? "" : "s"} ready to upload`}
-          sx={{ mb: 2, fontWeight: 800 }}
+          sx={{ mb: 2, fontWeight: 600 }}
         />
       )}
 

@@ -687,7 +687,7 @@ export const addTask = async (data) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching task add:", error);
-    return [];
+    throw error;
   }
 }
 export const addProject = async (data) => {

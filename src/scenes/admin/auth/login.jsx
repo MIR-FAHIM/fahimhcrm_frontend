@@ -146,7 +146,7 @@ const Login = () => {
                 color: "#fff",
               }}
             >
-              <Typography variant="h6" fontWeight={800} gutterBottom>
+              <Typography variant="h6" fontWeight={600} gutterBottom>
                 Demo Credentials
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.95, mb: 1 }}>
@@ -198,7 +198,7 @@ const Login = () => {
               color: "#fff",
             }}
           >
-            <Typography variant="h5" fontWeight={800}>
+            <Typography variant="h5" fontWeight={600}>
               Welcome back
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.9 }}>

@@ -366,7 +366,7 @@ const EmpProfile = () => {
             }}
           >
             <CircularProgress size={44} sx={{ color: brand, mb: 2 }} />
-            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 900 }}>
+            <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
               Loading employee profile
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
@@ -406,17 +406,17 @@ const EmpProfile = () => {
                     bgcolor: alpha(brand, 0.16),
                     color: brand,
                     border: `1px solid ${alpha(brand, 0.28)}`,
-                    fontWeight: 900,
+                    fontWeight: 700,
                   }}
                 >
                   {getInitials(profileData?.name)}
                 </Avatar>
                 <Box>
                   <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                    <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 950, lineHeight: 1.05 }}>
+                    <Typography variant="h4" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1.05 }}>
                       Employee Profile
                     </Typography>
-                    <Chip size="small" label={`ID #${profileData?.id || id}`} sx={{ fontWeight: 800, bgcolor: alpha(brand, 0.12), color: brand }} />
+                    <Chip size="small" label={`ID #${profileData?.id || id}`} sx={{ fontWeight: 600, bgcolor: alpha(brand, 0.12), color: brand }} />
                   </Stack>
                   <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 0.5 }}>
                     Manage {profileData?.name || "employee"} information, attendance, work, and activity from one place.
@@ -460,7 +460,7 @@ const EmpProfile = () => {
                 ".MuiTab-root": {
                   minHeight: 64,
                   textTransform: "none",
-                  fontWeight: 850,
+                  fontWeight: 650,
                   color: theme.palette.text.secondary,
                   borderRadius: 1.5,
                   px: { xs: 1.5, sm: 2 },

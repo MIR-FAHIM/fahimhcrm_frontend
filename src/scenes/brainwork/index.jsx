@@ -183,7 +183,7 @@ const TopBar = () => {
       mr: 1,
     }}
   />
-  <Typography variant="h6" fontWeight={800}>
+  <Typography variant="h6" fontWeight={600}>
     BrainToDo
   </Typography>
 </Box>
@@ -218,7 +218,7 @@ const TopBar = () => {
             variant="contained"
             sx={{
               textTransform: "none",
-              fontWeight: 800,
+              fontWeight: 600,
               bgcolor: brand,
               color: theme.palette.blueAccent?.contrastText ?? "#fff",
               "&:hover": { bgcolor: theme.palette.blueAccent?.dark ?? brand },
@@ -242,7 +242,7 @@ const Hero = () => {
   const brand = theme.palette.blueAccent?.main ?? theme.palette.primary.main;
   return (
     <Container sx={{ py: { xs: 6, md: 10 }, textAlign: "center" }}>
-      <Typography variant="h3" fontWeight={800} sx={{ lineHeight: 1.1, mb: 1 }}>
+      <Typography variant="h3" fontWeight={600} sx={{ lineHeight: 1.1, mb: 1 }}>
         HRM + CRM for result-driven teams
       </Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
@@ -257,7 +257,7 @@ const Hero = () => {
           sx={{
             px: 3,
             textTransform: "none",
-            fontWeight: 800,
+            fontWeight: 600,
             bgcolor: brand,
             color: theme.palette.blueAccent?.contrastText ?? "#fff",
             "&:hover": { bgcolor: theme.palette.blueAccent?.dark ?? brand },
@@ -312,7 +312,7 @@ const FeatureTabs = () => {
           scrollButtons="auto"
           aria-label="Main features"
           sx={{
-            "& .MuiTab-root": { textTransform: "none", fontWeight: 800, minHeight: 56 },
+            "& .MuiTab-root": { textTransform: "none", fontWeight: 600, minHeight: 56 },
             "& .Mui-selected": { color: brand },
             "& .MuiTabs-indicator": { backgroundColor: brand, height: 3 },
           }}
@@ -343,7 +343,7 @@ const FeatureTabs = () => {
             label={current.label}
             sx={{ mb: 1, fontWeight: 700, bgcolor: alpha(brand, 0.12), color: brand }}
           />
-          <Typography variant="h5" fontWeight={800} sx={{ mb: 0.5 }}>
+          <Typography variant="h5" fontWeight={600} sx={{ mb: 0.5 }}>
             {current.hero.title}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
@@ -379,7 +379,7 @@ const FeatureTabs = () => {
               endIcon={<ArrowForwardIcon />}
               sx={{
                 textTransform: "none",
-                fontWeight: 800,
+                fontWeight: 600,
                 bgcolor: brand,
                 color: theme.palette.blueAccent?.contrastText ?? "#fff",
                 "&:hover": { bgcolor: theme.palette.blueAccent?.dark ?? brand },

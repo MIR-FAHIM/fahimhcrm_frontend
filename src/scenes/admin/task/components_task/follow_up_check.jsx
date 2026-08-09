@@ -137,7 +137,7 @@ const TaskFollowUpNotes = ({
 
                 <ListItemText
                   primary={
-                    <Typography variant="body3" fontWeight="bold" sx={{ color: colors.gray[100] }}> {/* Changed to body2 */}
+                    <Typography variant="body3" fontWeight={600} sx={{ color: colors.gray[100] }}> {/* Changed to body2 */}
                       {followUp.followup_title}
                     </Typography>
                   }
@@ -152,7 +152,7 @@ const TaskFollowUpNotes = ({
                           color={followUp.status === '1' ? 'success' : 'default'}
                           size="small"
                           sx={{
-                            fontWeight: 'bold',
+                            fontWeight: 600,
                             fontSize: '0.65rem', // Slightly smaller font for chip
                             height: '20px', // Smaller chip height
                             backgroundColor: followUp.status === '1' ? colors.gray[700] : colors.gray[600],

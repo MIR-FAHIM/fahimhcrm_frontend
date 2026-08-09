@@ -116,7 +116,7 @@ export default function EffortOverview() {
           <Grid container spacing={3} alignItems="stretch">
             {/* Left: KPIs + activity breakdown */}
             <Grid item xs={12} md={8}>
-              <Typography variant="h5" fontWeight={800} color={textPri} gutterBottom>
+              <Typography variant="h5" fontWeight={600} color={textPri} gutterBottom>
                 Effort Overview
               </Typography>
 
@@ -153,7 +153,7 @@ export default function EffortOverview() {
                           height: "100%",
                         }}
                       >
-                        <Typography variant="subtitle2" fontWeight={800} color={textPri}>
+                        <Typography variant="subtitle2" fontWeight={600} color={textPri}>
                           {type.toUpperCase()}
                         </Typography>
                         <Typography variant="body2" color={textSec}>
@@ -206,7 +206,7 @@ export default function EffortOverview() {
                   border: `1px solid ${divider}`,
                 }}
               >
-                <Typography variant="subtitle1" fontWeight={800} color={textPri} gutterBottom>
+                <Typography variant="subtitle1" fontWeight={600} color={textPri} gutterBottom>
                   Effort Points
                 </Typography>
                 {[
@@ -243,7 +243,7 @@ export default function EffortOverview() {
                           {type.toUpperCase()}
                         </Typography>
                       </Box>
-                      <Typography variant="body2" fontWeight={800} color={c}>
+                      <Typography variant="body2" fontWeight={600} color={c}>
                         {point}
                       </Typography>
                     </Box>
@@ -256,7 +256,7 @@ export default function EffortOverview() {
       </Card>
 
       {/* Prospect-wise Table */}
-      <Typography variant="h6" fontWeight={800} color={textPri} gutterBottom>
+      <Typography variant="h6" fontWeight={600} color={textPri} gutterBottom>
         Prospect-wise Effort
       </Typography>
       {isMobile ? (
@@ -274,7 +274,7 @@ export default function EffortOverview() {
             >
               <Box display="flex" alignItems="center" justifyContent="space-between" gap={1.5}>
                 <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="subtitle1" fontWeight={800} color={textPri} noWrap>
+                  <Typography variant="subtitle1" fontWeight={600} color={textPri} noWrap>
                     {prospect.prospect_name}
                   </Typography>
                   <Typography variant="caption" color={textSec}>
@@ -336,7 +336,7 @@ export default function EffortOverview() {
                   bgcolor: brand,
                   color: brandContrast,
                   textTransform: "none",
-                  fontWeight: 800,
+                  fontWeight: 600,
                   "&:hover": { bgcolor: brandHover },
                 }}
               >
@@ -361,7 +361,7 @@ export default function EffortOverview() {
                 backgroundColor: alpha(brand, 0.12),
                 "& th": {
                   color: textPri,
-                  fontWeight: 800,
+                  fontWeight: 600,
                   borderBottom: `1px solid ${divider}`,
                 },
               }}
@@ -386,7 +386,7 @@ export default function EffortOverview() {
                   }}
                 >
                   <TableCell sx={{ maxWidth: 260 }}>
-                    <Typography variant="body2" fontWeight={800} color={textPri} noWrap>
+                    <Typography variant="body2" fontWeight={600} color={textPri} noWrap>
                       {prospect.prospect_name}
                     </Typography>
                   </TableCell>
@@ -458,7 +458,7 @@ export default function EffortOverview() {
                         bgcolor: brand,
                         color: brandContrast,
                         textTransform: "none",
-                        fontWeight: 800,
+                        fontWeight: 600,
                         "&:hover": { bgcolor: brandHover },
                       }}
                     >
