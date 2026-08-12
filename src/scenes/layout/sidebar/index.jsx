@@ -19,6 +19,7 @@ import {
   AdminPanelSettingsOutlined,
   CalculateOutlined,
   ClearRounded,
+  CloudUploadRounded,
   ExpandLess,
   ExpandMore,
   FaceOutlined,
@@ -32,6 +33,7 @@ import {
   SearchOutlined,
   SettingsOutlined,
   SourceOutlined,
+  SyncProblemRounded,
   ViewListOutlined,
 } from "@mui/icons-material";
 
@@ -252,6 +254,11 @@ const SideBar = () => {
             icon: <PieChartOutlined sx={muiIconSx} />,
           },
           {
+            title: "Bulk Upload",
+            path: "/prospect-bulk-upload",
+            icon: <CloudUploadRounded sx={muiIconSx} />,
+          },
+          {
             title: "Facebook Leads",
             path: "/facebook-leads",
             icon: <FaceOutlined sx={muiIconSx} />,
@@ -321,6 +328,11 @@ const SideBar = () => {
             title: "Client List",
             path: "/client-list",
             icon: <PeopleAltOutlined sx={muiIconSx} />,
+          },
+          {
+            title: "Unmatched Tickets",
+            path: "/unmatched-tickets",
+            icon: <SyncProblemRounded sx={muiIconSx} />,
           },
         ],
       },

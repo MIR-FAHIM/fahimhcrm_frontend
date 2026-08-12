@@ -77,10 +77,12 @@ import AddTaskPriority from "./admin/setting/add_task_priority";
 import AddTaskStatus from "./admin/setting/add_task_status";
 import AddTaskType from "./admin/setting/add_task_type";
 import ProspectListByStage from "./admin/prospect/prospect_list_by_stage";
+import ProspectBulkUpload from "./admin/prospect/prospect_bulk_upload";
 import ProspectReportMonthWise from "./admin/prospect/prospect_report";
 import SourceWiseProspectPie from "./admin/prospect/source_wise_prospect_report";
 import ClientList from "./admin/client/client_list";
 import ClientDetails from "./admin/client/client_details";
+import UnmatchedTickets from "./admin/client/unmatched_tickets";
 import SoftwareSalePage from "./admin/client/softwaresale";
 import SoftwareCard from "./admin/client/softwarecard";
 import ProjectDetailsTab from "./admin/project/project_details_tab";
@@ -213,10 +215,12 @@ export {
   AddTaskStatus,
   AddTaskType,
   ProspectListByStage,
+  ProspectBulkUpload,
   ProspectReportMonthWise,
   SourceWiseProspectPie,
   ClientList,
   ClientDetails,
+  UnmatchedTickets,
   SoftwareSalePage,
   SoftwareCard,
   ProjectDetailsTab,

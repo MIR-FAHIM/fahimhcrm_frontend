@@ -563,3 +563,87 @@ export const addContactUs = async (data) => {
   }
 
 }
+
+const bulkImportError = (error, fallback) => {
+  const data = error?.response?.data;
+  if (data?.errors && typeof data.errors === "object") {
+    const firstError = Object.values(data.errors).flat().filter(Boolean)[0];
+    if (firstError) return firstError;
+  }
+  return data?.message || data?.error || error?.message || fallback;
+};
+
+export const downloadProspectBulkTemplate = async () => {
+  try {
+    const response = await axiosInstance.get(API_URL.prospectBulkTemplate, {
+      headers: locationHeaders(),
+      responseType: "blob",
+    });
+    const disposition = response.headers?.["content-disposition"] || "";
+    const fileNameMatch = disposition.match(/filename\*?=(?:UTF-8'')?["']?([^"';]+)["']?/i);
+    return {
+      blob: response.data,
+      fileName: fileNameMatch ? decodeURIComponent(fileNameMatch[1]) : "prospect_bulk_import_template.csv",
+    };
+  } catch (error) {
+    console.error("Error downloading prospect bulk template:", error);
+    throw new Error(bulkImportError(error, "Failed to download prospect template."));
+  }
+};
+
+export const previewProspectBulkImport = async (file, uploadedBy) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (uploadedBy) formData.append("uploaded_by", uploadedBy);
+
+    const response = await axiosInstance.post(API_URL.prospectBulkPreview, formData, {
+      headers: {
+        ...locationHeaders(),
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error previewing prospect bulk import:", error);
+    throw new Error(bulkImportError(error, "Failed to preview prospect import."));
+  }
+};
+
+export const confirmProspectBulkImport = async (importId) => {
+  try {
+    const response = await axiosInstance.post(
+      API_URL.prospectBulkConfirm,
+      { import_id: importId },
+      { headers: locationHeaders() }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error confirming prospect bulk import:", error);
+    throw new Error(bulkImportError(error, "Failed to confirm prospect import."));
+  }
+};
+
+export const getProspectBulkHistory = async () => {
+  try {
+    const response = await axiosInstance.get(API_URL.prospectBulkHistory, {
+      headers: locationHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching prospect bulk import history:", error);
+    throw new Error(bulkImportError(error, "Failed to fetch prospect import history."));
+  }
+};
+
+export const getProspectBulkDetails = async (id) => {
+  try {
+    const response = await axiosInstance.get(`${API_URL.prospectBulkDetails}${id}`, {
+      headers: locationHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching prospect bulk import details:", error);
+    throw new Error(bulkImportError(error, "Failed to fetch prospect import details."));
+  }
+};

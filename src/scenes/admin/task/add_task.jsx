@@ -33,15 +33,16 @@ import {
 } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
 import {
-  getStatus,
   getPriority,
   getProjects,
   assignUser,
   addTask,
-  getTaskType,
+  getTaskStatusByDepartment,
+  getTaskTypeByDepartment,
   getProjectsPhases,
 } from "../../../api/controller/admin_controller/task_controller/task_controller";
 import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
+import { fetchDepartment } from "../../../api/controller/admin_controller/department_controller";
 import { useLocation } from "react-router-dom";
 import { tokens } from "../../../theme";
 
@@ -74,6 +75,7 @@ export default function AddTaskForm() {
     defaultValues: {
       task_title: "",
       task_details: "",
+      department_id: null,
       priority_id: null,
       task_type_id: null,
       status_id: null,
@@ -87,12 +89,14 @@ export default function AddTaskForm() {
   });
 
   const [priorities, setPriorities] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [taskTypes, setTaskTypes] = useState([]);
   const [statuses, setStatuses] = useState([]);
   const [projects, setProjects] = useState([]);
   const [phases, setPhases] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingDepartmentMeta, setLoadingDepartmentMeta] = useState(false);
 
   const location = useLocation();
   const passedData = location.state;
@@ -101,17 +105,17 @@ export default function AddTaskForm() {
   useEffect(() => {
     (async () => {
       try {
-        const [prioRes, typeRes, statusRes, projRes, empRes] = await Promise.all([
+        const [prioRes, deptRes, projRes, empRes] = await Promise.all([
           getPriority(),
-          getTaskType(),
-          getStatus(),
+          fetchDepartment(),
           getProjects(),
           fetchEmployees(),
         ]);
 
         setPriorities(prioRes.data || []);
-        setTaskTypes(typeRes.data || []);
-        setStatuses(statusRes.data || []);
+        setDepartments(deptRes.data || []);
+        setTaskTypes([]);
+        setStatuses([]);
         setProjects(projRes.data || []);
         setEmployees(empRes.data || []);
         if (passedData?.is_waiting != null) {
@@ -119,8 +123,6 @@ export default function AddTaskForm() {
         }
         // sensible defaults
         if (prioRes.data?.length) setValue("priority_id", prioRes.data[0].id);
-        if (typeRes.data?.length) setValue("task_type_id", typeRes.data[0].id);
-        if (statusRes.data?.length) setValue("status_id", statusRes.data[0].id);
 
         // preselect project & phase if passed
         if (passedData?.project_id != null) {
@@ -135,6 +137,7 @@ export default function AddTaskForm() {
         }
       } catch (e) {
         console.error(e);
+        alert(e?.response?.data?.message || e?.message || "Failed to load task form data.");
       }
     })();
   }, [setValue, passedData]);
@@ -143,6 +146,7 @@ export default function AddTaskForm() {
   const w = {
     title: watch("task_title"),
     details: watch("task_details"),
+    department: watch("department_id"),
     prio: watch("priority_id"),
     type: watch("task_type_id"),
     status: watch("status_id"),
@@ -151,6 +155,39 @@ export default function AddTaskForm() {
     phase: watch("project_phase_id"),
     assignee: watch("user_id"),
     due: watch("due_date"),
+  };
+
+  const getResponseList = (response) => {
+    if (Array.isArray(response)) return response;
+    if (Array.isArray(response?.data)) return response.data;
+    return [];
+  };
+
+  const handleDepartmentChange = async (departmentId) => {
+    setValue("department_id", departmentId || null, { shouldValidate: true, shouldDirty: true });
+    setValue("task_type_id", null, { shouldValidate: true, shouldDirty: true });
+    setValue("status_id", null, { shouldValidate: true, shouldDirty: true });
+    setTaskTypes([]);
+    setStatuses([]);
+
+    if (!departmentId) return;
+
+    setLoadingDepartmentMeta(true);
+    try {
+      const [typeRes, statusRes] = await Promise.all([
+        getTaskTypeByDepartment(departmentId),
+        getTaskStatusByDepartment(departmentId),
+      ]);
+      setTaskTypes(getResponseList(typeRes));
+      setStatuses(getResponseList(statusRes));
+    } catch (error) {
+      console.error("Department task metadata fetch failed:", error);
+      setTaskTypes([]);
+      setStatuses([]);
+      alert(error?.response?.data?.message || error?.message || "Failed to fetch department task type/status.");
+    } finally {
+      setLoadingDepartmentMeta(false);
+    }
   };
 
   // Fetch phases on project change
@@ -176,7 +213,19 @@ export default function AddTaskForm() {
       taskData.created_by = userID;
       taskData.is_remind = 1;
       taskData.show_completion_percentage = 0;
-      taskData.department_id = 1;
+
+      if (!taskData.department_id) {
+        alert("Please select a department.");
+        return;
+      }
+      if (!taskData.task_type_id) {
+        alert("Please select a task type.");
+        return;
+      }
+      if (!taskData.status_id) {
+        alert("Please select a task status.");
+        return;
+      }
 
       if (taskData.project_id === 0) {
         delete taskData.project_id;
@@ -195,6 +244,8 @@ export default function AddTaskForm() {
           is_main: 1,
         });
         reset();
+        setTaskTypes([]);
+        setStatuses([]);
         // tiny toast replacement:
         alert("✅ Task created");
       } else {
@@ -206,6 +257,12 @@ export default function AddTaskForm() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleResetForm = () => {
+    reset();
+    setTaskTypes([]);
+    setStatuses([]);
   };
 
   // Pretty chip renderer
@@ -314,9 +371,48 @@ export default function AddTaskForm() {
 
             <Divider sx={{ my: 3, borderColor: colors.gray[800] }} />
 
-            {/* Priority / Type / Status */}
+            {/* Department / Priority / Type / Status */}
             <Grid container spacing={2}>
-              <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={6}>
+                <Controller
+                  name="department_id"
+                  control={control}
+                  rules={{ required: "Department is required" }}
+                  render={({ field, fieldState }) => (
+                    <Autocomplete
+                      options={departments}
+                      getOptionLabel={(option) => option?.department_name || ""}
+                      isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                      value={departments.find((department) => department.id === field.value) || null}
+                      onChange={(_, department) => handleDepartmentChange(department?.id || null)}
+                      noOptionsText="No data found"
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Department"
+                          required
+                          error={!!fieldState.error}
+                          helperText={fieldState.error?.message || "Select department to load task type and status."}
+                          InputProps={{
+                            ...params.InputProps,
+                            startAdornment: (
+                              <>
+                                <InputAdornment position="start">
+                                  <WorkspacesRounded sx={{ color: colors.blueAccent[500] }} />
+                                </InputAdornment>
+                                {params.InputProps.startAdornment}
+                              </>
+                            ),
+                          }}
+                          sx={fieldSx(colors)}
+                        />
+                      )}
+                    />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
                 <Row icon={<FlagRounded sx={{ color: colors.orangeAccent[500] }} />} title="Priority" />
                 <Stack direction="row" spacing={1} flexWrap="wrap" mt={1}>
                   {priorities.map((p) => (
@@ -330,33 +426,112 @@ export default function AddTaskForm() {
                 </Stack>
               </Grid>
 
-              <Grid item xs={12} md={4}>
-                <Row icon={<CategoryRounded sx={{ color: colors.purpleAccent[500] }} />} title="Type" />
-                <Stack direction="row" spacing={1} flexWrap="wrap" mt={1}>
-                  {taskTypes.map((t) => (
-                    <ChipOption
-                      key={t.id}
-
-                      label={t.type_name}
-                      selected={w.type === t.id}
-                      onClick={() => setValue("task_type_id", t.id)}
+              <Grid item xs={12} md={6}>
+                <Controller
+                  name="task_type_id"
+                  control={control}
+                  rules={{ required: "Task type is required" }}
+                  render={({ field, fieldState }) => (
+                    <Autocomplete
+                      options={taskTypes}
+                      getOptionLabel={(option) => option?.type_name || ""}
+                      isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                      value={taskTypes.find((type) => type.id === field.value) || null}
+                      onChange={(_, type) => field.onChange(type?.id || null)}
+                      disabled={!w.department || loadingDepartmentMeta}
+                      loading={loadingDepartmentMeta}
+                      noOptionsText={w.department ? "No data found" : "Select department first"}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Task Type"
+                          required
+                          error={!!fieldState.error}
+                          helperText={
+                            fieldState.error?.message ||
+                            (!w.department
+                              ? "Select department first."
+                              : !loadingDepartmentMeta && taskTypes.length === 0
+                                ? "No data found"
+                                : "")
+                          }
+                          InputProps={{
+                            ...params.InputProps,
+                            startAdornment: (
+                              <>
+                                <InputAdornment position="start">
+                                  <CategoryRounded sx={{ color: colors.purpleAccent[500] }} />
+                                </InputAdornment>
+                                {params.InputProps.startAdornment}
+                              </>
+                            ),
+                            endAdornment: (
+                              <>
+                                {loadingDepartmentMeta ? <CircularProgress color="inherit" size={18} /> : null}
+                                {params.InputProps.endAdornment}
+                              </>
+                            ),
+                          }}
+                          sx={fieldSx(colors)}
+                        />
+                      )}
                     />
-                  ))}
-                </Stack>
+                  )}
+                />
               </Grid>
 
-              <Grid item xs={12} md={4}>
-                <Row icon={<TimelineRounded sx={{ color: colors.blueAccent[500] }} />} title="Status" />
-                <Stack direction="row" spacing={1} flexWrap="wrap" mt={1}>
-                  {statuses.map((s) => (
-                    <ChipOption
-                      key={s.id}
-                      label={s.status_name}
-                      selected={w.status === s.id}
-                      onClick={() => setValue("status_id", s.id)}
+              <Grid item xs={12} md={6}>
+                <Controller
+                  name="status_id"
+                  control={control}
+                  rules={{ required: "Task status is required" }}
+                  render={({ field, fieldState }) => (
+                    <Autocomplete
+                      options={statuses}
+                      getOptionLabel={(option) => option?.status_name || ""}
+                      isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                      value={statuses.find((status) => status.id === field.value) || null}
+                      onChange={(_, status) => field.onChange(status?.id || null)}
+                      disabled={!w.department || loadingDepartmentMeta}
+                      loading={loadingDepartmentMeta}
+                      noOptionsText={w.department ? "No data found" : "Select department first"}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Task Status"
+                          required
+                          error={!!fieldState.error}
+                          helperText={
+                            fieldState.error?.message ||
+                            (!w.department
+                              ? "Select department first."
+                              : !loadingDepartmentMeta && statuses.length === 0
+                                ? "No data found"
+                                : "")
+                          }
+                          InputProps={{
+                            ...params.InputProps,
+                            startAdornment: (
+                              <>
+                                <InputAdornment position="start">
+                                  <TimelineRounded sx={{ color: colors.blueAccent[500] }} />
+                                </InputAdornment>
+                                {params.InputProps.startAdornment}
+                              </>
+                            ),
+                            endAdornment: (
+                              <>
+                                {loadingDepartmentMeta ? <CircularProgress color="inherit" size={18} /> : null}
+                                {params.InputProps.endAdornment}
+                              </>
+                            ),
+                          }}
+                          sx={fieldSx(colors)}
+                        />
+                      )}
                     />
-                  ))}
-                </Stack>
+                  )}
+                />
               </Grid>
             </Grid>
 
@@ -487,7 +662,7 @@ export default function AddTaskForm() {
               </Button>
               <Button
                 type="button"
-                onClick={() => reset()}
+                onClick={handleResetForm}
                 variant="outlined"
                 sx={{
                   borderColor: colors.gray[600],
@@ -549,6 +724,12 @@ export default function AddTaskForm() {
             <Divider sx={{ my: 2, borderColor: colors.gray[800] }} />
 
             <Stack spacing={1.25}>
+              <Row icon={<WorkspacesRounded sx={{ color: colors.blueAccent[500] }} />} title="Department">
+                <Typography variant="body2" sx={{ color: colors.gray[200] }}>
+                  {departments.find((department) => department.id === w.department)?.department_name || "â€”"}
+                </Typography>
+              </Row>
+
               <Row icon={<FlagRounded sx={{ color: colors.orangeAccent[500] }} />} title="Priority">
                 <Badge
                   color="primary"

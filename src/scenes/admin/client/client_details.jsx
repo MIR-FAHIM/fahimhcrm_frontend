@@ -82,7 +82,7 @@ const InfoCard = ({ icon, label, value, action }) => {
         borderRadius: 2,
         bgcolor: theme.palette.background.paper,
         border: `1px solid ${theme.palette.divider}`,
-        minHeight: 92,
+        minHeight: 84,
       }}
     >
       <Stack direction="row" spacing={1.2} alignItems="flex-start">
@@ -357,13 +357,27 @@ const ClientDetails = () => {
         </Stack>
       </Paper>
 
-      <Grid container spacing={2.5}>
-        <Grid item xs={12} lg={3.5}>
-          <Stack spacing={1.5}>
+      <Box sx={{ mb: 2.5 }}>
+        <Grid container spacing={1.5}>
+          <Grid item xs={12} md={6} xl={3}>
             <InfoCard icon={<LocationOnRoundedIcon fontSize="small" />} label="Address" value={prospect?.address} />
-            {divisionName && <InfoCard label="Division" value={divisionName} />}
-            {districtName && <InfoCard label="District" value={districtName} />}
-            {thanaName && <InfoCard label="Upazila / Thana" value={thanaName} />}
+          </Grid>
+          {divisionName && (
+            <Grid item xs={12} sm={6} md={3} xl={1.7}>
+              <InfoCard label="Division" value={divisionName} />
+            </Grid>
+          )}
+          {districtName && (
+            <Grid item xs={12} sm={6} md={3} xl={1.7}>
+              <InfoCard label="District" value={districtName} />
+            </Grid>
+          )}
+          {thanaName && (
+            <Grid item xs={12} sm={6} md={3} xl={1.9}>
+              <InfoCard label="Upazila / Thana" value={thanaName} />
+            </Grid>
+          )}
+          <Grid item xs={12} sm={6} md={3} xl={2.1}>
             <InfoCard
               icon={<LanguageRoundedIcon fontSize="small" />}
               label="Website"
@@ -376,57 +390,57 @@ const ClientDetails = () => {
                 ) : null
               }
             />
+          </Grid>
+          <Grid item xs={12} md={6} xl={2.6}>
             <InfoCard icon={<NotesRoundedIcon fontSize="small" />} label="Note" value={prospect?.note} />
-          </Stack>
+          </Grid>
         </Grid>
+      </Box>
 
-        <Grid item xs={12} lg={8.5}>
-          <Paper elevation={0} sx={{ borderRadius: 2, bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, overflow: "hidden" }}>
-            <Tabs
-              value={activeTab}
-              onChange={(_, value) => setActiveTab(value)}
-              variant="scrollable"
-              scrollButtons="auto"
-              allowScrollButtonsMobile
-              sx={{
-                px: 1,
-                borderBottom: `1px solid ${theme.palette.divider}`,
-                ".MuiTabs-indicator": { bgcolor: brand, height: 3, borderRadius: 999 },
-                ".MuiTab-root": {
-                  minHeight: 58,
-                  textTransform: "none",
-                  fontWeight: 700,
-                  color: theme.palette.text.secondary,
-                  borderRadius: 1.5,
-                  "&:hover": { bgcolor: alpha(brand, 0.08), color: theme.palette.text.primary },
-                  "&.Mui-selected": { color: brand, bgcolor: alpha(brand, 0.10) },
-                },
-              }}
-            >
-              {tabs.map((tab) => (
-                <Tab key={tab.value} value={tab.value} icon={tab.icon} iconPosition="start" label={tab.label} />
-              ))}
-            </Tabs>
-            <Box sx={{ p: { xs: 1.5, md: 2 }, minHeight: 560 }}>
-              {activeTab === "tickets" && <ClientTicket clientId={id} refreshKey={ticketRefreshKey} />}
-              {activeTab === "tasks" && <ClientTask clntID={id} />}
-              {activeTab === "meeting" && (
-                prospect?.id ? (
-                  <MeetingForm prospectId={prospect.id} meetingTitlee={meetingTitle} />
-                ) : (
-                  <EmptyPanel icon={<EventRoundedIcon />} title="No prospect link found" subtitle="This client needs a linked prospect before meetings can be scheduled." />
-                )
-              )}
-              {activeTab === "communications" && (
-                <EmptyPanel icon={<TimelineRoundedIcon />} title="No communication timeline yet" subtitle="Call notes, emails, and client updates can be organized here." />
-              )}
-              {activeTab === "files" && (
-                <EmptyPanel icon={<FolderRoundedIcon />} title="No files attached yet" subtitle="Client documents and shared assets can be shown here when available." />
-              )}
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
+      <Paper elevation={0} sx={{ borderRadius: 2, bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, overflow: "hidden" }}>
+        <Tabs
+          value={activeTab}
+          onChange={(_, value) => setActiveTab(value)}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{
+            px: 1,
+            borderBottom: `1px solid ${theme.palette.divider}`,
+            ".MuiTabs-indicator": { bgcolor: brand, height: 3, borderRadius: 999 },
+            ".MuiTab-root": {
+              minHeight: 58,
+              textTransform: "none",
+              fontWeight: 700,
+              color: theme.palette.text.secondary,
+              borderRadius: 1.5,
+              "&:hover": { bgcolor: alpha(brand, 0.08), color: theme.palette.text.primary },
+              "&.Mui-selected": { color: brand, bgcolor: alpha(brand, 0.10) },
+            },
+          }}
+        >
+          {tabs.map((tab) => (
+            <Tab key={tab.value} value={tab.value} icon={tab.icon} iconPosition="start" label={tab.label} />
+          ))}
+        </Tabs>
+        <Box sx={{ p: { xs: 1.5, md: 2 }, minHeight: 560 }}>
+          {activeTab === "tickets" && <ClientTicket clientId={id} refreshKey={ticketRefreshKey} />}
+          {activeTab === "tasks" && <ClientTask clntID={id} />}
+          {activeTab === "meeting" && (
+            prospect?.id ? (
+              <MeetingForm prospectId={prospect.id} meetingTitlee={meetingTitle} />
+            ) : (
+              <EmptyPanel icon={<EventRoundedIcon />} title="No prospect link found" subtitle="This client needs a linked prospect before meetings can be scheduled." />
+            )
+          )}
+          {activeTab === "communications" && (
+            <EmptyPanel icon={<TimelineRoundedIcon />} title="No communication timeline yet" subtitle="Call notes, emails, and client updates can be organized here." />
+          )}
+          {activeTab === "files" && (
+            <EmptyPanel icon={<FolderRoundedIcon />} title="No files attached yet" subtitle="Client documents and shared assets can be shown here when available." />
+          )}
+        </Box>
+      </Paper>
 
       <Dialog open={isFormOpen} onClose={handleCloseForm} fullWidth maxWidth="sm" PaperProps={{ sx: { bgcolor: theme.palette.background.paper, color: theme.palette.text.primary } }}>
         <DialogTitle sx={{ fontWeight: 700 }}>Add New Ticket</DialogTitle>

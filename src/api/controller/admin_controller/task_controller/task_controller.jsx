@@ -511,6 +511,21 @@ export const getStatus = async () => {
     return [];
   }
 }
+export const getTaskStatusByDepartment = async (departmentId) => {
+  try {
+    const response = await axiosInstance.get(API_URL.getTaskStatusByDepartmentById(departmentId),
+      {
+        headers: {
+          'token': getMasterDataToken(),
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching department task status:", error);
+    throw error;
+  }
+}
 export const getTaskType = async () => {
   try {
     const response = await axiosInstance.get(API_URL.getTaskType,
@@ -525,6 +540,21 @@ export const getTaskType = async () => {
   } catch (error) {
     console.error("Error fetching task status:", error);
     return [];
+  }
+}
+export const getTaskTypeByDepartment = async (departmentId) => {
+  try {
+    const response = await axiosInstance.get(API_URL.getTaskTypeByDepartmentById(departmentId),
+      {
+        headers: {
+          'token': getMasterDataToken(),
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching department task type:", error);
+    throw error;
   }
 }
 export const getProjects = async () => {

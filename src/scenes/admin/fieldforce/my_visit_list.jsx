@@ -1,6 +1,11 @@
 // MyVisits.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Paper,
   Toolbar,
   Typography,
@@ -24,6 +29,8 @@ import {
   InputLabel,
   IconButton,
   Box,
+  Tabs,
+  Tab,
   useMediaQuery,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
@@ -37,7 +44,11 @@ import MyLocationIcon from "@mui/icons-material/MyLocation";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
 // Controller
-import { getEmpVisit } from "../../../api/controller/admin_controller/visit_controller";
+import {
+  completeVisit,
+  getEmpVisitSchedule,
+  startVisit,
+} from "../../../api/controller/admin_controller/visit_controller";
 
 const fmtDate = (val) => {
   if (!val) return "—";
@@ -55,10 +66,13 @@ export default function MyVisits() {
 
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState([]);
+  const [schedule, setSchedule] = useState({ today: [], upcoming: [], previous: [] });
+  const [activeTab, setActiveTab] = useState("today");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [snack, setSnack] = useState({ open: false, msg: "", sev: "error" });
+  const [actionState, setActionState] = useState({ open: false, type: "", visit: null, note: "", saving: false });
 
   const userID =
     typeof window !== "undefined" ? localStorage.getItem("userId") : null;
@@ -69,25 +83,86 @@ export default function MyVisits() {
     }
   };
 
+  const loadSchedule = async () => {
+    if (!userID) {
+      setSnack({ open: true, msg: "No user ID found.", sev: "error" });
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await getEmpVisitSchedule(userID);
+      const data = res?.data || {};
+      const nextSchedule = {
+        today: Array.isArray(data.today) ? data.today : [],
+        upcoming: Array.isArray(data.upcoming) ? data.upcoming : [],
+        previous: Array.isArray(data.previous) ? data.previous : [],
+      };
+      setSchedule(nextSchedule);
+      setRows(nextSchedule[activeTab] || []);
+    } catch (e) {
+      console.error(e);
+      setSnack({ open: true, msg: "Failed to load visits.", sev: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    (async () => {
-      if (!userID) {
-        setSnack({ open: true, msg: "No user ID found.", sev: "error" });
+    loadSchedule();
+  }, [userID]);
+
+  useEffect(() => {
+    setRows(schedule[activeTab] || []);
+  }, [activeTab, schedule]);
+
+  const getBrowserLocation = () =>
+    new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("Browser geolocation is not available."));
         return;
       }
-      setLoading(true);
-      try {
-        const res = await getEmpVisit(userID);
-        const list = Array.isArray(res?.data) ? res.data : [];
-        setRows(list);
-      } catch (e) {
-        console.error(e);
-        setSnack({ open: true, msg: "Failed to load visits.", sev: "error" });
-      } finally {
-        setLoading(false);
+      navigator.geolocation.getCurrentPosition(
+        (position) => resolve({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        }),
+        () => reject(new Error("Location permission was denied or unavailable.")),
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+      );
+    });
+
+  const openVisitAction = (type, visit) => setActionState({ open: true, type, visit, note: "", saving: false });
+  const closeVisitAction = () => setActionState({ open: false, type: "", visit: null, note: "", saving: false });
+
+  const submitVisitAction = async () => {
+    if (!actionState.visit?.id) return;
+    setActionState((current) => ({ ...current, saving: true }));
+    try {
+      const coords = await getBrowserLocation();
+      const payload = {
+        employee_id: Number(userID),
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        note: actionState.note?.trim() || null,
+      };
+      const res = actionState.type === "complete"
+        ? await completeVisit(actionState.visit.id, payload)
+        : await startVisit(actionState.visit.id, payload);
+
+      if (res?.status === "success" || res?.success) {
+        setSnack({ open: true, msg: actionState.type === "complete" ? "Visit completed." : "Visit started.", sev: "success" });
+        closeVisitAction();
+        await loadSchedule();
+      } else {
+        const message = res?.errors ? Object.values(res.errors).flat().join(" ") : res?.message;
+        setSnack({ open: true, msg: message || "Visit update failed.", sev: "error" });
+        setActionState((current) => ({ ...current, saving: false }));
       }
-    })();
-  }, [userID]);
+    } catch (error) {
+      setSnack({ open: true, msg: error.message || "Visit update failed.", sev: "error" });
+      setActionState((current) => ({ ...current, saving: false }));
+    }
+  };
 
   const displayLabel = (value, fallback = "—") => {
     if (typeof value === "string" || typeof value === "number") return String(value);
@@ -284,6 +359,22 @@ export default function MyVisits() {
           </Stack>
         </Toolbar>
 
+        <Tabs
+          value={activeTab}
+          onChange={(_, value) => setActiveTab(value)}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{
+            px: 2,
+            borderBottom: `1px solid ${theme.palette.divider}`,
+            ".MuiTab-root": { textTransform: "none", fontWeight: 700 },
+          }}
+        >
+          <Tab value="today" label={`Today (${schedule.today.length})`} />
+          <Tab value="upcoming" label={`Upcoming (${schedule.upcoming.length})`} />
+          <Tab value="previous" label={`Previous (${schedule.previous.length})`} />
+        </Tabs>
+
         {isMobile ? (
           <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
             {loading && <LinearProgress />}
@@ -360,6 +451,11 @@ export default function MyVisits() {
                       )}
                     </Box>
 
+                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap sx={{ mt: 1.5 }}>
+                      <Chip size="small" label={`Task: ${displayLabel(v?.task_visit_relation?.task?.status || v?.task_visit_relation?.status, "-")}`} variant="outlined" />
+                      <Chip size="small" label={`Priority: ${v.priority?.priority_name || "-"}`} variant="outlined" />
+                    </Stack>
+
                     <Box sx={{ mt: 1.5, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
                       <Box>
                         <Typography variant="caption" color="text.secondary">
@@ -406,6 +502,14 @@ export default function MyVisits() {
                     </Box>
 
                     <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
+                      <Stack direction="row" spacing={1} sx={{ mr: "auto" }}>
+                        <Button size="small" variant="outlined" onClick={() => openVisitAction("start", v)}>
+                          Start
+                        </Button>
+                        <Button size="small" variant="contained" onClick={() => openVisitAction("complete", v)}>
+                          Complete
+                        </Button>
+                      </Stack>
                       <IconButton
                         size="small"
                         color="primary"
@@ -548,22 +652,32 @@ export default function MyVisits() {
 
                         {/* Status */}
                         <TableCell>
-                          <Chip
-                            size="small"
-                            label={statusLabel}
-                            color={statusChipColor(v.status)}
-                            variant="outlined"
-                          />
+                          <Stack spacing={0.75} alignItems="flex-start">
+                            <Chip
+                              size="small"
+                              label={statusLabel}
+                              color={statusChipColor(v.status)}
+                              variant="outlined"
+                            />
+                            <Chip
+                              size="small"
+                              label={`Task: ${displayLabel(v?.task_visit_relation?.task?.status || v?.task_visit_relation?.status, "-")}`}
+                              variant="outlined"
+                            />
+                          </Stack>
                         </TableCell>
 
                         {/* Type */}
                         <TableCell>
-                          <Chip
-                            size="small"
-                            label={typeLabel}
-                            color={typeChipColor(v.visit_type)}
-                            variant="outlined"
-                          />
+                          <Stack spacing={0.75} alignItems="flex-start">
+                            <Chip
+                              size="small"
+                              label={typeLabel}
+                              color={typeChipColor(v.visit_type)}
+                              variant="outlined"
+                            />
+                            <Chip size="small" label={`Priority: ${v.priority?.priority_name || "-"}`} variant="outlined" />
+                          </Stack>
                         </TableCell>
 
                         {/* Location */}
@@ -608,18 +722,26 @@ export default function MyVisits() {
 
                         {/* Details column */}
                         <TableCell>
-                          <IconButton
-                            size="small"
-                            color="primary"
-                            onClick={() => {
-                              const tid = v.task_visit_relation?.task_id;
-                              if (tid) navigate(`/task-details/${tid}`);
-                            }}
-                            disabled={!v.task_visit_relation?.task_id}
-                            sx={{ borderRadius: 2 }}
-                          >
-                            <VisibilityIcon />
-                          </IconButton>
+                          <Stack direction="row" spacing={0.75}>
+                            <Button size="small" variant="outlined" onClick={() => openVisitAction("start", v)}>
+                              Start
+                            </Button>
+                            <Button size="small" variant="contained" onClick={() => openVisitAction("complete", v)}>
+                              Done
+                            </Button>
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => {
+                                const tid = v.task_visit_relation?.task_id;
+                                if (tid) navigate(`/task-details/${tid}`);
+                              }}
+                              disabled={!v.task_visit_relation?.task_id}
+                              sx={{ borderRadius: 2 }}
+                            >
+                              <VisibilityIcon />
+                            </IconButton>
+                          </Stack>
                         </TableCell>
                       </TableRow>
                     );
@@ -629,6 +751,37 @@ export default function MyVisits() {
           </TableContainer>
         )}
       </Paper>
+
+      <Dialog open={actionState.open} onClose={actionState.saving ? undefined : closeVisitAction} fullWidth maxWidth="sm">
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          {actionState.type === "complete" ? "Complete Visit" : "Start Visit"}
+        </DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={1.5}>
+            <Typography variant="body2" color="text.secondary">
+              {actionState.visit?.lead?.prospect_name || actionState.visit?.zone?.zone_name || "Selected visit"}
+            </Typography>
+            <TextField
+              label={actionState.type === "complete" ? "Visit report / note" : "Start note"}
+              value={actionState.note}
+              onChange={(event) => setActionState((current) => ({ ...current, note: event.target.value }))}
+              multiline
+              minRows={3}
+              fullWidth
+              placeholder="Write a short note"
+            />
+            <Alert severity="info">
+              Browser location permission is required for this action.
+            </Alert>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={closeVisitAction} disabled={actionState.saving}>Cancel</Button>
+          <Button variant="contained" onClick={submitVisitAction} disabled={actionState.saving}>
+            {actionState.saving ? "Saving..." : actionState.type === "complete" ? "Complete Visit" : "Start Visit"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={snack.open}

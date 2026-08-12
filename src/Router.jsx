@@ -64,10 +64,12 @@ import {
   AddTaskStatus,
   AddTaskType,
   ProspectListByStage,
+  ProspectBulkUpload,
   ProspectReportMonthWise,
   SourceWiseProspectPie,
   ClientList,
   ClientDetails,
+  UnmatchedTickets,
   SoftwareSalePage,
   ProjectDetailsTab,
   ProjectTask,
@@ -204,10 +206,12 @@ const AppRouter = () => {
           <Route path="/task-status" element={<AddTaskStatus />} />
           <Route path="/task-type" element={<AddTaskType />} />
           <Route path="/prospect-list-by-stage" element={<ProspectListByStage />} />
+          <Route path="/prospect-bulk-upload" element={<ProspectBulkUpload />} />
           <Route path="/prospect-report-monthwise" element={<ProspectReportMonthWise />} />
           <Route path="/source-wise-prospect-report" element={<SourceWiseProspectPie />} />
           <Route path="/client-list" element={<ClientList />} />
           <Route path="/client-details/:id" element={<ClientDetails />} />
+          <Route path="/unmatched-tickets" element={<UnmatchedTickets />} />
           <Route path="/software-sale" element={<SoftwareSalePage />} />
           <Route path="/project-detail-tab/:id" element={<ProjectDetailsTab />} />
           <Route path="/project-tasks" element={<ProjectTask />} />

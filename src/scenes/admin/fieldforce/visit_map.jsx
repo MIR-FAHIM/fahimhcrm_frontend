@@ -1,196 +1,370 @@
-import React, { useState, useEffect } from "react";
-import { APIProvider, Map, Marker, InfoWindow } from "@vis.gl/react-google-maps";
+import React, { useEffect, useMemo, useState } from "react";
+import { APIProvider, InfoWindow, Map, Marker } from "@vis.gl/react-google-maps";
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import { alpha } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
 import { google_map_key } from "../../../api/config/index";
-import { useLocation, useNavigate } from "react-router-dom";
 import { getVisitByDateEmp } from "../../../api/controller/admin_controller/visit_controller";
-import { TextField, MenuItem, Box, CircularProgress } from "@mui/material";
 import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
+import { fetchAllProspect } from "../../../api/controller/admin_controller/prospect_controller";
+
+const fallbackCenter = { lat: 23.8103, lng: 90.4125 };
+
+const labelOf = (value, fallback = "-") => {
+  if (typeof value === "string" || typeof value === "number") return String(value);
+  if (value && typeof value === "object") {
+    return value.status_name || value.priority_name || value.zone_name || value.prospect_name || value.name || value.label || fallback;
+  }
+  return fallback;
+};
+
+const normalize = (value) => labelOf(value, "").toLowerCase().replace(/[_-]/g, " ").trim();
+
+const parseNumber = (value) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const getLeadFromVisit = (visit, leadLookup = {}) => {
+  const leadId = visit?.lead_id || visit?.prospect_id || visit?.client_id;
+  return visit?.lead || visit?.prospect || visit?.client || visit?.customer || leadLookup[String(leadId)] || null;
+};
+
+const getZoneFromVisit = (visit) => visit?.zone || visit?.lead?.zone || visit?.prospect?.zone || null;
+
+const getVisitTarget = (visit, leadLookup = {}) => {
+  const lead = getLeadFromVisit(visit, leadLookup);
+  const zone = getZoneFromVisit(visit);
+  return lead?.prospect_name || lead?.name || zone?.zone_name || zone?.name || "Visit target not set";
+};
+
+const getTaskStatus = (visit) =>
+  labelOf(visit?.task_visit_relation?.task?.status || visit?.taskVisitRelation?.task?.status || visit?.task_visit_relation?.status || visit?.taskVisitRelation?.status);
+
+const getVisitCoords = (visit, leadLookup = {}) => {
+  const lead = getLeadFromVisit(visit, leadLookup);
+  const zone = getZoneFromVisit(visit);
+  const lat =
+    parseNumber(visit?.checkin_latitude) ??
+    parseNumber(visit?.check_in_latitude) ??
+    parseNumber(visit?.check_in_lat) ??
+    parseNumber(visit?.start_latitude) ??
+    parseNumber(visit?.start_lat) ??
+    parseNumber(visit?.latitude) ??
+    parseNumber(visit?.lat) ??
+    parseNumber(lead?.latitude) ??
+    parseNumber(lead?.lat) ??
+    parseNumber(zone?.latitude) ??
+    parseNumber(zone?.lat);
+  const lng =
+    parseNumber(visit?.checkin_longitude) ??
+    parseNumber(visit?.check_in_longitude) ??
+    parseNumber(visit?.check_in_lon) ??
+    parseNumber(visit?.check_in_lng) ??
+    parseNumber(visit?.start_longitude) ??
+    parseNumber(visit?.start_lon) ??
+    parseNumber(visit?.start_lng) ??
+    parseNumber(visit?.longitude) ??
+    parseNumber(visit?.lon) ??
+    parseNumber(visit?.lng) ??
+    parseNumber(lead?.longitude) ??
+    parseNumber(lead?.lon) ??
+    parseNumber(lead?.lng) ??
+    parseNumber(lead?.long) ??
+    parseNumber(zone?.longitude) ??
+    parseNumber(zone?.lon) ??
+    parseNumber(zone?.lng) ??
+    parseNumber(zone?.long);
+  return lat != null && lng != null ? { lat, lng } : null;
+};
+
+const getVisitCoordsSource = (visit, leadLookup = {}) => {
+  const lead = getLeadFromVisit(visit, leadLookup);
+  if (parseNumber(visit?.checkin_latitude) != null || parseNumber(visit?.check_in_latitude) != null) return "Check-in";
+  if (parseNumber(visit?.latitude) != null || parseNumber(visit?.lat) != null) return "Visit";
+  if (parseNumber(lead?.latitude) != null || parseNumber(lead?.lat) != null) return "Lead";
+  return "Zone";
+};
+
+const statusTone = (status) => {
+  const value = normalize(status);
+  if (["completed", "visited", "done", "complete"].some((item) => value.includes(item))) return "success";
+  if (["started", "in progress", "running"].some((item) => value.includes(item))) return "info";
+  if (["cancelled", "canceled", "failed"].some((item) => value.includes(item))) return "error";
+  return "warning";
+};
+
+const markerColor = (visit) => {
+  const tone = statusTone(visit?.status);
+  if (tone === "success") return "#2e7d32";
+  if (tone === "info") return "#1976d2";
+  if (tone === "error") return "#d32f2f";
+  return "#ed6c02";
+};
+
+const markerIcon = (color) => ({
+  url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="34" height="44" viewBox="0 0 34 44">
+      <path fill="${color}" d="M17 0C7.6 0 0 7.6 0 17c0 12.8 17 27 17 27s17-14.2 17-27C34 7.6 26.4 0 17 0z"/>
+      <circle fill="#fff" cx="17" cy="17" r="7"/>
+    </svg>
+  `)}`,
+});
+
+const formatDateTime = (value) => {
+  if (!value) return "-";
+  const date = new Date(String(value).replace(" ", "T"));
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+};
 
 const VisitMap = () => {
-  const location = useLocation();
+  const theme = useTheme();
   const navigate = useNavigate();
-  const searchParams = new URLSearchParams(location.search);
-  const lat = parseFloat(searchParams.get("lat")) || 23.8103;
-  const lng = parseFloat(searchParams.get("lng")) || 90.4125;
-
-  const [prospects, setProspects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedMarker, setSelectedMarker] = useState(null);
   const [employees, setEmployees] = useState([]);
+  const [leadLookup, setLeadLookup] = useState({});
+  const [visits, setVisits] = useState([]);
   const [selectedEmp, setSelectedEmp] = useState("");
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [selectedVisit, setSelectedVisit] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const defaultPosition = { lat, lng };
-
-  // Fetch employees from API
   useEffect(() => {
-    const fetchEmpList = async () => {
+    (async () => {
       try {
-        const response = await fetchEmployees();
-        if (response.status === "success") {
-          setEmployees([{ id: "", name: "All Employees" }, ...response.data.map(emp => ({ id: emp.id, name: emp.name }))]);
-        } else {
-          setError("Failed to fetch employees");
-        }
+        const [employeeResponse, prospectResponse] = await Promise.all([
+          fetchEmployees(),
+          fetchAllProspect(),
+        ]);
+        const list = Array.isArray(employeeResponse?.data) ? employeeResponse.data : [];
+        const prospects = Array.isArray(prospectResponse?.data) ? prospectResponse.data : [];
+        setEmployees(list);
+        setLeadLookup(Object.fromEntries(prospects.map((prospect) => [String(prospect.id), prospect])));
       } catch {
-        setError("Error fetching employees");
+        setError("Failed to fetch employees or lead locations.");
       }
-    };
-    fetchEmpList();
+    })();
   }, []);
 
-  // Fetch visits based on selected employee and date
-  useEffect(() => {
-    const fetchVisits = async () => {
-      setLoading(true);
-      try {
-        const response = await getVisitByDateEmp(selectedDate, selectedEmp);
-        if (response.status === "success") {
-          setProspects(response.data);
-          setError(null);
-        } else {
-          setError("Failed to fetch prospects");
-        }
-      } catch {
-        setError("Error fetching data");
+  const loadVisits = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await getVisitByDateEmp(selectedDate, selectedEmp);
+      if (response?.status === "success") {
+        setVisits(Array.isArray(response.data) ? response.data : []);
+      } else {
+        const message = response?.errors ? Object.values(response.errors).flat().join(" ") : response?.message;
+        setError(message || "Failed to fetch visits.");
+        setVisits([]);
       }
+    } catch {
+      setError("Failed to fetch visits.");
+      setVisits([]);
+    } finally {
       setLoading(false);
-    };
-    fetchVisits();
+    }
+  };
+
+  useEffect(() => {
+    loadVisits();
   }, [selectedDate, selectedEmp]);
 
-  const handleMarkerClick = (marker) => setSelectedMarker(marker);
-  const handleCloseInfoWindow = () => setSelectedMarker(null);
-  const handleAddWarehouse = () => navigate("/visit-plan");
+  const statusOptions = useMemo(() => {
+    const values = Array.from(new Set(visits.map((visit) => labelOf(visit.status, "")).filter(Boolean)));
+    return ["all", ...values];
+  }, [visits]);
 
-  if (loading) return <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "80vh" }}><CircularProgress /></Box>;
-  if (error) return <div>Error: {error}</div>;
+  const typeOptions = useMemo(() => {
+    const values = Array.from(new Set(visits.map((visit) => labelOf(visit.visit_type, "")).filter(Boolean)));
+    return ["all", ...values];
+  }, [visits]);
 
-  const prospectMarkers = prospects
-    .filter(
-      (prospect) =>
-        prospect.checkin_latitude &&
-        prospect.checkin_longitude &&
-        !isNaN(parseFloat(prospect.checkin_latitude)) &&
-        !isNaN(parseFloat(prospect.checkin_longitude))
-    )
-    .map((prospect) => ({
-      position: {
-        lat: parseFloat(prospect.checkin_latitude),
-        lng: parseFloat(prospect.checkin_longitude),
-      },
-      info: prospect.prospect_name,
-      createdAt: prospect.created_at,
-    }));
+  const filteredVisits = useMemo(() => (
+    visits.filter((visit) => {
+      const statusMatch = statusFilter === "all" || normalize(visit.status) === normalize(statusFilter);
+      const typeMatch = typeFilter === "all" || normalize(visit.visit_type) === normalize(typeFilter);
+      return statusMatch && typeMatch;
+    })
+  ), [statusFilter, typeFilter, visits]);
 
-  const allMarkers = [
-    { position: defaultPosition, info: "Default Location" },
-    ...prospectMarkers,
-  ];
+  const markerVisits = useMemo(
+    () => filteredVisits.map((visit) => ({ visit, coords: getVisitCoords(visit, leadLookup), source: getVisitCoordsSource(visit, leadLookup) })).filter((item) => item.coords),
+    [filteredVisits, leadLookup]
+  );
+  const center = markerVisits[0]?.coords || fallbackCenter;
 
   return (
-    <div style={{ width: "100%", height: "100vh", position: "relative" }}>
-      {/* Filters */}
-      <Box sx={{
-        position: "absolute",
-        top: 20,
-        left: 20,
-        zIndex: 1000,
-        display: "flex",
-        gap: 2,
-        bgcolor: "rgba(255,255,255,0.95)",
-        p: 2,
-        borderRadius: 2,
-        boxShadow: 2,
-        alignItems: "center"
-      }}>
-        <TextField
-          select
-          label="Employee"
-          size="small"
-          value={selectedEmp}
-          onChange={e => setSelectedEmp(e.target.value)}
-          sx={{ minWidth: 160 }}
+    <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1fr) 430px" }, minHeight: "calc(100vh - 24px)", bgcolor: theme.palette.background.default }}>
+      <Box sx={{ minHeight: { xs: 460, lg: "calc(100vh - 24px)" }, position: "relative" }}>
+        <Paper
+          elevation={0}
+          sx={{
+            position: "absolute",
+            top: 16,
+            left: 16,
+            right: { xs: 16, md: "auto" },
+            zIndex: 10,
+            p: 1.5,
+            borderRadius: 2,
+            bgcolor: alpha(theme.palette.background.paper, 0.94),
+            border: `1px solid ${theme.palette.divider}`,
+          }}
         >
-          {employees.map(emp => (
-            <MenuItem key={emp.id} value={emp.id}>{emp.name}</MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          type="date"
-          label="Date"
-          size="small"
-          value={selectedDate}
-          onChange={e => setSelectedDate(e.target.value)}
-          InputLabelProps={{ shrink: true }}
-          sx={{ minWidth: 140 }}
-        />
-      </Box>
+          <Stack direction={{ xs: "column", md: "row" }} spacing={1} alignItems={{ xs: "stretch", md: "center" }}>
+            <TextField size="small" type="date" label="Date" value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} InputLabelProps={{ shrink: true }} />
+            <TextField size="small" select label="Employee" value={selectedEmp} onChange={(event) => setSelectedEmp(event.target.value)} sx={{ minWidth: 170 }}>
+              <MenuItem value="">All Employees</MenuItem>
+              {employees.map((employee) => <MenuItem key={employee.id} value={employee.id}>{employee.name}</MenuItem>)}
+            </TextField>
+            <Button variant="contained" startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <RefreshIcon />} disabled={loading} onClick={loadVisits}>
+              Refresh
+            </Button>
+          </Stack>
+        </Paper>
 
-      {/* Add Warehouse Button */}
-      <button
-        onClick={handleAddWarehouse}
-        style={{
-          position: "absolute",
-          top: "20px",
-          right: "20px",
-          zIndex: 1000,
-          padding: "10px 15px",
-          backgroundColor: "#007bff",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-        }}
-      >
-        + Add Visit Plan
-      </button>
-
-      <APIProvider apiKey={google_map_key}>
-        <div style={{ width: "100%", height: "100%" }}> 
-          <Map gestureHandling="greedy" style={{ width: "100%", height: "100%" }} >
-            {prospectMarkers.length === 0 ? (
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  bgcolor: "rgba(255,255,255,0.95)",
-                  p: 3,
-                  borderRadius: 2,
-                  boxShadow: 2,
-                  zIndex: 2000,
-                }}
-              >
-                <h3>No visit found</h3>
-              </Box>
-            ) : (
-              allMarkers.map((marker, index) => (
-                <Marker
-                  key={index}
-                  position={marker.position}
-                  onClick={() => handleMarkerClick(marker)}
-                />
-              ))
-            )}
-
-            {selectedMarker && (
-              <InfoWindow
-                position={selectedMarker.position}
-                onCloseClick={handleCloseInfoWindow}
-              >
-                <div>
-                  <h3>{selectedMarker.info}</h3>
-                  <p>Visited At: {selectedMarker.createdAt ? new Date(selectedMarker.createdAt).toLocaleString() : "N/A"}</p>
-                </div>
+        <APIProvider apiKey={google_map_key}>
+          <Map
+            defaultCenter={center}
+            defaultZoom={markerVisits.length ? 12 : 10}
+            gestureHandling="greedy"
+            draggable
+            zoomControl
+            scrollwheel
+            style={{ width: "100%", height: "100%" }}
+          >
+            {markerVisits.map(({ visit, coords }) => (
+              <Marker key={visit.id} position={coords} icon={markerIcon(markerColor(visit))} onClick={() => setSelectedVisit(visit)} />
+            ))}
+            {selectedVisit && getVisitCoords(selectedVisit, leadLookup) && (
+              <InfoWindow position={getVisitCoords(selectedVisit, leadLookup)} onCloseClick={() => setSelectedVisit(null)}>
+                <Box sx={{ color: "#111", maxWidth: 260 }}>
+                  <Typography variant="subtitle2" fontWeight={800}>{getVisitTarget(selectedVisit, leadLookup)}</Typography>
+                  <Typography variant="body2">Employee: {selectedVisit.employee?.name || "-"}</Typography>
+                  <Typography variant="body2">Scheduled: {formatDateTime(selectedVisit.scheduled_at)}</Typography>
+                  <Typography variant="body2">Visit status: {labelOf(selectedVisit.status)}</Typography>
+                  <Typography variant="body2">Task status: {getTaskStatus(selectedVisit)}</Typography>
+                  <Typography variant="body2">Point source: {getVisitCoordsSource(selectedVisit, leadLookup)}</Typography>
+                  <Typography variant="body2">Completed: {formatDateTime(selectedVisit.actual_end_at || selectedVisit.completed_at)}</Typography>
+                </Box>
               </InfoWindow>
             )}
           </Map>
-        </div>
-      </APIProvider>
-    </div>
+        </APIProvider>
+      </Box>
+
+      <Paper elevation={0} sx={{ borderLeft: { lg: `1px solid ${theme.palette.divider}` }, bgcolor: theme.palette.background.paper, overflow: "hidden" }}>
+        <Stack spacing={2} sx={{ p: 2 }}>
+          <Stack direction="row" justifyContent="space-between" spacing={1} alignItems="center">
+            <Box>
+              <Typography variant="h5" fontWeight={800}>Field Force Map</Typography>
+              <Typography variant="body2" color="text.secondary">{filteredVisits.length} visits for selected filters</Typography>
+            </Box>
+            <Button variant="outlined" startIcon={<AddIcon />} onClick={() => navigate("/visit-plan")} sx={{ whiteSpace: "nowrap" }}>
+              Add
+            </Button>
+          </Stack>
+
+          {error && <Alert severity="error">{error}</Alert>}
+
+          <Stack direction="row" spacing={1}>
+            <FormControl size="small" fullWidth>
+              <InputLabel>Status</InputLabel>
+              <Select label="Status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                {statusOptions.map((option) => <MenuItem key={option} value={option}>{option === "all" ? "All statuses" : option}</MenuItem>)}
+              </Select>
+            </FormControl>
+            <FormControl size="small" fullWidth>
+              <InputLabel>Type</InputLabel>
+              <Select label="Type" value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
+                {typeOptions.map((option) => <MenuItem key={option} value={option}>{option === "all" ? "All types" : option}</MenuItem>)}
+              </Select>
+            </FormControl>
+          </Stack>
+
+          <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+            <Chip size="small" label={`Mapped ${markerVisits.length}`} color="primary" variant="outlined" />
+            <Chip size="small" label={`From lead ${markerVisits.filter((item) => item.source === "Lead").length}`} color="info" variant="outlined" />
+            <Chip size="small" label={`Pending ${filteredVisits.filter((visit) => statusTone(visit.status) === "warning").length}`} color="warning" variant="outlined" />
+            <Chip size="small" label={`Completed ${filteredVisits.filter((visit) => statusTone(visit.status) === "success").length}`} color="success" variant="outlined" />
+          </Stack>
+        </Stack>
+
+        <TableContainer sx={{ maxHeight: "calc(100vh - 220px)" }}>
+          <Table stickyHeader size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Employee</TableCell>
+                <TableCell>Lead/Zone</TableCell>
+                <TableCell>Time</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Priority</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {loading && (
+                <TableRow><TableCell colSpan={5} align="center"><CircularProgress size={24} /></TableCell></TableRow>
+              )}
+              {!loading && filteredVisits.length === 0 && (
+                <TableRow><TableCell colSpan={5} align="center" sx={{ py: 4, color: "text.secondary" }}>No visits found.</TableCell></TableRow>
+              )}
+              {!loading && filteredVisits.map((visit) => {
+                const coords = getVisitCoords(visit, leadLookup);
+                const coordsSource = coords ? getVisitCoordsSource(visit, leadLookup) : "";
+                return (
+                <TableRow key={visit.id} hover selected={selectedVisit?.id === visit.id} onClick={() => setSelectedVisit(visit)} sx={{ cursor: coords ? "pointer" : "default" }}>
+                  <TableCell>{visit.employee?.name || "-"}</TableCell>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight={700}>{getVisitTarget(visit, leadLookup)}</Typography>
+                    <Typography variant="caption" color="text.secondary">{visit.purpose || "-"}</Typography>
+                    {coords && (
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        {coordsSource}: {coords.lat.toFixed(6)}, {coords.lng.toFixed(6)}
+                      </Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="caption" color="text.secondary">Plan: {formatDateTime(visit.scheduled_at)}</Typography>
+                    <Typography variant="caption" color="text.secondary" display="block">Start: {formatDateTime(visit.actual_start_at || visit.started_at)}</Typography>
+                    <Typography variant="caption" color="text.secondary" display="block">End: {formatDateTime(visit.actual_end_at || visit.completed_at)}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip size="small" label={labelOf(visit.status)} color={statusTone(visit.status)} variant="outlined" />
+                    <Typography variant="caption" color="text.secondary" display="block">Task: {getTaskStatus(visit)}</Typography>
+                  </TableCell>
+                  <TableCell>{visit.priority?.priority_name || "-"}</TableCell>
+                </TableRow>
+              )})}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+    </Box>
   );
 };
 
