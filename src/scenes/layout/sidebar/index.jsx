@@ -1,8 +1,9 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   Avatar,
   Box,
   Chip,
+  CircularProgress,
   Collapse,
   IconButton,
   InputAdornment,
@@ -44,6 +45,7 @@ import {
   getProfile,
   modulePermission,
 } from "../../../api/controller/admin_controller/user_controller";
+import { getProspectViewPreference } from "../../../api/controller/admin_controller/prospect_controller";
 import { ToggledContext } from "../../../App";
 import logo from "../../../assets/images/logo.png";
 
@@ -62,6 +64,7 @@ const SideBar = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const [permissions, setPermissions] = useState({});
   const [isAdmin, setIsAdmin] = useState(0);
+  const [prospectViewLoading, setProspectViewLoading] = useState(false);
 
   const iconColor = theme.palette.blueAccent?.main || colors.blueAccent[500];
   const surfaceBg = theme.palette.background.paper;
@@ -89,12 +92,37 @@ const SideBar = () => {
     fontSize: 21,
   };
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path, activePaths = []) => location.pathname === path || activePaths.includes(location.pathname);
 
   const handleNavigate = (path) => {
     navigate(path);
     setToggled(false);
   };
+
+  const handleSalesPipelineNavigate = useCallback(async () => {
+    if (prospectViewLoading) return;
+    setProspectViewLoading(true);
+    try {
+      if (!userID) {
+        navigate("/prospect-list");
+        return;
+      }
+
+      const response = await getProspectViewPreference(userID);
+      const isTableView =
+        response?.data?.is_prospect_table_view === true ||
+        response?.data?.is_prospect_table_view === 1 ||
+        response?.data?.is_prospect_table_view === "1";
+
+      navigate(isTableView ? "/prospect-list" : "/prospect-list-by-stage");
+    } catch (error) {
+      console.error("Failed to resolve prospect view preference:", error);
+      navigate("/prospect-list");
+    } finally {
+      setProspectViewLoading(false);
+      setToggled(false);
+    }
+  }, [navigate, prospectViewLoading, setToggled, userID]);
 
   const toggleCategory = (key) => {
     if (collapsed) {
@@ -251,7 +279,9 @@ const SideBar = () => {
           {
             title: "Sales Pipeline",
             path: "/prospect-list-by-stage",
-            icon: <PieChartOutlined sx={muiIconSx} />,
+            activePaths: ["/prospect-list"],
+            icon: prospectViewLoading ? <CircularProgress size={18} color="inherit" /> : <PieChartOutlined sx={muiIconSx} />,
+            onClick: handleSalesPipelineNavigate,
           },
           {
             title: "Bulk Upload",
@@ -422,10 +452,15 @@ const SideBar = () => {
             path: "/task-type",
             icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
           },
+          {
+            title: "Prospect Stages",
+            path: "/prospect-stage-management",
+            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
+          },
         ],
       },
     ],
-    [permissions, isAdmin, iconColor]
+    [permissions, isAdmin, iconColor, prospectViewLoading, handleSalesPipelineNavigate]
   );
 
   const normalizedSearch = search.trim().toLowerCase();
@@ -524,9 +559,9 @@ const SideBar = () => {
     const itemNode = (
       <MenuItem
         key={item.path}
-        active={isActive(item.path)}
+        active={isActive(item.path, item.activePaths)}
         icon={item.icon}
-        onClick={() => handleNavigate(item.path)}
+        onClick={() => (item.onClick ? item.onClick() : handleNavigate(item.path))}
       >
         {!collapsed && (
           <Typography variant="body2" noWrap sx={{ fontWeight: 700 }}>

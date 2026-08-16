@@ -2,14 +2,16 @@ import React from "react";
 import {
   Grid,
   Box,
+  CircularProgress,
   MenuItem,
   Select,
   Typography,
   useTheme, // Import the useTheme hook
 } from "@mui/material";
 
-const TaskStatusChangeComponent = ({ task, statuses, handleStatusChange }) => {
+const TaskStatusChangeComponent = ({ task, statuses, loading = false, handleStatusChange }) => {
   const theme = useTheme(); // Get the current theme object
+  const currentStatusId = task?.status?.id || task?.status_id || "";
 
   return (
     <Grid item xs={12} sm={6} md={4} lg={3}>
@@ -28,7 +30,8 @@ const TaskStatusChangeComponent = ({ task, statuses, handleStatusChange }) => {
         <Select
           fullWidth
           size="small"
-          value={task.status.id}
+          value={currentStatusId}
+          disabled={loading || !statuses.length}
           onChange={(e) => handleStatusChange(task.id, e.target.value)}
           sx={{
             // Use the theme's background color, which adjusts automatically
@@ -37,6 +40,17 @@ const TaskStatusChangeComponent = ({ task, statuses, handleStatusChange }) => {
             fontSize: 14,
           }}
         >
+          {loading && (
+            <MenuItem value={currentStatusId}>
+              <Box display="flex" alignItems="center" gap={1}>
+                <CircularProgress size={16} />
+                Loading statuses...
+              </Box>
+            </MenuItem>
+          )}
+          {!loading && !statuses.length && (
+            <MenuItem value={currentStatusId}>No statuses found</MenuItem>
+          )}
           {statuses.map((status) => (
             <MenuItem key={status.id} value={status.id}>
               {status.status_name}

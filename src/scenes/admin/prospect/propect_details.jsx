@@ -435,7 +435,9 @@ export default function ProspectDetailsPage() {
     if (updateRes.status === "success") {
       await handleGetDetails();
       handleAlert("Prospect information updated.");
+      return updateRes;
     }
+    throw new Error(updateRes?.message || updateRes?.error || "Failed to update prospect information.");
   };
 
   const handleSaveNote = async (data) => {

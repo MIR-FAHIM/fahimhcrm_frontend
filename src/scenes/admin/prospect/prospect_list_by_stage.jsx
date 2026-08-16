@@ -7,6 +7,7 @@ import {
   Avatar,
   Box,
   Button,
+  ButtonGroup,
   Card,
   CardContent,
   Chip,
@@ -56,6 +57,7 @@ import {
 import {
   fetchAllProspectByStage,
   getProspectAllStatus,
+  updateProspectViewPreference,
 } from "../../../api/controller/admin_controller/prospect_controller";
 import { base_url } from "../../../api/config";
 import opportunity from "../../../assets/images/opportunity.png";
@@ -111,6 +113,9 @@ const formatDate = (value) => {
   const date = dayjs(value);
   return date.isValid() ? date.format("MMM D, YYYY") : "No activity";
 };
+
+const locationText = (prospect = {}) =>
+  [prospect.division?.name, prospect.district?.name, prospect.thana?.name].filter(Boolean).join(", ") || "No location";
 
 const flattenProspects = (grouped = {}) =>
   Object.entries(grouped).flatMap(([stageName, list]) =>
@@ -216,7 +221,7 @@ const ProspectCard = ({ prospect, stageColor, onDetails }) => {
   const source = prospect.information_source?.information_source_name || "No source";
   const industry = prospect.industry_type?.industry_type_name || "No industry";
   const interest = prospect.interested_for?.product_name || "No interest set";
-  const zone = prospect.zone?.zone_name || "No zone";
+  const location = locationText(prospect);
 
   return (
     <Card
@@ -286,10 +291,10 @@ const ProspectCard = ({ prospect, stageColor, onDetails }) => {
           <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1 }}>
             <Paper elevation={0} sx={{ p: 1, borderRadius: 1.5, bgcolor: theme.palette.background.default, border: `1px solid ${theme.palette.divider}` }}>
               <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
-                Zone
+                Location
               </Typography>
               <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
-                {zone}
+                {location}
               </Typography>
             </Paper>
             <Paper elevation={0} sx={{ p: 1, borderRadius: 1.5, bgcolor: theme.palette.background.default, border: `1px solid ${theme.palette.divider}` }}>
@@ -396,6 +401,7 @@ const ProspectListByStage = () => {
   const [opportunityFilter, setOpportunityFilter] = useState("all");
   const [sortBy, setSortBy] = useState("last_activity_desc");
   const [showEmptyStages, setShowEmptyStages] = useState(true);
+  const [viewSaving, setViewSaving] = useState(false);
 
   const brand = theme.palette.blueAccent?.main ?? theme.palette.primary.main;
 
@@ -462,7 +468,9 @@ const ProspectListByStage = () => {
             prospect?.industry_type?.industry_type_name,
             prospect?.interested_for?.product_name,
             prospect?.information_source?.information_source_name,
-            prospect?.zone?.zone_name,
+            prospect?.division?.name,
+            prospect?.district?.name,
+            prospect?.thana?.name,
             prospect?.concern_persons?.map((person) => person.person_name).join(" "),
           ]
             .filter(Boolean)
@@ -495,6 +503,31 @@ const ProspectListByStage = () => {
   });
 
   const handleDetails = (id) => navigate(`/prospect-detail/${id}`);
+
+  const handleViewPreferenceChange = async (isTableView) => {
+    if (!isTableView) return;
+    const userID = localStorage.getItem("userId");
+    if (!userID) {
+      setError("User information not found. Please login again.");
+      return;
+    }
+
+    setViewSaving(true);
+    try {
+      const response = await updateProspectViewPreference({
+        user_id: Number(userID),
+        is_prospect_table_view: true,
+      });
+      if (response?.status && String(response.status).toLowerCase() !== "success") {
+        throw new Error(response?.message || "Failed to update prospect view preference.");
+      }
+      navigate("/prospect-list");
+    } catch (error) {
+      setError(error?.message || "Failed to update prospect view preference.");
+    } finally {
+      setViewSaving(false);
+    }
+  };
 
   return (
     <Box
@@ -532,9 +565,10 @@ const ProspectListByStage = () => {
           <Button variant="contained" startIcon={<AddRounded />} onClick={() => navigate("/add-prospect")} sx={{ borderRadius: 2, fontWeight: 700 }}>
             Add Prospect
           </Button>
-          <Button variant="outlined" startIcon={<TableRowsRounded />} onClick={() => navigate("/prospect-list")} sx={{ borderRadius: 2, fontWeight: 700 }}>
-            Table View
-          </Button>
+          <ButtonGroup variant="outlined" disabled={viewSaving} sx={{ alignSelf: { xs: "stretch", sm: "center" }, "& .MuiButton-root": { fontWeight: 700, borderRadius: 2 } }}>
+            <Button startIcon={viewSaving ? <CircularProgress size={16} /> : <TableRowsRounded />} onClick={() => handleViewPreferenceChange(true)}>Table View</Button>
+            <Button variant="contained" startIcon={<ViewKanbanRounded />}>Pipeline View</Button>
+          </ButtonGroup>
           <Button
             variant="outlined"
             startIcon={refreshing ? <CircularProgress size={16} /> : <RefreshRounded />}

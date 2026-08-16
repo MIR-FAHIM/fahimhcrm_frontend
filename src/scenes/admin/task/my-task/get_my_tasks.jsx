@@ -17,7 +17,6 @@ import {
 
 import {
   getTaskByUsers,
-  getStatus,
   updateTaskStatus,
 } from "../../../../api/controller/admin_controller/task_controller/task_controller";
 import { fetchEmployees } from "../../../../api/controller/admin_controller/user_controller"; // (optional) remove if not used
@@ -27,6 +26,7 @@ import { image_file_url } from "../../../../api/config/index";
 // 🔁 Reuse the shared card component
 // Adjust the import path to where you saved TaskCardView.jsx
 import TaskCardView from "../components_task/task_card_view";
+import { fetchTaskStatusesForDepartment } from "../utils/task_status_options";
 
 const MyTaskTable = () => {
   const userID = localStorage.getItem("userId");
@@ -69,8 +69,7 @@ const MyTaskTable = () => {
 
   const fetchStatuses = async () => {
     try {
-      const response = await getStatus();
-      if (response?.data) setStatuses(response.data);
+      setStatuses(await fetchTaskStatusesForDepartment());
     } catch (err) {
       console.error("Error fetching statuses:", err);
     }
@@ -82,7 +81,7 @@ const MyTaskTable = () => {
     setFilteredTasks(tasks.filter((t) => t.status?.status_name === statusName));
   };
 
-  const handleStatusChange = async (taskId, newStatusId) => {
+  const handleStatusChange = async (taskId, newStatusId, selectedStatusObject) => {
     try {
       const resp = await updateTaskStatus({
         task_id: taskId,
@@ -90,7 +89,7 @@ const MyTaskTable = () => {
         user_id: userID,
       });
       if (resp.status === "success") {
-        const updatedStatus = statuses.find((s) => s.id === newStatusId);
+        const updatedStatus = selectedStatusObject || statuses.find((s) => Number(s.id) === Number(newStatusId));
         const updater = (arr) =>
           arr.map((t) => (t.id === taskId ? { ...t, status: updatedStatus } : t));
         setTasks(updater);

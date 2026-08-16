@@ -15,7 +15,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { tokens } from "../../../theme";
 import {
   getAllTaskByDepartment,
-  getStatus,
+  getTaskStatusByDepartment,
   updateTaskStatus,
 } from "../../../api/controller/admin_controller/task_controller/task_controller";
 import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
@@ -44,7 +44,7 @@ const DepartmentTask = () => {
       try {
         const [tasksRes, statusesRes, employeesRes] = await Promise.all([
           getAllTaskByDepartment(id),
-          getStatus(),
+          getTaskStatusByDepartment(id),
           fetchEmployees(),
         ]);
         setDepartmentName(tasksRes?.department_name ?? "");
@@ -84,10 +84,10 @@ const DepartmentTask = () => {
     setFilteredTasks(next);
   };
 
-  const handleStatusChange = async (taskId, newStatusId) => {
+  const handleStatusChange = async (taskId, newStatusId, selectedStatusObject) => {
     try {
       await updateTaskStatus({ task_id: taskId, status_id: newStatusId, user_id: userID });
-      const newStatusObj = statuses.find((s) => s.id === newStatusId);
+      const newStatusObj = selectedStatusObject || statuses.find((s) => Number(s.id) === Number(newStatusId));
       setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: newStatusObj } : t)));
       setFilteredTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: newStatusObj } : t)));
     } catch (e) {

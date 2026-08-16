@@ -15,12 +15,12 @@ import { useNavigate } from "react-router-dom";
 import { tokens } from "../../../theme";
 import {
   getAllTask,
-  getStatus,
   updateTaskStatus,
 } from "../../../api/controller/admin_controller/task_controller/task_controller";
 import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
 import { image_file_url } from "../../../api/config";
 import TaskCardView from "./components_task/task_card_view"; 
+import { fetchTaskStatusesForDepartment } from "./utils/task_status_options";
 
 const AllTaskTable = () => {
   const theme = useTheme();
@@ -41,13 +41,13 @@ const AllTaskTable = () => {
       try {
         const [tasksRes, statusesRes, employeesRes] = await Promise.all([
           getAllTask(),
-          getStatus(),
+          fetchTaskStatusesForDepartment(),
           fetchEmployees(),
         ]);
         const list = tasksRes?.data ?? [];
         setTasks(list);
         setFilteredTasks(list);
-        setStatuses(statusesRes?.data ?? []);
+        setStatuses(statusesRes ?? []);
         setEmployees(employeesRes?.data ?? []);
       } catch (e) {
         console.error("Error bootstrapping AllTaskTable:", e);
@@ -81,10 +81,10 @@ const AllTaskTable = () => {
     setFilteredTasks(next);
   };
 
-  const handleStatusChange = async (taskId, newStatusId) => {
+  const handleStatusChange = async (taskId, newStatusId, selectedStatusObject) => {
     try {
       await updateTaskStatus({ task_id: taskId, status_id: newStatusId, user_id: userID });
-      const newStatusObj = statuses.find((s) => s.id === newStatusId);
+      const newStatusObj = selectedStatusObject || statuses.find((s) => Number(s.id) === Number(newStatusId));
       setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: newStatusObj } : t)));
       setFilteredTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: newStatusObj } : t)));
     } catch (e) {

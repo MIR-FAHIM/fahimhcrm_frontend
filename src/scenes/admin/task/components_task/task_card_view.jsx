@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Card,
@@ -11,10 +11,12 @@ import {
   Tooltip,
   IconButton,
   FormControl,
+  FormHelperText,
   Select,
   MenuItem,
   useTheme,
   useMediaQuery,
+  CircularProgress,
 } from "@mui/material";
 import LaunchIcon from "@mui/icons-material/Launch";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
@@ -23,12 +25,39 @@ import TaskAltIcon from "@mui/icons-material/TaskAlt";
 import GroupIcon from "@mui/icons-material/Group";
 import FlagIcon from "@mui/icons-material/Flag";
 import { tokens } from "../../../../theme";
+import { fetchTaskStatusesForDepartment } from "../utils/task_status_options";
 
 const TaskCardView = ({ task, statuses = [], imageBaseUrl, onDetails, onStatusChange }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const isXs = useMediaQuery(theme.breakpoints.down("sm"));   // <600px
   const isMdDown = useMediaQuery(theme.breakpoints.down("md"));
+  const [departmentStatuses, setDepartmentStatuses] = useState(statuses);
+  const [statusLoading, setStatusLoading] = useState(false);
+  const effectiveStatuses = useMemo(() => {
+    const currentStatus = task?.status;
+    const exists = departmentStatuses.some((status) => Number(status.id) === Number(currentStatus?.id));
+    return currentStatus?.id && !exists ? [currentStatus, ...departmentStatuses] : departmentStatuses;
+  }, [departmentStatuses, task?.status]);
+
+  useEffect(() => {
+    let mounted = true;
+    setStatusLoading(true);
+    fetchTaskStatusesForDepartment({ task, fallbackStatuses: statuses })
+      .then((list) => {
+        if (mounted) setDepartmentStatuses(list);
+      })
+      .catch(() => {
+        if (mounted) setDepartmentStatuses(statuses);
+      })
+      .finally(() => {
+        if (mounted) setStatusLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [task?.id, task?.department_id, task?.department?.id, statuses]);
 
   const completionColor = useMemo(() => {
     const v = Number(task?.completion_percentage || 0);
@@ -234,19 +263,41 @@ const TaskCardView = ({ task, statuses = [], imageBaseUrl, onDetails, onStatusCh
   <FormControl size="small" fullWidth sx={{ mt: 1 }}>
     <Select
       value={task?.status?.id ?? ""}
-      onChange={(e) => onStatusChange?.(task.id, e.target.value)}
+      disabled={statusLoading || !effectiveStatuses.length}
+      onChange={(e) => {
+        const nextStatusId = e.target.value;
+        onStatusChange?.(
+          task.id,
+          nextStatusId,
+          effectiveStatuses.find((status) => Number(status.id) === Number(nextStatusId))
+        );
+      }}
       sx={{
         bgcolor: "background.paper",
         color: colors.gray[100],
         "& .MuiSelect-icon": { color: colors.gray[300] },
       }}
     >
-      {statuses.map((s) => (
+      {statusLoading && (
+        <MenuItem value={task?.status?.id ?? ""}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <CircularProgress size={16} />
+            Loading statuses...
+          </Box>
+        </MenuItem>
+      )}
+      {!statusLoading && !effectiveStatuses.length && (
+        <MenuItem value={task?.status?.id ?? ""}>No statuses found</MenuItem>
+      )}
+      {effectiveStatuses.map((s) => (
         <MenuItem key={s.id} value={s.id}>
           {s.status_name}
         </MenuItem>
       ))}
     </Select>
+    {!statusLoading && !effectiveStatuses.length && (
+      <FormHelperText>No statuses found for this department.</FormHelperText>
+    )}
   </FormControl>
 </Box>
 

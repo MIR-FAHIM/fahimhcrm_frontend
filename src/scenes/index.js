@@ -76,6 +76,7 @@ import FacebookLeadsTable from "./admin/prospect/facebook_leads";
 import AddTaskPriority from "./admin/setting/add_task_priority";
 import AddTaskStatus from "./admin/setting/add_task_status";
 import AddTaskType from "./admin/setting/add_task_type";
+import ProspectStageManagement from "./admin/setting/prospect_stage_management";
 import ProspectListByStage from "./admin/prospect/prospect_list_by_stage";
 import ProspectBulkUpload from "./admin/prospect/prospect_bulk_upload";
 import ProspectReportMonthWise from "./admin/prospect/prospect_report";
@@ -214,6 +215,7 @@ export {
   AddTaskPriority,
   AddTaskStatus,
   AddTaskType,
+  ProspectStageManagement,
   ProspectListByStage,
   ProspectBulkUpload,
   ProspectReportMonthWise,

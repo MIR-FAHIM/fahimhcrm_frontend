@@ -63,6 +63,7 @@ import {
   AddTaskPriority,
   AddTaskStatus,
   AddTaskType,
+  ProspectStageManagement,
   ProspectListByStage,
   ProspectBulkUpload,
   ProspectReportMonthWise,
@@ -205,6 +206,7 @@ const AppRouter = () => {
           <Route path="/task-priority" element={<AddTaskPriority />} />
           <Route path="/task-status" element={<AddTaskStatus />} />
           <Route path="/task-type" element={<AddTaskType />} />
+          <Route path="/prospect-stage-management" element={<ProspectStageManagement />} />
           <Route path="/prospect-list-by-stage" element={<ProspectListByStage />} />
           <Route path="/prospect-bulk-upload" element={<ProspectBulkUpload />} />
           <Route path="/prospect-report-monthwise" element={<ProspectReportMonthWise />} />

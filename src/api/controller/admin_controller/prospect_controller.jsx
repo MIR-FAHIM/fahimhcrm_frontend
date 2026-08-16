@@ -20,6 +20,15 @@ const locationHeaders = () => ({ token: getProspectToken() });
 const asLocationError = (error, fallback) =>
   error?.response?.data?.message || error?.response?.data?.error || error?.message || fallback;
 
+const getProspectApiError = (error, fallback) => {
+  const data = error?.response?.data;
+  if (data?.errors && typeof data.errors === "object") {
+    const firstError = Object.values(data.errors).flat().filter(Boolean)[0];
+    if (firstError) return firstError;
+  }
+  return data?.message || data?.error || error?.message || fallback;
+};
+
 export const fetchDivisions = async () => {
   try {
     const response = await axiosInstance.get(API_URL.getDivision, {
@@ -72,6 +81,69 @@ export const getProspectAllStatus = async () => {
     return [];
   }
 }
+
+export const getProspectViewPreference = async (userId) => {
+  try {
+    const response = await axiosInstance.get(API_URL.getProspectViewPreference(userId), {
+      headers: locationHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching prospect view preference:", error);
+    throw new Error(getProspectApiError(error, "Failed to fetch prospect view preference."));
+  }
+};
+
+export const updateProspectViewPreference = async (data) => {
+  try {
+    const response = await axiosInstance.post(API_URL.updateProspectViewPreference, data, {
+      headers: locationHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating prospect view preference:", error);
+    throw new Error(getProspectApiError(error, "Failed to update prospect view preference."));
+  }
+};
+
+export const addProspectStage = async (data) => {
+  try {
+    const response = await axiosInstance.post(API_URL.addProspectStage, data, {
+      headers: locationHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding prospect stage:", error);
+    throw new Error(getProspectApiError(error, "Failed to add prospect stage."));
+  }
+};
+
+export const updateProspectStage = async (id, data) => {
+  try {
+    const response = await axiosInstance.post(API_URL.updateProspectStageById(id), data, {
+      headers: locationHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating prospect stage:", error);
+    throw new Error(getProspectApiError(error, "Failed to update prospect stage."));
+  }
+};
+
+export const updateProspectStageOrder = async (stages) => {
+  try {
+    const response = await axiosInstance.post(
+      API_URL.updateProspectStageOrder,
+      { stages },
+      { headers: locationHeaders() }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating prospect stage order:", error);
+    throw new Error(getProspectApiError(error, "Failed to update prospect stage order."));
+  }
+};
+
 export const getProspectStagesByLog = async (data) => {
   try {
     const response = await axiosInstance.post(API_URL.prospectstageByLogAndProspect,data,

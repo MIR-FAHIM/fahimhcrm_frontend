@@ -7,6 +7,7 @@ import {
   Avatar,
   Box,
   Button,
+  ButtonGroup,
   Chip,
   CircularProgress,
   Divider,
@@ -22,6 +23,7 @@ import {
   TextField,
   Tooltip,
   Typography,
+  useMediaQuery,
   useTheme,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
@@ -50,6 +52,7 @@ import opportunity from "../../../assets/images/opportunity.png";
 import {
   fetchAllProspect,
   getAllProspectStageOverview,
+  updateProspectViewPreference,
 } from "../../../api/controller/admin_controller/prospect_controller";
 
 const activityItems = [
@@ -76,6 +79,8 @@ const href = (url) => (url ? (String(url).startsWith("http") ? url : `https://${
 const dateText = (value) => (value && dayjs(value).isValid() ? dayjs(value).format("MMM D, YYYY") : "N/A");
 const activityTotal = (row = {}) => Object.values(row.activity_summary || {}).reduce((sum, count) => sum + Number(count || 0), 0);
 const timeValue = (value) => (value && dayjs(value).isValid() ? dayjs(value).valueOf() : 0);
+const locationText = (row = {}) =>
+  [row.division?.name, row.district?.name, row.thana?.name].filter(Boolean).join(", ") || "N/A";
 
 const searchText = (row = {}) =>
   [
@@ -86,7 +91,9 @@ const searchText = (row = {}) =>
     row.stage?.stage_name,
     row.industry_type?.industry_type_name,
     row.information_source?.information_source_name,
-    row.zone?.zone_name,
+    row.division?.name,
+    row.district?.name,
+    row.thana?.name,
     row.interested_for?.product_name,
     row.concern_persons?.map((p) => `${p.person_name || ""} ${p.mobile || ""} ${p.email || ""}`).join(" "),
   ]
@@ -149,9 +156,101 @@ const ActivityChips = ({ row }) => {
   );
 };
 
+const ProspectMobileCard = ({ row, onOpen }) => {
+  const theme = useTheme();
+  const color = safeColor(theme, row.stage?.color_code);
+  const persons = row.concern_persons || [];
+  const first = persons[0];
+  const website = href(row.website_link);
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        p: 1.5,
+        borderRadius: 2,
+        bgcolor: theme.palette.background.paper,
+        border: `1px solid ${theme.palette.divider}`,
+      }}
+    >
+      <Stack spacing={1.25}>
+        <Stack direction="row" spacing={1.2} alignItems="flex-start">
+          <Avatar variant="rounded" sx={{ bgcolor: alpha(color, 0.14), color, fontWeight: 800 }}>
+            {initials(row.prospect_name)}
+          </Avatar>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Stack direction="row" spacing={0.75} alignItems="center" sx={{ minWidth: 0 }}>
+              <Typography sx={{ color: theme.palette.text.primary, fontWeight: 800, lineHeight: 1.2, wordBreak: "break-word" }}>
+                {row.prospect_name || "Untitled prospect"}
+              </Typography>
+              {truthy(row.is_opportunity) && (
+                <Tooltip title="Qualified opportunity">
+                  <Box component="img" src={opportunity} alt="Opportunity" sx={{ width: 18, height: 18, flexShrink: 0 }} />
+                </Tooltip>
+              )}
+            </Stack>
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+              Prospect #{row.id}
+            </Typography>
+          </Box>
+          <Button size="small" variant="contained" onClick={() => onOpen(row.id)} sx={{ flexShrink: 0, fontWeight: 800 }}>
+            View
+          </Button>
+        </Stack>
+
+        <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
+          <StageChip stage={row.stage} />
+          <Chip size="small" variant="outlined" label={row.industry_type?.industry_type_name || "No industry"} />
+          <Chip size="small" variant="outlined" label={row.interested_for?.product_name || "No product"} />
+        </Stack>
+
+        <Box>
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+            Location
+          </Typography>
+          <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 600 }}>
+            {locationText(row)}
+          </Typography>
+          {row.address && (
+            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, display: "block", mt: 0.25 }}>
+              {row.address}
+            </Typography>
+          )}
+        </Box>
+
+        <Paper elevation={0} sx={{ p: 1, borderRadius: 1.5, bgcolor: theme.palette.background.default, border: `1px solid ${theme.palette.divider}` }}>
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+            Contact
+          </Typography>
+          <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
+            {first?.person_name || "No contact person"}
+          </Typography>
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+            {first?.mobile || first?.email || "Contact unavailable"}{persons.length > 1 ? ` | +${persons.length - 1} more` : ""}
+          </Typography>
+        </Paper>
+
+        <Stack spacing={0.75}>
+          <ActivityChips row={row} />
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+            Last: {dateText(row.last_activity)} | Next: {dateText(row.next_activity)}
+          </Typography>
+        </Stack>
+
+        {website && (
+          <Link href={website} target="_blank" rel="noopener noreferrer" underline="hover" variant="body2" sx={{ color: theme.palette.primary.main, fontWeight: 700 }}>
+            Website
+          </Link>
+        )}
+      </Stack>
+    </Paper>
+  );
+};
+
 const ProspectListPage = () => {
   const navigate = useNavigate();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const brand = theme.palette.blueAccent?.main ?? theme.palette.primary.main;
   const brandHover = theme.palette.blueAccent?.dark ?? theme.palette.primary.dark;
   const brandContrast = theme.palette.blueAccent?.contrastText ?? theme.palette.getContrastText(brand);
@@ -166,6 +265,7 @@ const ProspectListPage = () => {
   const [typeFilter, setTypeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("last_activity");
   const [query, setQuery] = useState("");
+  const [viewSaving, setViewSaving] = useState(false);
 
   const loadData = useCallback(async ({ silent = false } = {}) => {
     if (silent) setRefreshing(true);
@@ -271,7 +371,8 @@ const ProspectListPage = () => {
         <Box sx={{ py: 1.25, width: "100%", minWidth: 0 }}>
           <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 650 }}>{row.industry_type?.industry_type_name || "No industry"}</Typography>
           <Typography variant="caption" noWrap sx={{ display: "block", color: theme.palette.text.secondary }}>Source: {row.information_source?.information_source_name || "N/A"}</Typography>
-          <Typography variant="caption" noWrap sx={{ display: "block", color: theme.palette.text.secondary }}>Zone: {row.zone?.zone_name || "N/A"} | Product: {row.interested_for?.product_name || "N/A"}</Typography>
+          <Typography variant="caption" noWrap sx={{ display: "block", color: theme.palette.text.secondary }}>Location: {locationText(row)}</Typography>
+          <Typography variant="caption" noWrap sx={{ display: "block", color: theme.palette.text.secondary }}>Product: {row.interested_for?.product_name || "N/A"}</Typography>
           {row.address && <Typography variant="caption" sx={{ color: theme.palette.text.secondary, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}><MapRounded sx={{ fontSize: 14, mr: 0.4, verticalAlign: "text-bottom" }} />{row.address}</Typography>}
         </Box>
       ),
@@ -327,8 +428,33 @@ const ProspectListPage = () => {
     setQuery("");
   };
 
+  const handleViewPreferenceChange = async (isTableView) => {
+    if (isTableView) return;
+    const userID = localStorage.getItem("userId");
+    if (!userID) {
+      setError("User information not found. Please login again.");
+      return;
+    }
+
+    setViewSaving(true);
+    try {
+      const response = await updateProspectViewPreference({
+        user_id: Number(userID),
+        is_prospect_table_view: false,
+      });
+      if (response?.status && String(response.status).toLowerCase() !== "success") {
+        throw new Error(response?.message || "Failed to update prospect view preference.");
+      }
+      navigate("/prospect-list-by-stage");
+    } catch (error) {
+      setError(error?.message || "Failed to update prospect view preference.");
+    } finally {
+      setViewSaving(false);
+    }
+  };
+
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: theme.palette.background.default, minHeight: "100vh" }}>
+    <Box sx={{ p: { xs: 1.5, md: 4 }, bgcolor: theme.palette.background.default, minHeight: "100vh", width: "100%", maxWidth: "100%", overflowX: "hidden", boxSizing: "border-box" }}>
       <Stack direction={{ xs: "column", lg: "row" }} alignItems={{ xs: "stretch", lg: "center" }} justifyContent="space-between" spacing={2} sx={{ mb: 2.5 }}>
         <Stack direction="row" spacing={1.25} alignItems="center">
           <Avatar variant="rounded" sx={{ bgcolor: alpha(brand, 0.12), color: brand }}><TableRowsRounded /></Avatar>
@@ -336,7 +462,10 @@ const ProspectListPage = () => {
         </Stack>
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
           <Button variant="contained" startIcon={<AddRounded />} onClick={() => navigate("/add-prospect")} sx={{ borderRadius: 2, fontWeight: 700 }}>Add Prospect</Button>
-          <Button variant="outlined" startIcon={<ViewKanbanRounded />} onClick={() => navigate("/prospect-list-by-stage")} sx={{ borderRadius: 2, fontWeight: 700 }}>Stage View</Button>
+          <ButtonGroup variant="outlined" disabled={viewSaving} sx={{ alignSelf: { xs: "stretch", sm: "center" }, "& .MuiButton-root": { fontWeight: 700, borderRadius: 2 } }}>
+            <Button variant="contained" startIcon={<TableRowsRounded />}>Table View</Button>
+            <Button startIcon={viewSaving ? <CircularProgress size={16} /> : <ViewKanbanRounded />} onClick={() => handleViewPreferenceChange(false)}>Pipeline View</Button>
+          </ButtonGroup>
           <Button variant="outlined" startIcon={refreshing ? <CircularProgress size={16} /> : <RefreshRounded />} disabled={loading || refreshing} onClick={() => loadData({ silent: true })} sx={{ borderRadius: 2, fontWeight: 700 }}>Refresh</Button>
         </Stack>
       </Stack>
@@ -371,9 +500,49 @@ const ProspectListPage = () => {
         </Stack>
       </Paper>
 
-      <Paper elevation={0} sx={{ height: "72vh", borderRadius: 2, overflow: "hidden", bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}`, "& .MuiDataGrid-root": { border: "none", color: theme.palette.text.primary }, "& .MuiDataGrid-columnHeaders": { bgcolor: alpha(brand, 0.1), borderBottom: `1px solid ${theme.palette.divider}` }, "& .MuiDataGrid-columnHeaderTitle": { fontWeight: 700 }, "& .MuiDataGrid-cell": { borderBottom: `1px solid ${theme.palette.divider}`, alignItems: "flex-start" }, "& .MuiDataGrid-row": { cursor: "pointer" }, "& .MuiDataGrid-row:hover": { bgcolor: alpha(brand, 0.06) }, "& .MuiDataGrid-footerContainer": { bgcolor: alpha(brand, 0.08), borderTop: `1px solid ${theme.palette.divider}` }, "& .MuiDataGrid-toolbarContainer": { p: 1, borderBottom: `1px solid ${theme.palette.divider}`, "& .MuiButton-text": { color: theme.palette.text.primary, fontWeight: 600 } } }}>
-        <DataGrid rows={filtered} columns={columns} getRowId={(row) => row.id} loading={loading || refreshing} checkboxSelection disableRowSelectionOnClick onRowDoubleClick={(params) => navigate(`/prospect-detail/${params.row.id}`)} slots={{ toolbar: GridToolbar }} getRowHeight={() => "auto"} pageSizeOptions={[10, 25, 50, 100]} initialState={{ pagination: { paginationModel: { pageSize: 10 } } }} />
-      </Paper>
+      {isMobile ? (
+        <Stack spacing={1.25}>
+          {(loading || refreshing) && (
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 2, textAlign: "center", bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}` }}>
+              <CircularProgress size={24} />
+            </Paper>
+          )}
+          {!loading && !refreshing && filtered.length === 0 && (
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 2, textAlign: "center", bgcolor: theme.palette.background.paper, border: `1px solid ${theme.palette.divider}` }}>
+              <Typography color="text.secondary">No prospects found.</Typography>
+            </Paper>
+          )}
+          {!loading && !refreshing && filtered.map((row) => (
+            <ProspectMobileCard key={row.id} row={row} onOpen={(id) => navigate(`/prospect-detail/${id}`)} />
+          ))}
+        </Stack>
+      ) : (
+        <Paper
+          elevation={0}
+          sx={{
+            height: "72vh",
+            width: "100%",
+            maxWidth: "100%",
+            minWidth: 0,
+            borderRadius: 2,
+            overflow: "hidden",
+            bgcolor: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+            "& .MuiDataGrid-root": { border: "none", color: theme.palette.text.primary, maxWidth: "100%" },
+            "& .MuiDataGrid-main": { overflow: "hidden" },
+            "& .MuiDataGrid-virtualScroller": { overflowX: "auto" },
+            "& .MuiDataGrid-columnHeaders": { bgcolor: alpha(brand, 0.1), borderBottom: `1px solid ${theme.palette.divider}` },
+            "& .MuiDataGrid-columnHeaderTitle": { fontWeight: 700 },
+            "& .MuiDataGrid-cell": { borderBottom: `1px solid ${theme.palette.divider}`, alignItems: "flex-start" },
+            "& .MuiDataGrid-row": { cursor: "pointer" },
+            "& .MuiDataGrid-row:hover": { bgcolor: alpha(brand, 0.06) },
+            "& .MuiDataGrid-footerContainer": { bgcolor: alpha(brand, 0.08), borderTop: `1px solid ${theme.palette.divider}` },
+            "& .MuiDataGrid-toolbarContainer": { p: 1, borderBottom: `1px solid ${theme.palette.divider}`, "& .MuiButton-text": { color: theme.palette.text.primary, fontWeight: 600 } },
+          }}
+        >
+          <DataGrid rows={filtered} columns={columns} getRowId={(row) => row.id} loading={loading || refreshing} checkboxSelection disableRowSelectionOnClick onRowDoubleClick={(params) => navigate(`/prospect-detail/${params.row.id}`)} slots={{ toolbar: GridToolbar }} getRowHeight={() => "auto"} pageSizeOptions={[10, 25, 50, 100]} initialState={{ pagination: { paginationModel: { pageSize: 10 } } }} />
+        </Paper>
+      )}
 
       <Paper elevation={0} sx={{ mt: 2, p: 1.5, borderRadius: 2, bgcolor: alpha(brand, 0.06), border: `1px solid ${alpha(brand, 0.16)}` }}>
         <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ xs: "flex-start", sm: "center" }} justifyContent="space-between">

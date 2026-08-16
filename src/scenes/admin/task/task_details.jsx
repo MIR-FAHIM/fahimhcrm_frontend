@@ -45,7 +45,6 @@ import {
   assignUser,
   deleteTaskFollowup,
   getPriority,
-  getStatus,
   getTaskActivity,
   getTaskDetails,
   getTaskFollowup,
@@ -66,6 +65,7 @@ import TaskPriorityUpdateComponent from "./components_task/task_priority_update"
 import TaskStatusChangeComponent from "./components_task/task_status_update_details";
 import TaskTitleInfo from "./components_task/task_info_title";
 import TaskTypeUpdateComponent from "./components_task/task_type_update";
+import { fetchTaskStatusesForDepartment } from "./utils/task_status_options";
 
 const fallback = "-";
 
@@ -227,6 +227,7 @@ const TaskDetails = () => {
   const theme = useTheme();
 
   const [statuses, setStatuses] = useState([]);
+  const [statusesLoading, setStatusesLoading] = useState(false);
   const [typeList, setTypeList] = useState([]);
   const [priorityList, setPriorityList] = useState([]);
   const [task, setTask] = useState(null);
@@ -272,9 +273,8 @@ const TaskDetails = () => {
     (async () => {
       setLoading(true);
       try {
-        const [st, tt, pr] = await Promise.all([getStatus(), getTaskType(), getPriority()]);
+        const [tt, pr] = await Promise.all([getTaskType(), getPriority()]);
         if (!mounted) return;
-        setStatuses(st?.data ?? []);
         setTypeList(tt?.data ?? []);
         setPriorityList(pr?.data ?? []);
         await refreshTask();
@@ -290,6 +290,30 @@ const TaskDetails = () => {
       mounted = false;
     };
   }, [id, refreshTask]);
+
+  useEffect(() => {
+    if (!task) return;
+    let mounted = true;
+    setStatusesLoading(true);
+    fetchTaskStatusesForDepartment({ task })
+      .then((list) => {
+        if (mounted) setStatuses(list);
+      })
+      .catch((statusError) => {
+        console.error("department statuses:", statusError);
+        if (mounted) {
+          setStatuses([]);
+          notify("Task status list could not be loaded.", "warning");
+        }
+      })
+      .finally(() => {
+        if (mounted) setStatusesLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [task?.id, task?.department_id, task?.department?.id]);
 
   const dueInfo = useMemo(() => getDueInfo(task?.due_date), [task?.due_date]);
   const isVisit = getTaskTypeName(task) === "Visit";
@@ -566,7 +590,7 @@ const TaskDetails = () => {
               ) : (
                 <TaskTypeUpdateComponent task={task} taskTypeList={typeList} handleTaskTypeUpdate={handleTaskType} />
               )}
-              <TaskStatusChangeComponent task={task} statuses={statuses} handleStatusChange={handleStatusChange} />
+              <TaskStatusChangeComponent task={task} statuses={statuses} loading={statusesLoading} handleStatusChange={handleStatusChange} />
               <TaskDueDate task={task} onEditDueDate={onEditDueDate} />
             </Grid>
           </Section>
