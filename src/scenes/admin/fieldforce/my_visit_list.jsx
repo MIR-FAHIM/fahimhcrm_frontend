@@ -42,6 +42,7 @@ import FmdGoodIcon from "@mui/icons-material/FmdGood";
 import WorkHistoryIcon from "@mui/icons-material/WorkHistory";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import AltRouteIcon from "@mui/icons-material/AltRoute";
 
 // Controller
 import {
@@ -49,6 +50,7 @@ import {
   getEmpVisitSchedule,
   startVisit,
 } from "../../../api/controller/admin_controller/visit_controller";
+import { google_map_key } from "../../../api/config";
 
 const fmtDate = (val) => {
   if (!val) return "—";
@@ -57,6 +59,45 @@ const fmtDate = (val) => {
   } catch {
     return val;
   }
+};
+
+const parseNum = (value) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+};
+
+const getStartCoords = (visit) => {
+  const lat = parseNum(visit?.start_latitude) ?? parseNum(visit?.checkin_latitude) ?? parseNum(visit?.check_in_latitude);
+  const lng = parseNum(visit?.start_longitude) ?? parseNum(visit?.checkin_longitude) ?? parseNum(visit?.check_in_longitude);
+  return lat != null && lng != null ? { lat, lng } : null;
+};
+
+const getCompleteCoords = (visit) => {
+  const lat = parseNum(visit?.complete_latitude) ?? parseNum(visit?.checkout_latitude) ?? parseNum(visit?.check_out_latitude);
+  const lng = parseNum(visit?.complete_longitude) ?? parseNum(visit?.checkout_longitude) ?? parseNum(visit?.check_out_longitude);
+  return lat != null && lng != null ? { lat, lng } : null;
+};
+
+const getRouteUrl = (visit) => {
+  const start = getStartCoords(visit);
+  const complete = getCompleteCoords(visit);
+  if (!start || !complete) return "";
+  return `https://www.google.com/maps/dir/${start.lat},${start.lng}/${complete.lat},${complete.lng}`;
+};
+
+const toRad = (value) => (value * Math.PI) / 180;
+
+const getStraightDistanceKm = (visit) => {
+  const start = getStartCoords(visit);
+  const complete = getCompleteCoords(visit);
+  if (!start || !complete) return null;
+  const earthRadiusKm = 6371;
+  const dLat = toRad(complete.lat - start.lat);
+  const dLng = toRad(complete.lng - start.lng);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(start.lat)) * Math.cos(toRad(complete.lat)) * Math.sin(dLng / 2) ** 2;
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
 export default function MyVisits() {
@@ -131,26 +172,73 @@ export default function MyVisits() {
       );
     });
 
+  const resolveAddress = async ({ latitude, longitude }) => {
+    const fallback = `Lat: ${Number(latitude).toFixed(6)}, Lon: ${Number(longitude).toFixed(6)}`;
+    if (!google_map_key) return fallback;
+
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${google_map_key}`
+      );
+      const data = await response.json();
+      return data.status === "OK" ? data.results?.[0]?.formatted_address || fallback : fallback;
+    } catch (error) {
+      console.error("Reverse geocode failed:", error);
+      return fallback;
+    }
+  };
+
+  const replaceVisitInSchedule = (updatedVisit) => {
+    if (!updatedVisit?.id) return;
+    setSchedule((current) => {
+      const next = {};
+      Object.entries(current).forEach(([key, list]) => {
+        next[key] = Array.isArray(list)
+          ? list.map((visit) => (String(visit.id) === String(updatedVisit.id) ? { ...visit, ...updatedVisit } : visit))
+          : [];
+      });
+      return next;
+    });
+    setRows((current) => current.map((visit) => (String(visit.id) === String(updatedVisit.id) ? { ...visit, ...updatedVisit } : visit)));
+  };
+
   const openVisitAction = (type, visit) => setActionState({ open: true, type, visit, note: "", saving: false });
   const closeVisitAction = () => setActionState({ open: false, type: "", visit: null, note: "", saving: false });
 
   const submitVisitAction = async () => {
     if (!actionState.visit?.id) return;
+    const note = actionState.note?.trim() || "";
+    if (actionState.type === "complete" && !note) {
+      setSnack({ open: true, msg: "Please write a completion note before completing the visit.", sev: "error" });
+      return;
+    }
+
     setActionState((current) => ({ ...current, saving: true }));
     try {
       const coords = await getBrowserLocation();
-      const payload = {
-        employee_id: Number(userID),
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-        note: actionState.note?.trim() || null,
-      };
+      const locationText = await resolveAddress(coords);
+      const payload = actionState.type === "complete"
+        ? {
+            employee_id: Number(userID),
+            complete_latitude: coords.latitude,
+            complete_longitude: coords.longitude,
+            complete_location: locationText,
+            note,
+          }
+        : {
+            employee_id: Number(userID),
+            start_latitude: coords.latitude,
+            start_longitude: coords.longitude,
+            start_location: locationText,
+            note: note || null,
+          };
       const res = actionState.type === "complete"
         ? await completeVisit(actionState.visit.id, payload)
         : await startVisit(actionState.visit.id, payload);
 
       if (res?.status === "success" || res?.success) {
         setSnack({ open: true, msg: actionState.type === "complete" ? "Visit completed." : "Visit started.", sev: "success" });
+        replaceVisitInSchedule(res?.visit || res?.data || { ...actionState.visit, ...payload });
         closeVisitAction();
         await loadSchedule();
       } else {
@@ -265,19 +353,83 @@ export default function MyVisits() {
 
   // Helper to get preferred coords (check-in first, else lead coords)
   const getCoords = (v) => {
-    const parseNum = (x) => {
-      const n = Number(x);
-      return Number.isFinite(n) ? n : null;
-    };
+    const startCoords = getStartCoords(v);
+    if (startCoords) return startCoords;
     const lat =
-      parseNum(v?.checkin_latitude) ??
       parseNum(v?.lead?.latitude) ??
       null;
     const lng =
-      parseNum(v?.checkin_longitude) ??
       parseNum(v?.lead?.longitude) ??
       null;
     return { lat, lng };
+  };
+
+  const canActOnVisit = (visit) => {
+    const assignedId = visit?.employee_id || visit?.employee?.id;
+    return String(assignedId || "") === String(userID || "");
+  };
+
+  const isStartDisabled = (visit) => !canActOnVisit(visit) || Boolean(visit?.actual_start_at || visit?.actual_end_at);
+  const isCompleteDisabled = (visit) => !canActOnVisit(visit) || Boolean(visit?.actual_end_at);
+
+  const renderVisitGpsDetails = (visit, compact = false) => {
+    const start = getStartCoords(visit);
+    const complete = getCompleteCoords(visit);
+    const routeUrl = getRouteUrl(visit);
+    const distanceKm = getStraightDistanceKm(visit);
+
+    return (
+      <Stack spacing={1} sx={{ mt: compact ? 1 : 1.5 }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: compact ? "1fr" : "1fr 1fr" }, gap: 1 }}>
+          <Paper variant="outlined" sx={{ p: 1, borderRadius: 2, bgcolor: theme.palette.background.default }}>
+            <Typography variant="caption" color="text.secondary" fontWeight={800}>
+              Start Data
+            </Typography>
+            <Typography variant="caption" display="block" color="text.secondary">
+              Time: {fmtDate(visit.actual_start_at || visit.started_at)}
+            </Typography>
+            <Typography variant="caption" display="block" color="text.secondary">
+              Location: {visit.start_location || visit.checkin_location || "-"}
+            </Typography>
+            <Typography variant="caption" display="block" color="text.secondary">
+              Lat/Lon: {start ? `${start.lat.toFixed(6)}, ${start.lng.toFixed(6)}` : "-"}
+            </Typography>
+          </Paper>
+          <Paper variant="outlined" sx={{ p: 1, borderRadius: 2, bgcolor: theme.palette.background.default }}>
+            <Typography variant="caption" color="text.secondary" fontWeight={800}>
+              Complete Data
+            </Typography>
+            <Typography variant="caption" display="block" color="text.secondary">
+              Time: {fmtDate(visit.actual_end_at || visit.completed_at)}
+            </Typography>
+            <Typography variant="caption" display="block" color="text.secondary">
+              Location: {visit.complete_location || visit.checkout_location || "-"}
+            </Typography>
+            <Typography variant="caption" display="block" color="text.secondary">
+              Lat/Lon: {complete ? `${complete.lat.toFixed(6)}, ${complete.lng.toFixed(6)}` : "-"}
+            </Typography>
+          </Paper>
+        </Box>
+        {routeUrl && (
+          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<AltRouteIcon />}
+              href={routeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ borderRadius: 2, textTransform: "none", fontWeight: 700 }}
+            >
+              View Route
+            </Button>
+            {distanceKm != null && (
+              <Chip size="small" label={`Straight distance ${distanceKm.toFixed(2)} km`} variant="outlined" />
+            )}
+          </Stack>
+        )}
+      </Stack>
+    );
   };
 
   // Column count (update if you add/remove columns)
@@ -456,6 +608,8 @@ export default function MyVisits() {
                       <Chip size="small" label={`Priority: ${v.priority?.priority_name || "-"}`} variant="outlined" />
                     </Stack>
 
+                    {renderVisitGpsDetails(v)}
+
                     <Box sx={{ mt: 1.5, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5 }}>
                       <Box>
                         <Typography variant="caption" color="text.secondary">
@@ -502,14 +656,16 @@ export default function MyVisits() {
                     </Box>
 
                     <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
-                      <Stack direction="row" spacing={1} sx={{ mr: "auto" }}>
-                        <Button size="small" variant="outlined" onClick={() => openVisitAction("start", v)}>
-                          Start
-                        </Button>
-                        <Button size="small" variant="contained" onClick={() => openVisitAction("complete", v)}>
-                          Complete
-                        </Button>
-                      </Stack>
+                      {canActOnVisit(v) && (
+                        <Stack direction="row" spacing={1} sx={{ mr: "auto" }}>
+                          <Button size="small" variant="outlined" disabled={isStartDisabled(v)} onClick={() => openVisitAction("start", v)}>
+                            Start
+                          </Button>
+                          <Button size="small" variant="contained" disabled={isCompleteDisabled(v)} onClick={() => openVisitAction("complete", v)}>
+                            Complete
+                          </Button>
+                        </Stack>
+                      )}
                       <IconButton
                         size="small"
                         color="primary"
@@ -682,33 +838,36 @@ export default function MyVisits() {
 
                         {/* Location */}
                         <TableCell>
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (hasCoords) handleOpenMap(lat, lng);
-                              }}
-                              disabled={!hasCoords}
-                              sx={{
-                                borderRadius: 2,
-                                bgcolor: hasCoords ? alpha(brand, 0.08) : "transparent",
-                                border: `1px solid ${hasCoords ? alpha(brand, 0.3) : divider}`,
-                                "&:hover": {
-                                  bgcolor: hasCoords ? alpha(brand, 0.16) : "transparent",
-                                },
-                              }}
-                            >
-                              <MyLocationIcon
-                                sx={{
-                                  fontSize: 18,
-                                  color: hasCoords ? brand : textSec,
+                          <Stack spacing={1}>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (hasCoords) handleOpenMap(lat, lng);
                                 }}
-                              />
-                            </IconButton>
-                            <Typography variant="caption" color="text.secondary" noWrap>
-                              {hasCoords ? `${lat.toFixed(5)}, ${lng.toFixed(5)}` : "—"}
-                            </Typography>
+                                disabled={!hasCoords}
+                                sx={{
+                                  borderRadius: 2,
+                                  bgcolor: hasCoords ? alpha(brand, 0.08) : "transparent",
+                                  border: `1px solid ${hasCoords ? alpha(brand, 0.3) : divider}`,
+                                  "&:hover": {
+                                    bgcolor: hasCoords ? alpha(brand, 0.16) : "transparent",
+                                  },
+                                }}
+                              >
+                                <MyLocationIcon
+                                  sx={{
+                                    fontSize: 18,
+                                    color: hasCoords ? brand : textSec,
+                                  }}
+                                />
+                              </IconButton>
+                              <Typography variant="caption" color="text.secondary" noWrap>
+                                {hasCoords ? `${lat.toFixed(5)}, ${lng.toFixed(5)}` : "—"}
+                              </Typography>
+                            </Stack>
+                            {renderVisitGpsDetails(v, true)}
                           </Stack>
                         </TableCell>
 
@@ -723,12 +882,16 @@ export default function MyVisits() {
                         {/* Details column */}
                         <TableCell>
                           <Stack direction="row" spacing={0.75}>
-                            <Button size="small" variant="outlined" onClick={() => openVisitAction("start", v)}>
-                              Start
-                            </Button>
-                            <Button size="small" variant="contained" onClick={() => openVisitAction("complete", v)}>
-                              Done
-                            </Button>
+                            {canActOnVisit(v) && (
+                              <>
+                                <Button size="small" variant="outlined" disabled={isStartDisabled(v)} onClick={() => openVisitAction("start", v)}>
+                                  Start
+                                </Button>
+                                <Button size="small" variant="contained" disabled={isCompleteDisabled(v)} onClick={() => openVisitAction("complete", v)}>
+                                  Done
+                                </Button>
+                              </>
+                            )}
                             <IconButton
                               size="small"
                               color="primary"
@@ -768,10 +931,12 @@ export default function MyVisits() {
               multiline
               minRows={3}
               fullWidth
-              placeholder="Write a short note"
+              required={actionState.type === "complete"}
+              helperText={actionState.type === "complete" ? "Completion note is required." : "Optional note for the visit start."}
+              placeholder={actionState.type === "complete" ? "Write the visit completion report" : "Write a short start note"}
             />
             <Alert severity="info">
-              Browser location permission is required for this action.
+              Browser location permission is required. This action saves separate {actionState.type === "complete" ? "completion" : "starting"} GPS coordinates and location.
             </Alert>
           </Stack>
         </DialogContent>

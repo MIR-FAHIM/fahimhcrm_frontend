@@ -45,6 +45,7 @@ import { fetchDepartment, fetchZone } from "../../../api/controller/admin_contro
 import {
   getPriority,
   getStatus,
+  getTaskStatusByDepartment,
   getTaskType,
 } from "../../../api/controller/admin_controller/task_controller/task_controller";
 
@@ -101,6 +102,7 @@ export default function VisitPlanner() {
   });
 
   const [loading, setLoading] = useState(true);
+  const [statusLoading, setStatusLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [activeTab, setActiveTab] = useState("lead"); // 'lead' | 'zone'
@@ -130,12 +132,11 @@ export default function VisitPlanner() {
   useEffect(() => {
     (async () => {
       try {
-        const [empsRes, prospectsRes, visitsRes, zonesRes, statusesRes, typesRes, prioritiesRes, departmentsRes] = await Promise.all([
+        const [empsRes, prospectsRes, visitsRes, zonesRes, typesRes, prioritiesRes, departmentsRes] = await Promise.all([
           fetchEmployees(),
           fetchAllProspect(),
           getAllVisit(),
           fetchZone(),
-          getStatus(),
           getTaskType(),
           getPriority(),
           fetchDepartment(),
@@ -151,18 +152,18 @@ export default function VisitPlanner() {
         setZones(zonesArr);
         setVisits(visitsArr);
         const setup = {
-          statuses: listFromResponse(statusesRes),
+          statuses: [],
           types: listFromResponse(typesRes),
           priorities: listFromResponse(prioritiesRes),
           departments: listFromResponse(departmentsRes),
         };
+        const defaultDepartmentId = findByName(setup.departments, ["department_name", "name"], ["sales", "field", "marketing"])?.id || "";
 
         setTaskSetup(setup);
         setForm((current) => ({
           ...current,
-          task_status_id: current.task_status_id || findByName(setup.statuses, ["status_name", "name"], ["scheduled", "planned", "pending", "to do", "open"])?.id || "",
           task_type_id: current.task_type_id || findByName(setup.types, ["type_name", "name"], ["visit"])?.id || "",
-          department_id: current.department_id || findByName(setup.departments, ["department_name", "name"], ["sales", "field", "marketing"])?.id || "",
+          department_id: current.department_id || defaultDepartmentId,
           priority_id: current.priority_id || findByName(setup.priorities, ["priority_name", "name"], ["important", "normal", "medium", "low"])?.id || "",
         }));
       } catch (e) {
@@ -173,6 +174,58 @@ export default function VisitPlanner() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    const departmentId = form.department_id;
+    let ignore = false;
+
+    const loadDepartmentStatuses = async () => {
+      if (!departmentId) {
+        setTaskSetup((current) => ({ ...current, statuses: [] }));
+        setForm((current) => ({ ...current, task_status_id: "" }));
+        return;
+      }
+
+      setStatusLoading(true);
+      try {
+        let statuses = [];
+        try {
+          const response = await getTaskStatusByDepartment(departmentId);
+          statuses = listFromResponse(response);
+        } catch (departmentError) {
+          console.error("Department status load failed, using fallback:", departmentError);
+          const fallbackResponse = await getStatus();
+          statuses = listFromResponse(fallbackResponse);
+        }
+
+        if (ignore) return;
+
+        setTaskSetup((current) => ({ ...current, statuses }));
+        setForm((current) => {
+          const currentStillValid = statuses.some((item) => String(item.id) === String(current.task_status_id));
+          return {
+            ...current,
+            task_status_id: currentStillValid
+              ? current.task_status_id
+              : findByName(statuses, ["status_name", "name"], ["scheduled", "planned", "pending", "to do", "open"])?.id || "",
+          };
+        });
+      } catch (error) {
+        if (ignore) return;
+        console.error("Status load error:", error);
+        setTaskSetup((current) => ({ ...current, statuses: [] }));
+        setForm((current) => ({ ...current, task_status_id: "" }));
+        setSnack({ open: true, msg: "Failed to load task statuses for this department.", sev: "error" });
+      } finally {
+        if (!ignore) setStatusLoading(false);
+      }
+    };
+
+    loadDepartmentStatuses();
+    return () => {
+      ignore = true;
+    };
+  }, [form.department_id]);
 
   const handleSelect = (type, id) => {
     if (type === "lead") {
@@ -196,6 +249,9 @@ export default function VisitPlanner() {
       if (k === "target_type") {
         setActiveTab(value === "zone" ? "zone" : "lead");
         return { ...f, target_type: value, lead_id: "", zone_id: "" };
+      }
+      if (k === "department_id") {
+        return { ...f, department_id: value, task_status_id: "" };
       }
       return { ...f, [k]: value };
     });
@@ -438,9 +494,19 @@ export default function VisitPlanner() {
                       value={form.task_status_id}
                       onChange={onChange("task_status_id")}
                       SelectProps={{ native: true }}
+                      disabled={!form.department_id || statusLoading}
+                      helperText={
+                        !form.department_id
+                          ? "Select department first"
+                          : statusLoading
+                            ? "Loading department statuses..."
+                            : !taskSetup.statuses.length
+                              ? "No status found for this department"
+                              : ""
+                      }
                       required
                     >
-                      <option value="">Select status</option>
+                      <option value="">{statusLoading ? "Loading statuses..." : "Select status"}</option>
                       {taskSetup.statuses.map((item) => (
                         <option key={item.id} value={item.id}>
                           {item.status_name || item.name}

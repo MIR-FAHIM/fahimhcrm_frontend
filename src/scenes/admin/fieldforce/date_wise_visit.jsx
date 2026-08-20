@@ -96,8 +96,8 @@ const getCoords = (visit) => {
     const number = Number(value);
     return Number.isFinite(number) ? number : null;
   };
-  const lat = parse(visit?.checkin_latitude) ?? parse(visit?.lead?.latitude);
-  const lng = parse(visit?.checkin_longitude) ?? parse(visit?.lead?.longitude);
+  const lat = parse(visit?.start_latitude) ?? parse(visit?.checkin_latitude) ?? parse(visit?.complete_latitude) ?? parse(visit?.lead?.latitude);
+  const lng = parse(visit?.start_longitude) ?? parse(visit?.checkin_longitude) ?? parse(visit?.complete_longitude) ?? parse(visit?.lead?.longitude);
   return lat != null && lng != null ? { lat, lng } : null;
 };
 

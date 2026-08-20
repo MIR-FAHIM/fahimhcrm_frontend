@@ -64,15 +64,43 @@ const getVisitTarget = (visit, leadLookup = {}) => {
 const getTaskStatus = (visit) =>
   labelOf(visit?.task_visit_relation?.task?.status || visit?.taskVisitRelation?.task?.status || visit?.task_visit_relation?.status || visit?.taskVisitRelation?.status);
 
-const getVisitCoords = (visit, leadLookup = {}) => {
+const getStartCoords = (visit) => {
+  const lat =
+    parseNumber(visit?.start_latitude) ??
+    parseNumber(visit?.start_lat) ??
+    parseNumber(visit?.checkin_latitude) ??
+    parseNumber(visit?.check_in_latitude) ??
+    parseNumber(visit?.check_in_lat);
+  const lng =
+    parseNumber(visit?.start_longitude) ??
+    parseNumber(visit?.start_lon) ??
+    parseNumber(visit?.start_lng) ??
+    parseNumber(visit?.checkin_longitude) ??
+    parseNumber(visit?.check_in_longitude) ??
+    parseNumber(visit?.check_in_lon) ??
+    parseNumber(visit?.check_in_lng);
+  return lat != null && lng != null ? { lat, lng } : null;
+};
+
+const getCompleteCoords = (visit) => {
+  const lat =
+    parseNumber(visit?.complete_latitude) ??
+    parseNumber(visit?.complete_lat) ??
+    parseNumber(visit?.checkout_latitude) ??
+    parseNumber(visit?.check_out_latitude);
+  const lng =
+    parseNumber(visit?.complete_longitude) ??
+    parseNumber(visit?.complete_lon) ??
+    parseNumber(visit?.complete_lng) ??
+    parseNumber(visit?.checkout_longitude) ??
+    parseNumber(visit?.check_out_longitude);
+  return lat != null && lng != null ? { lat, lng } : null;
+};
+
+const getFallbackCoords = (visit, leadLookup = {}) => {
   const lead = getLeadFromVisit(visit, leadLookup);
   const zone = getZoneFromVisit(visit);
   const lat =
-    parseNumber(visit?.checkin_latitude) ??
-    parseNumber(visit?.check_in_latitude) ??
-    parseNumber(visit?.check_in_lat) ??
-    parseNumber(visit?.start_latitude) ??
-    parseNumber(visit?.start_lat) ??
     parseNumber(visit?.latitude) ??
     parseNumber(visit?.lat) ??
     parseNumber(lead?.latitude) ??
@@ -80,13 +108,6 @@ const getVisitCoords = (visit, leadLookup = {}) => {
     parseNumber(zone?.latitude) ??
     parseNumber(zone?.lat);
   const lng =
-    parseNumber(visit?.checkin_longitude) ??
-    parseNumber(visit?.check_in_longitude) ??
-    parseNumber(visit?.check_in_lon) ??
-    parseNumber(visit?.check_in_lng) ??
-    parseNumber(visit?.start_longitude) ??
-    parseNumber(visit?.start_lon) ??
-    parseNumber(visit?.start_lng) ??
     parseNumber(visit?.longitude) ??
     parseNumber(visit?.lon) ??
     parseNumber(visit?.lng) ??
@@ -101,12 +122,64 @@ const getVisitCoords = (visit, leadLookup = {}) => {
   return lat != null && lng != null ? { lat, lng } : null;
 };
 
+const getVisitCoords = (visit, leadLookup = {}) =>
+  getStartCoords(visit) || getCompleteCoords(visit) || getFallbackCoords(visit, leadLookup);
+
 const getVisitCoordsSource = (visit, leadLookup = {}) => {
   const lead = getLeadFromVisit(visit, leadLookup);
+  if (getStartCoords(visit)) return "Start";
+  if (getCompleteCoords(visit)) return "Complete";
   if (parseNumber(visit?.checkin_latitude) != null || parseNumber(visit?.check_in_latitude) != null) return "Check-in";
   if (parseNumber(visit?.latitude) != null || parseNumber(visit?.lat) != null) return "Visit";
   if (parseNumber(lead?.latitude) != null || parseNumber(lead?.lat) != null) return "Lead";
   return "Zone";
+};
+
+const buildVisitMapPoints = (visit, leadLookup = {}) => {
+  const points = [];
+  const start = getStartCoords(visit);
+  const complete = getCompleteCoords(visit);
+
+  if (start) {
+    points.push({
+      id: `${visit.id}-start`,
+      visit,
+      coords: start,
+      source: "Start",
+      color: "#1976d2",
+      time: visit.actual_start_at || visit.started_at,
+      location: visit.start_location || visit.checkin_location,
+    });
+  }
+
+  if (complete) {
+    points.push({
+      id: `${visit.id}-complete`,
+      visit,
+      coords: complete,
+      source: "Complete",
+      color: "#2e7d32",
+      time: visit.actual_end_at || visit.completed_at,
+      location: visit.complete_location || visit.checkout_location,
+    });
+  }
+
+  if (!points.length) {
+    const fallback = getFallbackCoords(visit, leadLookup);
+    if (fallback) {
+      points.push({
+        id: `${visit.id}-target`,
+        visit,
+        coords: fallback,
+        source: getVisitCoordsSource(visit, leadLookup),
+        color: markerColor(visit),
+        time: visit.scheduled_at,
+        location: getVisitTarget(visit, leadLookup),
+      });
+    }
+  }
+
+  return points;
 };
 
 const statusTone = (status) => {
@@ -151,6 +224,7 @@ const VisitMap = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [selectedVisit, setSelectedVisit] = useState(null);
+  const [selectedPoint, setSelectedPoint] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -214,7 +288,7 @@ const VisitMap = () => {
   ), [statusFilter, typeFilter, visits]);
 
   const markerVisits = useMemo(
-    () => filteredVisits.map((visit) => ({ visit, coords: getVisitCoords(visit, leadLookup), source: getVisitCoordsSource(visit, leadLookup) })).filter((item) => item.coords),
+    () => filteredVisits.flatMap((visit) => buildVisitMapPoints(visit, leadLookup)),
     [filteredVisits, leadLookup]
   );
   const center = markerVisits[0]?.coords || fallbackCenter;
@@ -258,19 +332,39 @@ const VisitMap = () => {
             scrollwheel
             style={{ width: "100%", height: "100%" }}
           >
-            {markerVisits.map(({ visit, coords }) => (
-              <Marker key={visit.id} position={coords} icon={markerIcon(markerColor(visit))} onClick={() => setSelectedVisit(visit)} />
+            {markerVisits.map((point) => (
+              <Marker
+                key={point.id}
+                position={point.coords}
+                icon={markerIcon(point.color)}
+                onClick={() => {
+                  setSelectedVisit(point.visit);
+                  setSelectedPoint(point);
+                }}
+              />
             ))}
-            {selectedVisit && getVisitCoords(selectedVisit, leadLookup) && (
-              <InfoWindow position={getVisitCoords(selectedVisit, leadLookup)} onCloseClick={() => setSelectedVisit(null)}>
+            {selectedVisit && (selectedPoint?.coords || getVisitCoords(selectedVisit, leadLookup)) && (
+              <InfoWindow
+                position={selectedPoint?.coords || getVisitCoords(selectedVisit, leadLookup)}
+                onCloseClick={() => {
+                  setSelectedVisit(null);
+                  setSelectedPoint(null);
+                }}
+              >
                 <Box sx={{ color: "#111", maxWidth: 260 }}>
                   <Typography variant="subtitle2" fontWeight={800}>{getVisitTarget(selectedVisit, leadLookup)}</Typography>
                   <Typography variant="body2">Employee: {selectedVisit.employee?.name || "-"}</Typography>
                   <Typography variant="body2">Scheduled: {formatDateTime(selectedVisit.scheduled_at)}</Typography>
                   <Typography variant="body2">Visit status: {labelOf(selectedVisit.status)}</Typography>
                   <Typography variant="body2">Task status: {getTaskStatus(selectedVisit)}</Typography>
-                  <Typography variant="body2">Point source: {getVisitCoordsSource(selectedVisit, leadLookup)}</Typography>
-                  <Typography variant="body2">Completed: {formatDateTime(selectedVisit.actual_end_at || selectedVisit.completed_at)}</Typography>
+                  <Typography variant="body2">Point source: {selectedPoint?.source || getVisitCoordsSource(selectedVisit, leadLookup)}</Typography>
+                  <Typography variant="body2">Point time: {formatDateTime(selectedPoint?.time)}</Typography>
+                  <Typography variant="body2">Location: {selectedPoint?.location || "-"}</Typography>
+                  {selectedPoint?.coords && (
+                    <Typography variant="body2">
+                      Lat/Lon: {selectedPoint.coords.lat.toFixed(6)}, {selectedPoint.coords.lng.toFixed(6)}
+                    </Typography>
+                  )}
                 </Box>
               </InfoWindow>
             )}
@@ -308,7 +402,9 @@ const VisitMap = () => {
           </Stack>
 
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-            <Chip size="small" label={`Mapped ${markerVisits.length}`} color="primary" variant="outlined" />
+            <Chip size="small" label={`Mapped points ${markerVisits.length}`} color="primary" variant="outlined" />
+            <Chip size="small" label={`Start ${markerVisits.filter((item) => item.source === "Start").length}`} color="info" variant="outlined" />
+            <Chip size="small" label={`Complete ${markerVisits.filter((item) => item.source === "Complete").length}`} color="success" variant="outlined" />
             <Chip size="small" label={`From lead ${markerVisits.filter((item) => item.source === "Lead").length}`} color="info" variant="outlined" />
             <Chip size="small" label={`Pending ${filteredVisits.filter((visit) => statusTone(visit.status) === "warning").length}`} color="warning" variant="outlined" />
             <Chip size="small" label={`Completed ${filteredVisits.filter((visit) => statusTone(visit.status) === "success").length}`} color="success" variant="outlined" />
@@ -336,13 +432,34 @@ const VisitMap = () => {
               {!loading && filteredVisits.map((visit) => {
                 const coords = getVisitCoords(visit, leadLookup);
                 const coordsSource = coords ? getVisitCoordsSource(visit, leadLookup) : "";
+                const startCoords = getStartCoords(visit);
+                const completeCoords = getCompleteCoords(visit);
                 return (
-                <TableRow key={visit.id} hover selected={selectedVisit?.id === visit.id} onClick={() => setSelectedVisit(visit)} sx={{ cursor: coords ? "pointer" : "default" }}>
+                <TableRow
+                  key={visit.id}
+                  hover
+                  selected={selectedVisit?.id === visit.id}
+                  onClick={() => {
+                    setSelectedVisit(visit);
+                    setSelectedPoint(buildVisitMapPoints(visit, leadLookup)[0] || null);
+                  }}
+                  sx={{ cursor: coords ? "pointer" : "default" }}
+                >
                   <TableCell>{visit.employee?.name || "-"}</TableCell>
                   <TableCell>
                     <Typography variant="body2" fontWeight={700}>{getVisitTarget(visit, leadLookup)}</Typography>
                     <Typography variant="caption" color="text.secondary">{visit.purpose || "-"}</Typography>
-                    {coords && (
+                    {startCoords && (
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        Start: {startCoords.lat.toFixed(6)}, {startCoords.lng.toFixed(6)}
+                      </Typography>
+                    )}
+                    {completeCoords && (
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        Complete: {completeCoords.lat.toFixed(6)}, {completeCoords.lng.toFixed(6)}
+                      </Typography>
+                    )}
+                    {!startCoords && !completeCoords && coords && (
                       <Typography variant="caption" color="text.secondary" display="block">
                         {coordsSource}: {coords.lat.toFixed(6)}, {coords.lng.toFixed(6)}
                       </Typography>
