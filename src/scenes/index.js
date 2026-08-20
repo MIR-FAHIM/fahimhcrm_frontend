@@ -76,6 +76,7 @@ import FacebookLeadsTable from "./admin/prospect/facebook_leads";
 import AddTaskPriority from "./admin/setting/add_task_priority";
 import AddTaskStatus from "./admin/setting/add_task_status";
 import AddTaskType from "./admin/setting/add_task_type";
+import AttendanceMethodManagement from "./admin/setting/attendance_method_management";
 import ProspectStageManagement from "./admin/setting/prospect_stage_management";
 import ProspectListByStage from "./admin/prospect/prospect_list_by_stage";
 import ProspectBulkUpload from "./admin/prospect/prospect_bulk_upload";
@@ -134,6 +135,7 @@ import DateWiseVisit from "./admin/fieldforce/date_wise_visit";// Import the Wor
 import PrivacyPolicy from "./admin/setting/privacy_policy";// Import the WorkShop component
 import NewSystemUpdate from "./admin/setting/new_system_update";
 import BrainToDoLanding from "./landing/BrainToDoLanding";
+import BrainToDoPrivacyPolicy from "./landing/BrainToDoPrivacyPolicy";
 
 
 
@@ -215,6 +217,7 @@ export {
   AddTaskPriority,
   AddTaskStatus,
   AddTaskType,
+  AttendanceMethodManagement,
   ProspectStageManagement,
   ProspectListByStage,
   ProspectBulkUpload,
@@ -273,4 +276,5 @@ export {
   PrivacyPolicy,
   NewSystemUpdate,
   BrainToDoLanding,
+  BrainToDoPrivacyPolicy,
 };

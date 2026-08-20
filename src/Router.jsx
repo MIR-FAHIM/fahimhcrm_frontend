@@ -63,6 +63,7 @@ import {
   AddTaskPriority,
   AddTaskStatus,
   AddTaskType,
+  AttendanceMethodManagement,
   ProspectStageManagement,
   ProspectListByStage,
   ProspectBulkUpload,
@@ -119,6 +120,7 @@ import {
  PrivacyPolicy,
  NewSystemUpdate,
  BrainToDoLanding,
+ BrainToDoPrivacyPolicy,
 } from "./scenes";
 
 const AppRouter = () => {
@@ -139,7 +141,7 @@ const AppRouter = () => {
         <Route path="/" element={<App />}>
         <Route path="/" element={<Dashboard />} /> 
         */}
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/privacy-policy" element={<BrainToDoPrivacyPolicy />} />
           <Route path="/landing" element={<BrainToDoLanding />} />
      {/* <Route path="/" element={<LandingPage />}></Route>  */}
      <Route path="/what-next" element={<NextFeatures />}></Route> 
@@ -206,6 +208,7 @@ const AppRouter = () => {
           <Route path="/task-priority" element={<AddTaskPriority />} />
           <Route path="/task-status" element={<AddTaskStatus />} />
           <Route path="/task-type" element={<AddTaskType />} />
+          <Route path="/attendance-methods" element={<AttendanceMethodManagement />} />
           <Route path="/prospect-stage-management" element={<ProspectStageManagement />} />
           <Route path="/prospect-list-by-stage" element={<ProspectListByStage />} />
           <Route path="/prospect-bulk-upload" element={<ProspectBulkUpload />} />

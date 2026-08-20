@@ -1,10 +1,11 @@
 {
-  "name": "admin-dashboard",
+  "name": "braintodo",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:landing": "vite --mode landing",
     "build": "vite build",
     "build:landing": "vite build --mode landing",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",

@@ -18,11 +18,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   getProfile, uploadProfileImage, logOut, updateProfile,
   modulePermission, changePassController, getUserActivity,
-  changeEmployeeRole, changeEmployeeDepartment, changeEmployeeDesignation
+  changeEmployeeRole, changeEmployeeDepartment, changeEmployeeDesignation,
+  updateEmployeeInfo
 } from "../../../api/controller/admin_controller/user_controller";
 
-import { getAttendanceReportByUser } from "../../../api/controller/admin_controller/attendance_controller";
+import { fetchAttendanceMethods, getAttendanceReportByUser } from "../../../api/controller/admin_controller/attendance_controller";
 import { fetchDepartment, fetchDesignation, fetchRole } from "../../../api/controller/admin_controller/department_controller";
+import { resolveAttendanceMethodList } from "../setting/attendance_method_utils";
 import { image_file_url } from "../../../api/config/index";
 import ProfileComponent from "./profile_components/profile_components";
 import TaskComponents from "./profile_components/task_components";
@@ -57,8 +59,9 @@ const EmpProfile = () => {
   const [roleOptions, setRoleOptions] = useState([]);
   const [departmentOptions, setDepartmentOptions] = useState([]);
   const [designationOptions, setDesignationOptions] = useState([]);
-  const [assignmentValues, setAssignmentValues] = useState({ role_id: "", department_id: "", designation_id: "" });
-  const [assignmentSaving, setAssignmentSaving] = useState({ role: false, department: false, designation: false });
+  const [attendanceMethodOptions, setAttendanceMethodOptions] = useState([]);
+  const [assignmentValues, setAssignmentValues] = useState({ role_id: "", department_id: "", designation_id: "", attendance_method_id: "" });
+  const [assignmentSaving, setAssignmentSaving] = useState({ role: false, department: false, designation: false, attendanceMethod: false });
   const [assignmentLoading, setAssignmentLoading] = useState(false);
   const [snack, setSnack] = useState({ open: false, msg: "", sev: "success" });
 
@@ -105,6 +108,7 @@ const EmpProfile = () => {
       role_id: String(profileData?.role_id || profileData?.role?.id || ""),
       department_id: String(profileData?.department_id || profileData?.department?.id || ""),
       designation_id: String(profileData?.designation_id || profileData?.designation?.id || ""),
+      attendance_method_id: profileData?.attendance_method_id || profileData?.attendance_method?.id ? String(profileData?.attendance_method_id || profileData?.attendance_method?.id) : "",
     });
   }, [profileData]);
 
@@ -118,14 +122,16 @@ const EmpProfile = () => {
   const loadAssignmentOptions = async () => {
     setAssignmentLoading(true);
     try {
-      const [roleRes, departmentRes, designationRes] = await Promise.all([
+      const [roleRes, departmentRes, designationRes, attendanceMethodRes] = await Promise.all([
         fetchRole(),
         fetchDepartment(),
         fetchDesignation(),
+        fetchAttendanceMethods(),
       ]);
       setRoleOptions(roleRes?.data || []);
       setDepartmentOptions(departmentRes?.data || []);
       setDesignationOptions(designationRes?.data || []);
+      setAttendanceMethodOptions(resolveAttendanceMethodList(attendanceMethodRes));
     } catch (err) {
       console.error("Assignment options fetch error:", err);
       showSnack("Failed to load role, department, and designation options.", "error");
@@ -198,6 +204,33 @@ const EmpProfile = () => {
       setAssignmentSaving((current) => ({ ...current, [type]: false }));
     }
   };
+
+  const handleAttendanceMethodSave = async () => {
+    if (!isSuperAdmin || !profileData?.id) {
+      showSnack("Only Super Admin can update attendance method assignment.", "error");
+      return;
+    }
+
+    const previous = profileData?.attendance_method_id || profileData?.attendance_method?.id ? String(profileData?.attendance_method_id || profileData?.attendance_method?.id) : "";
+    const selectedValue = assignmentValues.attendance_method_id || null;
+
+    setAssignmentSaving((current) => ({ ...current, attendanceMethod: true }));
+    try {
+      await updateEmployeeInfo({
+        user_id: profileData.id,
+        attendance_method_id: selectedValue ? Number(selectedValue) : null,
+      });
+      await refreshViewedProfile();
+      showSnack("Employee attendance method updated successfully.");
+    } catch (err) {
+      console.error("Failed to update attendance method:", err);
+      setAssignmentValues((current) => ({ ...current, attendance_method_id: previous }));
+      showSnack(getErrorMessage(err, "Failed to update employee attendance method."), "error");
+    } finally {
+      setAssignmentSaving((current) => ({ ...current, attendanceMethod: false }));
+    }
+  };
+
   const handleGetModulePermission = async () => {
     try {
       const response = await modulePermission();
@@ -495,11 +528,13 @@ const EmpProfile = () => {
               imageUrl={imageUrl}
               isSuperAdmin={isSuperAdmin}
               assignmentOptions={{ roles: roleOptions, departments: departmentOptions, designations: designationOptions }}
+              attendanceMethodOptions={attendanceMethodOptions}
               assignmentValues={assignmentValues}
               assignmentLoading={assignmentLoading}
               assignmentSaving={assignmentSaving}
               onAssignmentChange={handleAssignmentValueChange}
               onAssignmentSave={handleAssignmentSave}
+              onAttendanceMethodSave={handleAttendanceMethodSave}
             />
           )}
 

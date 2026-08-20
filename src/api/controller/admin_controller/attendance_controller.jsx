@@ -2,6 +2,12 @@ import API_URL from '../../api_url';
 // src/api/apiController.js
 import axiosInstance from '../../axiosInstance.jsx'
 
+const authHeaders = () => ({
+  headers: {
+    token: localStorage.getItem("authToken"),
+  },
+});
+
 // Fetch posts from API
 export const getAttendanceByDate = async (date) => {
   try {
@@ -179,3 +185,53 @@ export const checkOutNow = async (data) => {
   }
 
 }
+
+export const fetchAttendanceMethods = async () => {
+  try {
+    const response = await axiosInstance.get(API_URL.attendanceMethods, authHeaders());
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching attendance methods:", error);
+    throw error;
+  }
+};
+
+export const fetchAttendanceMethodById = async (id) => {
+  try {
+    const response = await axiosInstance.get(API_URL.attendanceMethodById(id), authHeaders());
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching attendance method:", error);
+    throw error;
+  }
+};
+
+export const createAttendanceMethod = async (data) => {
+  try {
+    const response = await axiosInstance.post(API_URL.attendanceMethods, data, authHeaders());
+    return response.data;
+  } catch (error) {
+    console.error("Error creating attendance method:", error);
+    throw error;
+  }
+};
+
+export const updateAttendanceMethod = async (id, data) => {
+  try {
+    const response = await axiosInstance.put(API_URL.attendanceMethodById(id), data, authHeaders());
+    return response.data;
+  } catch (error) {
+    console.error("Error updating attendance method:", error);
+    throw error;
+  }
+};
+
+export const deleteAttendanceMethod = async (id) => {
+  try {
+    const response = await axiosInstance.delete(API_URL.attendanceMethodById(id), authHeaders());
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting attendance method:", error);
+    throw error;
+  }
+};

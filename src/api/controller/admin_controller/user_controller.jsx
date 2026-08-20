@@ -320,6 +320,18 @@ export const updateProfile = async (data) => {
   }
 
 };
+
+export const updateEmployeeInfo = async (data) => {
+  try {
+    const response = await axiosInstance.post(API_URL.updateUserinfo, data, {
+      headers: { token: getUserAppToken() },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating employee info:", error);
+    throw error;
+  }
+};
 export const changePassController = async (data) => {
   try {
     const response = await axiosInstance.post(API_URL.changePassword, data,

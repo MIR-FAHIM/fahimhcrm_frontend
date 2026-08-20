@@ -174,9 +174,18 @@ When a new backend route and response are provided, follow this workflow:
 ```bash
 npm install
 npm run dev
+npm run dev:landing
 npm run build
+npm run build:landing
 npm run lint
 ```
+
+## Landing Page Build
+
+- Use `npm run dev:landing` to develop only the BrainToDo landing page.
+- Use `npm run build:landing` to build the landing page for the main domain.
+- Landing mode reads `.env.landing`, where `VITE_LANDING_ROOT=true` makes `/` load the landing page.
+- Normal app development still uses `npm run dev`.
 
 ## Development Notes
 

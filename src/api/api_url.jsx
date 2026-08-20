@@ -28,6 +28,8 @@ const API_URL = {
   assignTask: `/api/assign-task`,
   attendanceReportDashboard: `/api/attendance-report-dashboard`,
   attendanceReportByUserCountData: `/api/attendanceReportByUser-count-data`,
+  attendanceMethods: `/api/attendance-methods`,
+  attendanceMethodById: (id) => `/api/attendance-methods/${id}`,
   calculateEffortProspect: `/api/calculate-effort-prospect`,
   cartMultiple: `/api/cart/multiple`,
   cartOrderByOrderId: (orderId) => `/api/cart/order/${orderId}`,

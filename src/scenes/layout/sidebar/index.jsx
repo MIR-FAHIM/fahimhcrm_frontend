@@ -453,6 +453,11 @@ const SideBar = () => {
             icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
           },
           {
+            title: "Attendance Methods",
+            path: "/attendance-methods",
+            icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
+          },
+          {
             title: "Prospect Stages",
             path: "/prospect-stage-management",
             icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,

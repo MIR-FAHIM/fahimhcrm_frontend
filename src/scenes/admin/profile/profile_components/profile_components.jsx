@@ -35,6 +35,11 @@ import {
 } from "@mui/icons-material";
 import { alpha } from "@mui/material/styles";
 import { image_file_url } from "../../../../api/config";
+import {
+  getAttendanceMethodLabel,
+  METHOD_ICONS,
+  summarizeAttendanceMethod,
+} from "../../setting/attendance_method_utils";
 
 const SectionCard = ({ title, subtitle, icon, action, children, sx }) => {
   const theme = useTheme();
@@ -189,11 +194,13 @@ const ProfileComponent = ({
   imageUrl,
   isSuperAdmin = false,
   assignmentOptions = { roles: [], departments: [], designations: [] },
+  attendanceMethodOptions = [],
   assignmentValues = { role_id: "", department_id: "", designation_id: "" },
   assignmentLoading = false,
   assignmentSaving = { role: false, department: false, designation: false },
   onAssignmentChange = () => {},
   onAssignmentSave = () => {},
+  onAttendanceMethodSave = () => {},
 }) => {
   const theme = useTheme();
   const brand = theme.palette.blueAccent?.main ?? theme.palette.primary.main;
@@ -340,6 +347,11 @@ const ProfileComponent = ({
     );
     return selected?.[row.labelKey] || "Not selected";
   };
+
+  const selectedAttendanceMethod = attendanceMethodOptions.find(
+    (method) => String(method.id) === String(assignmentValues.attendance_method_id)
+  );
+  const CurrentAttendanceIcon = METHOD_ICONS[selectedAttendanceMethod?.method] || AccessTimeIcon;
 
   return (
     <Box
@@ -568,6 +580,117 @@ const ProfileComponent = ({
                 </Box>
               </Grid>
             ))}
+          </Grid>
+        </SectionCard>
+      )}
+
+      {isSuperAdmin && (
+        <SectionCard
+          title="Attendance Method"
+          subtitle="Assign or clear this employee's attendance validation method."
+          icon={<AccessTimeIcon fontSize="small" />}
+          sx={{ mb: 2 }}
+        >
+          <Grid container spacing={2} alignItems="stretch">
+            <Grid item xs={12} md={5}>
+              <Box
+                sx={{
+                  height: "100%",
+                  p: 1.5,
+                  borderRadius: 1.5,
+                  bgcolor: alpha(theme.palette.text.primary, 0.035),
+                  border: `1px solid ${theme.palette.divider}`,
+                }}
+              >
+                <Stack direction="row" spacing={1.25} alignItems="center">
+                  <Avatar
+                    variant="rounded"
+                    sx={{
+                      bgcolor: alpha(brand, 0.12),
+                      color: brand,
+                      width: 40,
+                      height: 40,
+                    }}
+                  >
+                    <CurrentAttendanceIcon fontSize="small" />
+                  </Avatar>
+                  <Box>
+                    <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                      Current Method
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 800 }}>
+                      {selectedAttendanceMethod
+                        ? getAttendanceMethodLabel(selectedAttendanceMethod.method)
+                        : profileData?.attendance_method
+                          ? getAttendanceMethodLabel(profileData.attendance_method.method)
+                          : "Not assigned"}
+                    </Typography>
+                  </Box>
+                </Stack>
+                <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 1.25, lineHeight: 1.6 }}>
+                  {selectedAttendanceMethod
+                    ? summarizeAttendanceMethod(selectedAttendanceMethod)
+                    : profileData?.attendance_method
+                      ? summarizeAttendanceMethod(profileData.attendance_method)
+                      : "This employee will use the default active attendance method if backend fallback is enabled."}
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid item xs={12} md={7}>
+              <Box
+                sx={{
+                  height: "100%",
+                  p: 1.5,
+                  borderRadius: 1.5,
+                  bgcolor: alpha(theme.palette.text.primary, 0.035),
+                  border: `1px solid ${theme.palette.divider}`,
+                }}
+              >
+                <Stack spacing={1.25}>
+                  <FormControl fullWidth size="small" disabled={!isSuperAdmin || assignmentLoading || assignmentSaving.attendanceMethod}>
+                    <Select
+                      displayEmpty
+                      value={assignmentValues.attendance_method_id || ""}
+                      onChange={(event) => onAssignmentChange("attendance_method_id", event.target.value)}
+                      sx={{
+                        bgcolor: theme.palette.background.paper,
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: alpha(brand, 0.20),
+                        },
+                      }}
+                    >
+                      <MenuItem value="">No assigned method</MenuItem>
+                      {attendanceMethodOptions.map((method) => (
+                        <MenuItem key={method.id} value={String(method.id)}>
+                          {getAttendanceMethodLabel(method.method)} {method.is_active ? "(Active)" : ""}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                    Clearing the field sends <strong>attendance_method_id: null</strong>.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={onAttendanceMethodSave}
+                    disabled={!isSuperAdmin || assignmentLoading || assignmentSaving.attendanceMethod}
+                    startIcon={assignmentSaving.attendanceMethod ? <CircularProgress size={15} color="inherit" /> : <SaveIcon />}
+                    sx={{
+                      width: "fit-content",
+                      textTransform: "none",
+                      fontWeight: 700,
+                      bgcolor: brand,
+                      color: brandContrast,
+                      "&:hover": { bgcolor: brandDark },
+                    }}
+                  >
+                    Save Attendance Method
+                  </Button>
+                </Stack>
+              </Box>
+            </Grid>
           </Grid>
         </SectionCard>
       )}
