@@ -72,6 +72,7 @@ const API_URL = {
   getAllTaskByStatus: `/api/get-all-task-by-status`,
   getAllTaskDepartmentById: (id) => `/api/get-all-task-department/${id}`,
   getAllUserActivity: `/api/get-all-user-activity`,
+  getUserActivityDailyReport: (query = "") => `/api/user-activity/daily-report${query}`,
   getAllWithdraw: `/api/get-all-withdraw`,
   getAssignedTaskById: (id) => `/api/get-assigned-task/${id}`,
   getAttendanceAdjustment: `/api/get-attendance-adjustment`,
@@ -239,3 +240,5 @@ const API_URL = {
 };
 
 export default API_URL;
+
+

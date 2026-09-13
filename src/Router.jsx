@@ -121,6 +121,7 @@ import {
  NewSystemUpdate,
  BrainToDoLanding,
  BrainToDoPrivacyPolicy,
+ ErrorLogsDashboard,
 } from "./scenes";
 
 const AppRouter = () => {
@@ -262,6 +263,7 @@ const AppRouter = () => {
 
         
           <Route path="/new-system-update" element={<NewSystemUpdate />} />
+          <Route path="/error-logs" element={<ErrorLogsDashboard />} />
         </Route>
         )}
       </Routes>

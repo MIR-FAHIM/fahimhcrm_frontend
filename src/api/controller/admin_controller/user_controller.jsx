@@ -211,6 +211,31 @@ export const getAllUserTrack = async () => {
     return [];
   }
 }
+export const getUserActivityDailyReport = async ({ date, platform } = {}) => {
+  const token = localStorage.getItem("authToken");
+
+  if (!token) {
+    console.error("No auth token found in localStorage.");
+    return { status: "error", message: "No auth token found.", data: null };
+  }
+
+  const params = new URLSearchParams();
+  if (date) params.set("date", date);
+  if (platform) params.set("platform", platform);
+  const query = params.toString() ? `?${params.toString()}` : "";
+
+  try {
+    const response = await axiosInstance.get(API_URL.getUserActivityDailyReport(query), {
+      headers: {
+        token: localStorage.getItem("authToken"),
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user activity daily report:", error);
+    return error?.response?.data || { status: "error", message: "Failed to fetch daily activity report.", data: null };
+  }
+}
 export const getUserActivity = async (id) => {
   const token = localStorage.getItem("authToken"); // Retrieve token from localStorage
 
@@ -415,3 +440,4 @@ export const changeEmployeeDesignation = async (userId, data) => {
     throw error;
   }
 };
+

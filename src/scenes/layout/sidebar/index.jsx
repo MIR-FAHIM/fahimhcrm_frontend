@@ -462,6 +462,11 @@ const SideBar = () => {
             path: "/prospect-stage-management",
             icon: <AdminPanelSettingsOutlined sx={muiIconSx} />,
           },
+          {
+            title: "API Error Logs",
+            path: "/error-logs",
+            icon: <SyncProblemRounded sx={muiIconSx} />,
+          },
         ],
       },
     ],

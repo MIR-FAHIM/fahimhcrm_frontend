@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { APIProvider, InfoWindow, Map, Marker } from "@vis.gl/react-google-maps";
+import { APIProvider, InfoWindow, Map, Marker, useMap } from "@vis.gl/react-google-maps";
 import {
   Alert,
   Box,
@@ -30,6 +30,7 @@ import { google_map_key } from "../../../api/config/index";
 import { getVisitByDateEmp } from "../../../api/controller/admin_controller/visit_controller";
 import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
 import { fetchAllProspect } from "../../../api/controller/admin_controller/prospect_controller";
+import { formatVisitDistance } from "./visit_distance";
 
 const fallbackCenter = { lat: 23.8103, lng: 90.4125 };
 
@@ -213,6 +214,27 @@ const formatDateTime = (value) => {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
 };
 
+const VisitStraightLine = ({ start, complete, color = "#1976d2" }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map || !window.google?.maps || !start || !complete) return undefined;
+
+    const line = new window.google.maps.Polyline({
+      path: [start, complete],
+      geodesic: true,
+      strokeColor: color,
+      strokeOpacity: 0.82,
+      strokeWeight: 3,
+      map,
+    });
+
+    return () => line.setMap(null);
+  }, [color, complete, map, start]);
+
+  return null;
+};
+
 const VisitMap = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -291,6 +313,18 @@ const VisitMap = () => {
     () => filteredVisits.flatMap((visit) => buildVisitMapPoints(visit, leadLookup)),
     [filteredVisits, leadLookup]
   );
+  const routeLines = useMemo(
+    () =>
+      filteredVisits
+        .map((visit) => ({
+          id: visit.id,
+          start: getStartCoords(visit),
+          complete: getCompleteCoords(visit),
+          distance: visit?.straight_distance_meters,
+        }))
+        .filter((line) => line.start && line.complete),
+    [filteredVisits]
+  );
   const center = markerVisits[0]?.coords || fallbackCenter;
 
   return (
@@ -343,6 +377,9 @@ const VisitMap = () => {
                 }}
               />
             ))}
+            {routeLines.map((line) => (
+              <VisitStraightLine key={`line-${line.id}`} start={line.start} complete={line.complete} color="#1976d2" />
+            ))}
             {selectedVisit && (selectedPoint?.coords || getVisitCoords(selectedVisit, leadLookup)) && (
               <InfoWindow
                 position={selectedPoint?.coords || getVisitCoords(selectedVisit, leadLookup)}
@@ -360,6 +397,9 @@ const VisitMap = () => {
                   <Typography variant="body2">Point source: {selectedPoint?.source || getVisitCoordsSource(selectedVisit, leadLookup)}</Typography>
                   <Typography variant="body2">Point time: {formatDateTime(selectedPoint?.time)}</Typography>
                   <Typography variant="body2">Location: {selectedPoint?.location || "-"}</Typography>
+                  <Typography variant="body2">
+                    Straight-line distance: {formatVisitDistance(selectedVisit?.straight_distance_meters)}
+                  </Typography>
                   {selectedPoint?.coords && (
                     <Typography variant="body2">
                       Lat/Lon: {selectedPoint.coords.lat.toFixed(6)}, {selectedPoint.coords.lng.toFixed(6)}
@@ -405,6 +445,7 @@ const VisitMap = () => {
             <Chip size="small" label={`Mapped points ${markerVisits.length}`} color="primary" variant="outlined" />
             <Chip size="small" label={`Start ${markerVisits.filter((item) => item.source === "Start").length}`} color="info" variant="outlined" />
             <Chip size="small" label={`Complete ${markerVisits.filter((item) => item.source === "Complete").length}`} color="success" variant="outlined" />
+            <Chip size="small" label={`Routes ${routeLines.length}`} color="primary" variant="outlined" />
             <Chip size="small" label={`From lead ${markerVisits.filter((item) => item.source === "Lead").length}`} color="info" variant="outlined" />
             <Chip size="small" label={`Pending ${filteredVisits.filter((visit) => statusTone(visit.status) === "warning").length}`} color="warning" variant="outlined" />
             <Chip size="small" label={`Completed ${filteredVisits.filter((visit) => statusTone(visit.status) === "success").length}`} color="success" variant="outlined" />
@@ -418,16 +459,17 @@ const VisitMap = () => {
                 <TableCell>Employee</TableCell>
                 <TableCell>Lead/Zone</TableCell>
                 <TableCell>Time</TableCell>
+                <TableCell>Distance</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Priority</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {loading && (
-                <TableRow><TableCell colSpan={5} align="center"><CircularProgress size={24} /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} align="center"><CircularProgress size={24} /></TableCell></TableRow>
               )}
               {!loading && filteredVisits.length === 0 && (
-                <TableRow><TableCell colSpan={5} align="center" sx={{ py: 4, color: "text.secondary" }}>No visits found.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} align="center" sx={{ py: 4, color: "text.secondary" }}>No visits found.</TableCell></TableRow>
               )}
               {!loading && filteredVisits.map((visit) => {
                 const coords = getVisitCoords(visit, leadLookup);
@@ -469,6 +511,14 @@ const VisitMap = () => {
                     <Typography variant="caption" color="text.secondary">Plan: {formatDateTime(visit.scheduled_at)}</Typography>
                     <Typography variant="caption" color="text.secondary" display="block">Start: {formatDateTime(visit.actual_start_at || visit.started_at)}</Typography>
                     <Typography variant="caption" color="text.secondary" display="block">End: {formatDateTime(visit.actual_end_at || visit.completed_at)}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight={700}>
+                      {formatVisitDistance(visit?.straight_distance_meters)}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Straight-line
+                    </Typography>
                   </TableCell>
                   <TableCell>
                     <Chip size="small" label={labelOf(visit.status)} color={statusTone(visit.status)} variant="outlined" />

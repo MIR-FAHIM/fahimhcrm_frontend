@@ -139,6 +139,8 @@ import BrainToDoPrivacyPolicy from "./landing/BrainToDoPrivacyPolicy";
 
 
 
+import ErrorLogsDashboard from "./admin/error_logs/ErrorLogsDashboard";
+
 export {
   Navbar,
   SideBar,
@@ -277,4 +279,5 @@ export {
   NewSystemUpdate,
   BrainToDoLanding,
   BrainToDoPrivacyPolicy,
+  ErrorLogsDashboard,
 };

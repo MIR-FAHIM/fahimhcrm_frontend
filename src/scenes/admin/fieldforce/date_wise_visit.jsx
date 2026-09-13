@@ -48,6 +48,7 @@ import TodayIcon from "@mui/icons-material/Today";
 import WorkHistoryIcon from "@mui/icons-material/WorkHistory";
 
 import { getDateWiseVisit } from "../../../api/controller/admin_controller/visit_controller";
+import { formatVisitDistance } from "./visit_distance";
 
 const fallback = "-";
 
@@ -266,11 +267,12 @@ const VisitCard = ({ visit, onMap, onProspect, onTask }) => {
           </Paper>
         )}
 
-        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(4, 1fr)" }, gap: 1 }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(auto-fit, minmax(150px, 1fr))" }, gap: 1 }}>
           <MetaItem icon={<WorkHistoryIcon />} label="Planner" value={visit?.planner?.name} />
           <MetaItem icon={<PersonIcon />} label="Visited By" value={visit?.employee?.name} />
           <MetaItem icon={<RoomIcon />} label="Lead" value={leadName} />
           <MetaItem icon={<MapIcon />} label="Zone" value={visit?.zone?.zone_name} />
+          <MetaItem icon={<MyLocationIcon />} label="Straight-line distance" value={formatVisitDistance(visit?.straight_distance_meters)} />
         </Box>
 
         <Divider />

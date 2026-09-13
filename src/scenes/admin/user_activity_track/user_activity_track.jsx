@@ -5,6 +5,9 @@ import {
   TextField,
   MenuItem,
   Button,
+  Alert,
+  Chip,
+  CircularProgress,
   Typography,
   useTheme,
   useMediaQuery,
@@ -12,9 +15,10 @@ import {
   Divider,
 } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
+import { alpha } from "@mui/material/styles";
 import { Header } from "../../../components";
 import { tokens } from "../../../theme";
-import { getAllUserTrack } from "../../../api/controller/admin_controller/user_controller";
+import { getAllUserTrack, getUserActivityDailyReport } from "../../../api/controller/admin_controller/user_controller";
 
 const TYPE_OPTIONS = [
   { label: "All types", value: "" },
@@ -23,7 +27,50 @@ const TYPE_OPTIONS = [
   { label: "System", value: "system" },
 ];
 
+const PLATFORM_OPTIONS = [
+  { label: "All platforms", value: "" },
+  { label: "Web", value: "web" },
+  { label: "App", value: "app" },
+];
+
+const getTodayValue = () => {
+  const date = new Date();
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().split("T")[0];
+};
+
 const DEFAULT_PAGE_SIZE = 25;
+
+const ReportStat = ({ label, value, helper, tone = "primary" }) => {
+  const theme = useTheme();
+  const color = theme.palette[tone]?.main || theme.palette.primary.main;
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        p: 1.5,
+        borderRadius: 2,
+        bgcolor: alpha(color, theme.palette.mode === "dark" ? 0.14 : 0.08),
+        border: `1px solid ${alpha(color, 0.22)}`,
+        minWidth: { xs: "100%", sm: 150 },
+        flex: "1 1 150px",
+      }}
+    >
+      <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+        {label}
+      </Typography>
+      <Typography variant="h5" sx={{ color: theme.palette.text.primary, fontWeight: 800, lineHeight: 1.15 }}>
+        {value ?? 0}
+      </Typography>
+      {helper && (
+        <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+          {helper}
+        </Typography>
+      )}
+    </Paper>
+  );
+};
 
 const UserActivityList = () => {
   const theme = useTheme();
@@ -45,9 +92,42 @@ const UserActivityList = () => {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
 
+  // daily report
+  const [reportDate, setReportDate] = useState(getTodayValue());
+  const [reportPlatform, setReportPlatform] = useState("");
+  const [dailyReport, setDailyReport] = useState(null);
+  const [dailyReportLoading, setDailyReportLoading] = useState(false);
+  const [dailyReportError, setDailyReportError] = useState("");
+
   // for manual refresh
   const [reloadKey, setReloadKey] = useState(0);
 
+  const fetchDailyReport = useCallback(async () => {
+    setDailyReportLoading(true);
+    setDailyReportError("");
+    try {
+      const res = await getUserActivityDailyReport({
+        date: reportDate,
+        platform: reportPlatform || undefined,
+      });
+      if (res?.status === "success") {
+        setDailyReport(res.data || null);
+      } else {
+        setDailyReport(null);
+        setDailyReportError(res?.message || "Failed to load daily activity report.");
+      }
+    } catch (error) {
+      console.error("getUserActivityDailyReport failed:", error);
+      setDailyReport(null);
+      setDailyReportError("Failed to load daily activity report.");
+    } finally {
+      setDailyReportLoading(false);
+    }
+  }, [reportDate, reportPlatform]);
+
+  useEffect(() => {
+    fetchDailyReport();
+  }, [fetchDailyReport]);
   const columns = useMemo(
     () => [
       {
@@ -380,3 +460,8 @@ const UserActivityList = () => {
 };
 
 export default UserActivityList;
+
+
+
+
+

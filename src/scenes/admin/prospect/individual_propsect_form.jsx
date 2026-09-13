@@ -30,6 +30,7 @@ import { alpha } from "@mui/material/styles";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import MyLocationIcon from "@mui/icons-material/MyLocation";
 import MapComponentSetLocation from "./form/google_map_set_location";
 import ProspectLocationSelector from "./components/prospect_location_selector";
 
@@ -136,6 +137,7 @@ const IndividualForm = () => {
   const [productList, setProductList] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [isClient, setIsClient] = useState(false);
+  const [locating, setLocating] = useState(false);
 
   const [contactPersons, setContactPersons] = useState([
     {
@@ -217,6 +219,36 @@ const IndividualForm = () => {
       latitude: newLat.toString(),
       longitude: newLng.toString(),
     }));
+  };
+
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      handleSnackbar("Your browser does not support current location.", "error");
+      return;
+    }
+
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setForm((prev) => ({
+          ...prev,
+          latitude: latitude.toFixed(6),
+          longitude: longitude.toFixed(6),
+        }));
+        setLocating(false);
+        handleSnackbar("Current location saved for this prospect.", "success");
+      },
+      (error) => {
+        setLocating(false);
+        const message =
+          error.code === error.PERMISSION_DENIED
+            ? "Location permission denied. Please allow location access and try again."
+            : "Could not get your current location. Please try again.";
+        handleSnackbar(message, "error");
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
   };
 
   const handleContactChange = (index, field, value) => {
@@ -492,7 +524,23 @@ const IndividualForm = () => {
           longitude={form.longitude}
           onMapClick={handleSetLatLon}
         />
-        <Box mt={1} display="flex" gap={1} flexWrap="wrap">
+        <Box mt={1.5} display="flex" gap={1} flexWrap="wrap" alignItems="center">
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<MyLocationIcon />}
+            onClick={handleUseCurrentLocation}
+            disabled={locating}
+            sx={{
+              borderRadius: 2,
+              fontWeight: 700,
+              borderColor: brand,
+              color: brand,
+              "&:hover": { bgcolor: alpha(brand, 0.08), borderColor: brandDark },
+            }}
+          >
+            {locating ? "Getting Location..." : "Save Current Location"}
+          </Button>
           <Chip size="small" label={`Lat: ${form.latitude}`} />
           <Chip size="small" label={`Lng: ${form.longitude}`} />
         </Box>

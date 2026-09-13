@@ -51,6 +51,7 @@ import {
   startVisit,
 } from "../../../api/controller/admin_controller/visit_controller";
 import { google_map_key } from "../../../api/config";
+import { formatVisitDistance } from "./visit_distance";
 
 const fmtDate = (val) => {
   if (!val) return "—";
@@ -83,21 +84,6 @@ const getRouteUrl = (visit) => {
   const complete = getCompleteCoords(visit);
   if (!start || !complete) return "";
   return `https://www.google.com/maps/dir/${start.lat},${start.lng}/${complete.lat},${complete.lng}`;
-};
-
-const toRad = (value) => (value * Math.PI) / 180;
-
-const getStraightDistanceKm = (visit) => {
-  const start = getStartCoords(visit);
-  const complete = getCompleteCoords(visit);
-  if (!start || !complete) return null;
-  const earthRadiusKm = 6371;
-  const dLat = toRad(complete.lat - start.lat);
-  const dLng = toRad(complete.lng - start.lng);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(start.lat)) * Math.cos(toRad(complete.lat)) * Math.sin(dLng / 2) ** 2;
-  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
 export default function MyVisits() {
@@ -376,7 +362,7 @@ export default function MyVisits() {
     const start = getStartCoords(visit);
     const complete = getCompleteCoords(visit);
     const routeUrl = getRouteUrl(visit);
-    const distanceKm = getStraightDistanceKm(visit);
+    const straightDistance = formatVisitDistance(visit?.straight_distance_meters);
 
     return (
       <Stack spacing={1} sx={{ mt: compact ? 1 : 1.5 }}>
@@ -423,10 +409,11 @@ export default function MyVisits() {
             >
               View Route
             </Button>
-            {distanceKm != null && (
-              <Chip size="small" label={`Straight distance ${distanceKm.toFixed(2)} km`} variant="outlined" />
-            )}
+            <Chip size="small" label={`Straight-line distance: ${straightDistance}`} variant="outlined" />
           </Stack>
+        )}
+        {!routeUrl && (
+          <Chip size="small" label={`Straight-line distance: ${straightDistance}`} variant="outlined" sx={{ alignSelf: "flex-start" }} />
         )}
       </Stack>
     );

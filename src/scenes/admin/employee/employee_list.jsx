@@ -18,7 +18,25 @@ import { alpha } from "@mui/material/styles";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import { Visibility as VisibilityIcon, Add as AddIcon } from "@mui/icons-material";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { fetchEmployees } from "../../../api/controller/admin_controller/user_controller";
+
+dayjs.extend(relativeTime);
+
+const formatLastActivity = (activity) => {
+  const createdAt = activity?.created_at;
+  if (!createdAt) return "No activity";
+  const parsed = dayjs(createdAt);
+  return parsed.isValid() ? parsed.fromNow() : "No activity";
+};
+
+const formatLastActivityTitle = (activity) => {
+  const createdAt = activity?.created_at;
+  if (!createdAt) return "";
+  const parsed = dayjs(createdAt);
+  return parsed.isValid() ? parsed.format("MMM D, YYYY h:mm A") : String(createdAt);
+};
 
 const StatTile = ({ label, value }) => {
   const theme = useTheme();
@@ -98,6 +116,27 @@ const ActiveChip = ({ value }) => {
   );
 };
 
+const LastActivityCell = ({ activity }) => {
+  const theme = useTheme();
+  const activityName = activity?.activity_name || "No recent activity";
+  const platform = activity?.platform;
+  const timeLabel = formatLastActivity(activity);
+  const exactTime = formatLastActivityTitle(activity);
+
+  return (
+    <Tooltip title={exactTime || "No activity found"} arrow>
+      <Box sx={{ minWidth: 0 }}>
+        <Typography variant="body2" noWrap sx={{ color: theme.palette.text.primary, fontWeight: 650 }}>
+          {platform ? `${timeLabel} • ${platform}` : timeLabel}
+        </Typography>
+        <Typography variant="caption" noWrap sx={{ color: theme.palette.text.secondary, display: "block", textTransform: activity?.activity_name ? "capitalize" : "none" }}>
+          {activityName}
+        </Typography>
+      </Box>
+    </Tooltip>
+  );
+};
+
 const ActionCell = ({ id, onView }) => {
   const theme = useTheme();
   return (
@@ -170,6 +209,9 @@ const EmployeesList = () => {
         e.designation?.designation_name,
         e.department?.department_name,
         e.role?.role_name,
+        e.latest_activity?.activity_name,
+        e.latest_activity?.details,
+        e.latest_activity?.platform,
       ]
         .filter(Boolean)
         .join(" ")
@@ -209,6 +251,15 @@ const EmployeesList = () => {
       headerName: "Role",
       flex: 0.8,
       valueGetter: (p) => p.row.role?.role_name || "-",
+    },
+    {
+      field: "latest_activity",
+      headerName: "Last Activity",
+      flex: 0.95,
+      minWidth: 145,
+      valueGetter: (p) => p.row.latest_activity?.created_at || "",
+      renderCell: (params) => <LastActivityCell activity={params.row.latest_activity} />,
+      sortable: true,
     },
     {
       field: "isActive",
@@ -316,6 +367,7 @@ const EmployeesList = () => {
           {filteredEmployees.map((employee) => {
             const departmentLabel = employee.department?.department_name || "No department";
             const designationLabel = employee.designation?.designation_name || "No designation";
+            const lastActivityTitle = formatLastActivityTitle(employee.latest_activity);
             return (
             <Paper
               key={employee.id}
@@ -351,6 +403,26 @@ const EmployeesList = () => {
                     Role
                   </Typography>
                   <Typography variant="body2">{employee.role?.role_name || "-"}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Last Activity
+                  </Typography>
+                  <Tooltip title={lastActivityTitle || "No activity found"} arrow>
+                    <Typography variant="body2">
+                      {employee.latest_activity?.platform
+                        ? `${formatLastActivity(employee.latest_activity)} • ${employee.latest_activity.platform}`
+                        : formatLastActivity(employee.latest_activity)}
+                    </Typography>
+                  </Tooltip>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Activity Type
+                  </Typography>
+                  <Typography variant="body2" sx={{ textTransform: employee.latest_activity?.activity_name ? "capitalize" : "none" }}>
+                    {employee.latest_activity?.activity_name || "-"}
+                  </Typography>
                 </Box>
               </Box>
 
