@@ -41,6 +41,7 @@ import {
   DepartmentWiseEmp,
   EmpProfile,
   Login,
+  ForgotPassword,
   MapComponent,
   MyTaskTable,
   AllTaskTable,
@@ -53,6 +54,7 @@ import {
   TaskDetails,
   ProspectListPage,
   ProspectDetailsPage,
+  EditProspect,
   AddProspect,
   ProjectPhases,
   EffortOverview,
@@ -67,6 +69,7 @@ import {
   ProspectStageManagement,
   ProspectListByStage,
   ProspectBulkUpload,
+  ProspectTeams,
   ProspectReportMonthWise,
   SourceWiseProspectPie,
   ClientList,
@@ -119,6 +122,7 @@ import {
  DateWiseVisit,
  PrivacyPolicy,
  NewSystemUpdate,
+ AppUpdateManagement,
  BrainToDoLanding,
  BrainToDoPrivacyPolicy,
  ErrorLogsDashboard,
@@ -133,6 +137,8 @@ const AppRouter = () => {
     
       <Routes>
       <Route path="/login" element={<Login />}></Route>
+      <Route path="/forgot-password" element={<ForgotPassword />}></Route>
+      <Route path="/reset-password" element={<ForgotPassword />}></Route>
 
 
       
@@ -199,6 +205,7 @@ const AppRouter = () => {
           <Route path="/task-details/:id" element={<TaskDetails />} />
           <Route path="/prospect-list" element={<ProspectListPage />} />
           <Route path="/prospect-detail/:id" element={<ProspectDetailsPage />} />
+          <Route path="/edit-prospect/:id" element={<EditProspect />} />
           <Route path="/add-prospect" element={<AddProspect />} />
           <Route path="/project-detail/:id" element={<ProjectPhases />} />
           <Route path="/effort-calculation" element={<EffortOverview />} />
@@ -213,6 +220,7 @@ const AppRouter = () => {
           <Route path="/prospect-stage-management" element={<ProspectStageManagement />} />
           <Route path="/prospect-list-by-stage" element={<ProspectListByStage />} />
           <Route path="/prospect-bulk-upload" element={<ProspectBulkUpload />} />
+          <Route path="/admin/prospect-teams" element={<ProspectTeams />} />
           <Route path="/prospect-report-monthwise" element={<ProspectReportMonthWise />} />
           <Route path="/source-wise-prospect-report" element={<SourceWiseProspectPie />} />
           <Route path="/client-list" element={<ClientList />} />
@@ -263,6 +271,7 @@ const AppRouter = () => {
 
         
           <Route path="/new-system-update" element={<NewSystemUpdate />} />
+          <Route path="/app-update-management" element={<AppUpdateManagement />} />
           <Route path="/error-logs" element={<ErrorLogsDashboard />} />
         </Route>
         )}

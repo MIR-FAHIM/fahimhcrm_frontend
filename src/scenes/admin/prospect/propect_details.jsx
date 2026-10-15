@@ -28,6 +28,7 @@ import {
   BusinessRounded,
   CalendarMonthRounded,
   CheckCircleRounded,
+  EditRounded,
   EmailRounded,
   EventRounded,
   FlagRounded,
@@ -575,6 +576,15 @@ export default function ProspectDetailsPage() {
           </TextField>
           <Button
             variant="contained"
+            color="primary"
+            startIcon={<EditRounded />}
+            onClick={() => navigate(`/edit-prospect/${id}`)}
+            sx={{ borderRadius: 2, fontWeight: 700, whiteSpace: "nowrap" }}
+          >
+            Edit Prospect
+          </Button>
+          <Button
+            variant="outlined"
             startIcon={refreshing ? <CircularProgress size={16} color="inherit" /> : <RefreshRounded />}
             disabled={refreshing}
             onClick={() => loadWorkspace({ silent: true })}

@@ -239,6 +239,88 @@ const UserActivityList = () => {
         <Header title="User Activity Track" subtitle="Monitor logins and actions across the system" />
       </Box>
 
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2,
+          mb: 2,
+          borderRadius: 2,
+          bgcolor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+        }}
+      >
+        <Stack
+          direction={{ xs: "column", lg: "row" }}
+          spacing={1.5}
+          alignItems={{ xs: "stretch", lg: "center" }}
+          justifyContent="space-between"
+          sx={{ mb: 1.5 }}
+        >
+          <Box>
+            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+              <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
+                Daily Activity Report
+              </Typography>
+              <Chip
+                size="small"
+                label={dailyReport?.platform || "All platforms"}
+                variant="outlined"
+                sx={{ textTransform: dailyReport?.platform ? "capitalize" : "none", fontWeight: 700 }}
+              />
+            </Stack>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+              Quick admin view of active and inactive employees for {dailyReport?.date || reportDate}.
+            </Typography>
+          </Box>
+
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ xs: "stretch", sm: "center" }}>
+            <TextField
+              size="small"
+              type="date"
+              label="Report Date"
+              InputLabelProps={{ shrink: true }}
+              value={reportDate}
+              onChange={(event) => setReportDate(event.target.value)}
+            />
+            <TextField
+              select
+              size="small"
+              label="Platform"
+              value={reportPlatform}
+              onChange={(event) => setReportPlatform(event.target.value)}
+              sx={{ minWidth: { xs: "100%", sm: 160 } }}
+            >
+              {PLATFORM_OPTIONS.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </TextField>
+            <Button
+              variant="outlined"
+              onClick={fetchDailyReport}
+              disabled={dailyReportLoading}
+              startIcon={dailyReportLoading ? <CircularProgress size={16} /> : null}
+              sx={{ fontWeight: 700 }}
+            >
+              Refresh
+            </Button>
+          </Stack>
+        </Stack>
+
+        {dailyReportError && (
+          <Alert severity="warning" sx={{ mb: 1.5, borderRadius: 2 }}>
+            {dailyReportError}
+          </Alert>
+        )}
+
+        <Stack direction="row" gap={1.5} flexWrap="wrap">
+          <ReportStat label="Total Employees" value={dailyReport?.total_active_employee_count} helper="Active employee base" />
+          <ReportStat label="Active Today" value={dailyReport?.active_user_count} helper="Made activity" tone="success" />
+          <ReportStat label="Inactive Today" value={dailyReport?.inactive_user_count} helper="No activity found" tone="warning" />
+          <ReportStat label="Total Activities" value={dailyReport?.total_activity_count} helper="Logged events" tone="info" />
+        </Stack>
+      </Paper>
       {/* Filters */}
       <Box
         sx={{
@@ -460,6 +542,7 @@ const UserActivityList = () => {
 };
 
 export default UserActivityList;
+
 
 
 

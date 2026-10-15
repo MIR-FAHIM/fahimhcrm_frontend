@@ -1,8 +1,8 @@
 // Full EmpProfile Page with Error Handling and Code Cleanup
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef, useContext } from "react";
 import {
-  Alert, Avatar, Box, Chip, CircularProgress, Paper, Snackbar, Stack, Tab, Tabs, Typography, useTheme,
+  Alert, Avatar, Box, Button, Chip, CircularProgress, Paper, Snackbar, Stack, Tab, Tabs, Typography, useTheme,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -16,27 +16,32 @@ import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
 import { useParams, useNavigate } from "react-router-dom";
 
 import {
-  getProfile, uploadProfileImage, logOut, updateProfile,
+  getProfile, uploadProfileImage, logOut,
   modulePermission, changePassController, getUserActivity,
-  changeEmployeeRole, changeEmployeeDepartment, changeEmployeeDesignation,
   updateEmployeeInfo
 } from "../../../api/controller/admin_controller/user_controller";
 
 import { fetchAttendanceMethods, getAttendanceReportByUser } from "../../../api/controller/admin_controller/attendance_controller";
 import { fetchDepartment, fetchDesignation, fetchRole } from "../../../api/controller/admin_controller/department_controller";
 import { resolveAttendanceMethodList } from "../setting/attendance_method_utils";
-import { image_file_url } from "../../../api/config/index";
 import ProfileComponent from "./profile_components/profile_components";
 import TaskComponents from "./profile_components/task_components";
 import UserActivityList from "../user_activity_track/user_activity_track";
 import AttendanceCountReport from "./profile_components/attendance_count_report";
 import AttendanceReport from "./profile_components/attendance_emp_report";
 import { useProfile } from '../../provider/profile_context';
+import { ColorModeContext } from "../../../theme";
+import {
+  ATTENDANCE_FIELDS, EMPLOYMENT_FIELDS, PERSONAL_FIELDS, PREFERENCE_FIELDS,
+  assertProfileSuccess, profileErrorMessage, resolveProfilePhoto,
+} from "./profile_edit_utils";
 
 const EmpProfile = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const { id } = useParams();
+  const viewedId = useRef(id);
+  viewedId.current = id;
   const userID = localStorage.getItem("userId");
   const brand = theme.palette.blueAccent?.main ?? theme.palette.primary.main;
   const brandDark = theme.palette.blueAccent?.dark ?? theme.palette.primary.dark;
@@ -54,15 +59,20 @@ const EmpProfile = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const [permissions, setPermissions] = useState({});
   const { userProfileData, setUserProfileData } = useProfile();
+  const { setColorMode } = useContext(ColorModeContext);
   const isSuperAdmin = userProfileData?.role?.role_name === "Super Admin";
+  const canManageProfile = isSuperAdmin || (
+    Number(userProfileData?.role_id ?? userProfileData?.role?.id) === 2 && Boolean(permissions.employee)
+  );
+  const canEditProfile = canManageProfile || String(userID) === String(profileData?.id);
 
   const [roleOptions, setRoleOptions] = useState([]);
   const [departmentOptions, setDepartmentOptions] = useState([]);
   const [designationOptions, setDesignationOptions] = useState([]);
   const [attendanceMethodOptions, setAttendanceMethodOptions] = useState([]);
-  const [assignmentValues, setAssignmentValues] = useState({ role_id: "", department_id: "", designation_id: "", attendance_method_id: "" });
-  const [assignmentSaving, setAssignmentSaving] = useState({ role: false, department: false, designation: false, attendanceMethod: false });
   const [assignmentLoading, setAssignmentLoading] = useState(false);
+  const [assignmentError, setAssignmentError] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [snack, setSnack] = useState({ open: false, msg: "", sev: "success" });
 
   const getInitials = (name = "") =>
@@ -103,134 +113,60 @@ const EmpProfile = () => {
   }, [id]);
 
   useEffect(() => {
-    if (!profileData) return;
-    setAssignmentValues({
-      role_id: String(profileData?.role_id || profileData?.role?.id || ""),
-      department_id: String(profileData?.department_id || profileData?.department?.id || ""),
-      designation_id: String(profileData?.designation_id || profileData?.designation?.id || ""),
-      attendance_method_id: profileData?.attendance_method_id || profileData?.attendance_method?.id ? String(profileData?.attendance_method_id || profileData?.attendance_method?.id) : "",
-    });
-  }, [profileData]);
-
-  useEffect(() => {
-    if (!isSuperAdmin) return;
-    loadAssignmentOptions();
-  }, [isSuperAdmin]);
+    if (canManageProfile) loadAssignmentOptions();
+  }, [canManageProfile]);
 
   const showSnack = (msg, sev = "success") => setSnack({ open: true, msg, sev });
 
   const loadAssignmentOptions = async () => {
     setAssignmentLoading(true);
-    try {
-      const [roleRes, departmentRes, designationRes, attendanceMethodRes] = await Promise.all([
-        fetchRole(),
-        fetchDepartment(),
-        fetchDesignation(),
-        fetchAttendanceMethods(),
-      ]);
-      setRoleOptions(roleRes?.data || []);
-      setDepartmentOptions(departmentRes?.data || []);
-      setDesignationOptions(designationRes?.data || []);
-      setAttendanceMethodOptions(resolveAttendanceMethodList(attendanceMethodRes));
-    } catch (err) {
-      console.error("Assignment options fetch error:", err);
-      showSnack("Failed to load role, department, and designation options.", "error");
-    } finally {
-      setAssignmentLoading(false);
-    }
+    setAssignmentError("");
+    const requests = [
+      [fetchRole, setRoleOptions, "roles"],
+      [fetchDepartment, setDepartmentOptions, "departments"],
+      [fetchDesignation, setDesignationOptions, "designations"],
+      [fetchAttendanceMethods, setAttendanceMethodOptions, "attendance methods"],
+    ];
+    const results = await Promise.allSettled(requests.map(([request]) => request()));
+    const failures = [];
+    results.forEach((result, index) => {
+      const [, setOptions, label] = requests[index];
+      const response = result.status === "fulfilled" ? result.value : null;
+      const list = resolveAttendanceMethodList(response);
+      if (!response || (response.status && response.status !== "success") ||
+          (!Array.isArray(response?.data) && !Array.isArray(response?.data?.data))) {
+        failures.push(profileErrorMessage(result.reason ?? response, `Failed to load ${label}.`));
+      } else {
+        setOptions(list);
+      }
+    });
+    if (failures.length) setAssignmentError(failures.join(" "));
+    setAssignmentLoading(false);
   };
 
-  const getErrorMessage = (error, fallback) =>
-    error?.response?.data?.message || error?.response?.data?.error || error?.message || fallback;
+  const applyViewedProfile = (profile) => {
+    setProfileData(profile);
+    setImageUrl(resolveProfilePhoto(profile.photo));
+    if (String(profile.id) === String(userID)) setUserProfileData(profile);
+  };
 
   const refreshViewedProfile = async () => {
-    const updatedProfile = await getProfile(id);
-    setProfileData(updatedProfile.data || {});
-    return updatedProfile.data || {};
+    const response = await getProfile(id, navigate);
+    if (String(viewedId.current) !== String(id)) return null;
+    assertProfileSuccess(response, "Failed to load employee profile.");
+    if (!response.data?.id) throw new Error("Employee profile was not found.");
+    applyViewedProfile(response.data);
+    return response.data;
   };
 
-  const handleAssignmentValueChange = (field, value) => {
-    if (!isSuperAdmin) return;
-    setAssignmentValues((current) => ({ ...current, [field]: value }));
-  };
-
-  const handleAssignmentSave = async (type) => {
-    if (!isSuperAdmin || !profileData?.id) {
-      showSnack("Only Super Admin can update employee assignments.", "error");
-      return;
-    }
-
-    const configs = {
-      role: {
-        field: "role_id",
-        payloadKey: "role_id",
-        label: "role",
-        request: changeEmployeeRole,
-        previous: String(profileData?.role_id || profileData?.role?.id || ""),
-      },
-      department: {
-        field: "department_id",
-        payloadKey: "department_id",
-        label: "department",
-        request: changeEmployeeDepartment,
-        previous: String(profileData?.department_id || profileData?.department?.id || ""),
-      },
-      designation: {
-        field: "designation_id",
-        payloadKey: "designation_id",
-        label: "designation",
-        request: changeEmployeeDesignation,
-        previous: String(profileData?.designation_id || profileData?.designation?.id || ""),
-      },
-    };
-
-    const config = configs[type];
-    const selectedValue = assignmentValues[config.field];
-    if (!selectedValue) {
-      showSnack(`Select a ${config.label} first.`, "warning");
-      return;
-    }
-
-    setAssignmentSaving((current) => ({ ...current, [type]: true }));
+  const refreshAfterSave = async () => {
+    window.dispatchEvent(new Event("employee-profile-updated"));
     try {
-      await config.request(profileData.id, { [config.payloadKey]: selectedValue });
       await refreshViewedProfile();
-      showSnack(`Employee ${config.label} updated successfully.`);
     } catch (err) {
-      console.error(`Failed to update ${config.label}:`, err);
-      setAssignmentValues((current) => ({ ...current, [config.field]: config.previous }));
-      showSnack(getErrorMessage(err, `Failed to update employee ${config.label}.`), "error");
-    } finally {
-      setAssignmentSaving((current) => ({ ...current, [type]: false }));
+      showSnack(profileErrorMessage(err, err.message || "Saved, but profile refresh failed. Please reload."), "warning");
     }
   };
-
-  const handleAttendanceMethodSave = async () => {
-    if (!isSuperAdmin || !profileData?.id) {
-      showSnack("Only Super Admin can update attendance method assignment.", "error");
-      return;
-    }
-
-    const previous = profileData?.attendance_method_id || profileData?.attendance_method?.id ? String(profileData?.attendance_method_id || profileData?.attendance_method?.id) : "";
-    const selectedValue = assignmentValues.attendance_method_id || null;
-
-    setAssignmentSaving((current) => ({ ...current, attendanceMethod: true }));
-    try {
-      await updateEmployeeInfo({
-        user_id: profileData.id,
-        attendance_method_id: selectedValue ? Number(selectedValue) : null,
-      });
-      await refreshViewedProfile();
-      showSnack("Employee attendance method updated successfully.");
-    } catch (err) {
-      console.error("Failed to update attendance method:", err);
-      setAssignmentValues((current) => ({ ...current, attendance_method_id: previous }));
-      showSnack(getErrorMessage(err, "Failed to update employee attendance method."), "error");
-    } finally {
-      setAssignmentSaving((current) => ({ ...current, attendanceMethod: false }));
-    }
-  };
-
   const handleGetModulePermission = async () => {
     try {
       const response = await modulePermission();
@@ -243,26 +179,27 @@ const EmpProfile = () => {
   };
 
   const fetchProfile = async () => {
-    console.log('user profile id', id);
     setLoading(true);
+    setError(null);
+    setProfileData(null);
+    setSelectedFile(null);
+    setActiveTab("general");
+    setActivityData([]);
     try {
-      const response = await getProfile(id);
-      setProfileData(response.data || {});
-      const photoPath = response?.data?.photo ?? "";
-      setImageUrl(photoPath ? `${image_file_url}/${photoPath}` : "https://placehold.co/200x300/CCCCCC/FFFFFF?text=No+Image");
+      await refreshViewedProfile();
     } catch (err) {
-      setError("Failed to fetch profile data.");
-      console.error(err);
+      if (String(viewedId.current) === String(id)) setError(profileErrorMessage(err, err.message || "Failed to fetch profile data."));
     } finally {
-      setLoading(false);
+      if (String(viewedId.current) === String(id)) setLoading(false);
     }
   };
-
   const handleUserActivity = async () => {
     try {
       const response = await getUserActivity(id);
+      if (String(viewedId.current) !== String(id)) return;
       if (response.status === "success") {
-        setActivityData(response.data.data);
+        const activity = response.data?.data ?? response.data;
+        setActivityData(Array.isArray(activity) ? activity : []);
       } else {
         setError("Failed to fetch user activity");
       }
@@ -287,40 +224,60 @@ const EmpProfile = () => {
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) return alert("Please select an image!");
+    if (!canEditProfile || !profileData?.id || uploading) return;
+    if (!selectedFile) {
+      showSnack("Please select a photo first.", "warning");
+      return;
+    }
+    if (!selectedFile.type.startsWith("image/")) {
+      showSnack("Please select an image file.", "error");
+      return;
+    }
+    setUploading(true);
     try {
-      const response = await uploadProfileImage({ user_id: userID, photo: selectedFile });
-      if (response) {
-        alert("Image uploaded successfully!");
-        const updatedProfile = await getProfile(userID);
-        setProfileData(updatedProfile.data);
-        setImageUrl(`${image_file_url}/${updatedProfile.data.photo}`);
-      } else {
-        alert("Image upload failed!");
-      }
+      const response = await uploadProfileImage({ user_id: Number(profileData.id), photo: selectedFile });
+      assertProfileSuccess(response, "Failed to upload profile photo.");
+      setSelectedFile(null);
+      showSnack(response.message || "Photo uploaded successfully.");
+      await refreshAfterSave();
     } catch (err) {
-      console.error("Upload error:", err);
-      alert("Something went wrong while uploading.");
+      showSnack(profileErrorMessage(err, err.message || "Failed to upload profile photo."), "error");
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleUpdateProfileData = async (data) => {
-    try {
-      const response = await updateProfile(data);
-      if (response) {
-        alert("Profile updated successfully!");
-        const updatedProfile = await getProfile(id);
-        setProfileData(updatedProfile.data);
-        const photoPath = updatedProfile?.data?.photo ?? "";
-        setImageUrl(photoPath ? `${image_file_url}/${photoPath}` : "https://placehold.co/200x300/CCCCCC/FFFFFF?text=No+Image");
-      } else {
-        alert("Update failed!");
+    if (!canEditProfile || !profileData?.id) throw new Error("You cannot edit this employee.");
+    const allowedFields = [
+      ...PERSONAL_FIELDS, ...PREFERENCE_FIELDS,
+      ...(canManageProfile ? [...ATTENDANCE_FIELDS, "isActive"] : []),
+      ...(isSuperAdmin ? EMPLOYMENT_FIELDS : []),
+    ];
+    const payload = { user_id: Number(profileData.id) };
+    for (const field of allowedFields) {
+      if (Object.hasOwn(data, field) && data[field] !== undefined && data[field] !== "undefined") {
+        payload[field] = data[field];
       }
+    }
+    if (Object.keys(payload).length === 1) throw new Error("No editable changes to save.");
+    try {
+      const response = await updateEmployeeInfo(payload);
+      assertProfileSuccess(response, "Failed to update employee information.");
+      if (String(profileData.id) === String(userID) && typeof payload.is_dark_mode === "boolean") {
+        setColorMode(payload.is_dark_mode ? "dark" : "light");
+      }
+      if (String(viewedId.current) === String(id)) {
+        setProfileData((current) => ({ ...current, ...payload, id: current.id }));
+      }
+      showSnack(response.message || "Employee information saved.");
+      await refreshAfterSave();
     } catch (err) {
-      alert("Update error");
+      err.message = profileErrorMessage(err, err.message || "Failed to update employee information.");
+      showSnack(err.message, "error");
+      throw err;
     }
   };
-
   const handleChangePass = async (data) => {
     try {
       const response = await changePassController(data);
@@ -407,6 +364,10 @@ const EmpProfile = () => {
             </Typography>
           </Paper>
         </Box>
+      ) : !profileData ? (
+        <Alert severity="error" action={<Button color="inherit" onClick={fetchProfile}>Retry</Button>}>
+          {error || "Employee profile was not found."}
+        </Alert>
       ) : (
         <Box sx={{ maxWidth: 1280, mx: "auto" }}>
           {error && (
@@ -523,18 +484,17 @@ const EmpProfile = () => {
               handleUpload={handleUpload}
               profileData={profileData}
               userID={userID}
-              canManageProfile={Boolean(permissions.employee)}
+              canManageProfile={canManageProfile}
               handleLogout={handleLogout}
               imageUrl={imageUrl}
               isSuperAdmin={isSuperAdmin}
               assignmentOptions={{ roles: roleOptions, departments: departmentOptions, designations: designationOptions }}
               attendanceMethodOptions={attendanceMethodOptions}
-              assignmentValues={assignmentValues}
               assignmentLoading={assignmentLoading}
-              assignmentSaving={assignmentSaving}
-              onAssignmentChange={handleAssignmentValueChange}
-              onAssignmentSave={handleAssignmentSave}
-              onAttendanceMethodSave={handleAttendanceMethodSave}
+              assignmentError={assignmentError}
+              onRetryOptions={loadAssignmentOptions}
+              uploading={uploading}
+              selectedFile={selectedFile}
             />
           )}
 

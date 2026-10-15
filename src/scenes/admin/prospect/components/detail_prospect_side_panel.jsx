@@ -1,5 +1,6 @@
 // src/components/prospect/ProspectSidebar.jsx
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import {
   Avatar,
@@ -86,6 +87,7 @@ const ProspectSidebar = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [text, setText] = useState(details.prospect_name || "");
+  const navigate = useNavigate();
   const theme = useTheme();
   const isIndividual = isTrue(details.is_individual);
   const canShowMap = !isIndividual && details.latitude != null && details.longitude != null;
@@ -164,6 +166,17 @@ const ProspectSidebar = ({
           </Stack>
 
           <OpportunityComponent details={details} onToggleOpportunity={onToggleOpportunityController} onSubmitOpportunity={onSubmitOpportunity} />
+
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<EditRounded />}
+            onClick={() => navigate(`/edit-prospect/${details.id}`)}
+            fullWidth
+            sx={{ borderRadius: 2, fontWeight: 700 }}
+          >
+            Edit All Details
+          </Button>
         </Stack>
 
         <Divider sx={{ my: 2 }} />

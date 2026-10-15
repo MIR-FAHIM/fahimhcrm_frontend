@@ -47,6 +47,7 @@ import EmployeeAttendanceReport from "./admin/attendance/employee_attendance_rep
 import DepartmentWiseEmp from "./admin/department_wise/department_wise_user";
 import EmpProfile from "./admin/profile/get_user_profile";
 import Login from "./admin/auth/login";
+import ForgotPassword from "./admin/auth/ForgotPassword";
 import MapComponent from "./admin/map/google_map";
 import ProfileComponent from "./admin/profile/profile_components/profile_components";
 import MyTaskTable from "./admin/task/my-task/get_my_tasks";
@@ -63,6 +64,7 @@ import FollowUpList from "./admin/task/followup-activity/followup_list";
 import ActivityList from "./admin/task/followup-activity/activity_list";
 import ProspectListPage from "./admin/prospect/prospect_list";
 import ProspectDetailsPage from "./admin/prospect/propect_details";
+import EditProspect from "./admin/prospect/edit_prospect";
 import AddProspect from "./admin/prospect/add_prospect";
 import OrganizationForm from "./admin/prospect/organization_prospect_form";
 import IndividualForm from "./admin/prospect/individual_propsect_form";
@@ -80,6 +82,7 @@ import AttendanceMethodManagement from "./admin/setting/attendance_method_manage
 import ProspectStageManagement from "./admin/setting/prospect_stage_management";
 import ProspectListByStage from "./admin/prospect/prospect_list_by_stage";
 import ProspectBulkUpload from "./admin/prospect/prospect_bulk_upload";
+import ProspectTeams from "./admin/prospect/prospect_teams";
 import ProspectReportMonthWise from "./admin/prospect/prospect_report";
 import SourceWiseProspectPie from "./admin/prospect/source_wise_prospect_report";
 import ClientList from "./admin/client/client_list";
@@ -134,6 +137,7 @@ import VisitMap from "./admin/fieldforce/visit_map";// Import the WorkShop compo
 import DateWiseVisit from "./admin/fieldforce/date_wise_visit";// Import the WorkShop component
 import PrivacyPolicy from "./admin/setting/privacy_policy";// Import the WorkShop component
 import NewSystemUpdate from "./admin/setting/new_system_update";
+import AppUpdateManagement from "./admin/setting/app_update_management";
 import BrainToDoLanding from "./landing/BrainToDoLanding";
 import BrainToDoPrivacyPolicy from "./landing/BrainToDoPrivacyPolicy";
 
@@ -190,6 +194,7 @@ export {
   DepartmentWiseEmp,
   EmpProfile,
   Login,
+  ForgotPassword,
   MapComponent,
   ProfileComponent,
   MyTaskTable,
@@ -206,6 +211,7 @@ export {
   FollowUpList,
   ProspectListPage,
   ProspectDetailsPage,
+  EditProspect,
   AddProspect,
   OrganizationForm,
   IndividualForm,
@@ -223,6 +229,7 @@ export {
   ProspectStageManagement,
   ProspectListByStage,
   ProspectBulkUpload,
+  ProspectTeams,
   ProspectReportMonthWise,
   SourceWiseProspectPie,
   ClientList,
@@ -277,6 +284,7 @@ export {
   DateWiseVisit,
   PrivacyPolicy,
   NewSystemUpdate,
+  AppUpdateManagement,
   BrainToDoLanding,
   BrainToDoPrivacyPolicy,
   ErrorLogsDashboard,

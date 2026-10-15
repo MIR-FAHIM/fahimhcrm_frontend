@@ -179,7 +179,7 @@ export const updateProspect = async (data) => {
     const response = await axiosInstance.post(API_URL.updateProspect,data,
       {
         headers: {
-          'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+          'token': getProspectToken() || localStorage.getItem("authToken"),
         },
       }
     );

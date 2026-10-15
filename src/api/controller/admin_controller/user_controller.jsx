@@ -31,12 +31,14 @@ export const registerEmployee = async (data) => {
 
 }
 export const uploadProfileImage = async (data) => {
+  const formData = new FormData();
+  formData.append("user_id", String(data.user_id));
+  formData.append("photo", data.photo);
   try {
-    const response = await axiosInstance.post(API_URL.uploadUserImage, data,
+    const response = await axiosInstance.post(API_URL.uploadUserImage, formData,
       {
         headers: {
-          "Content-Type": "multipart/form-data",
-          'token': localStorage.getItem("authToken"), // Add the token in Authorization header
+          token: getUserAppToken(),
         },
       }
     );
@@ -64,6 +66,26 @@ export const loginController = async (data) => {
   }
 
 }
+export const forgotPasswordController = async (data) => {
+  try {
+    const response = await axiosInstance.post(API_URL.forgotPassword, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error in forgotPasswordController:", error);
+    throw error;
+  }
+};
+
+export const resetPasswordController = async (data) => {
+  try {
+    const response = await axiosInstance.post(API_URL.resetPassword, data);
+    return response.data;
+  } catch (error) {
+    console.error("Error in resetPasswordController:", error);
+    throw error;
+  }
+};
+
 export const addUserActivity = async (data) => {
   try {
     const response = await axiosInstance.post(API_URL.addUserActivity, data,
@@ -288,20 +310,21 @@ export const getProfile = async (id, navigate) => {
     const response = await axiosInstance.get(API_URL.getProfile(id),
       {
         headers: {
-          'token': localStorage.getItem("authToken"),// Add the token in Authorization header
+          token: getUserAppToken(),
         },
       }
     );
-    return response.data;
+    const body = response.data;
+    return { ...body, data: body?.data?.data ?? body?.data };
   } catch (error) {
     console.error("Error fetching profile:", error);
 
-    if (error.response.status === 450) {
+    if (error.response?.status === 450) {
       // Remove invalid token and redirect to login
       localStorage.removeItem("authToken");
-      navigate('/login');
+      navigate?.('/login');
     }
-    return [];
+    throw error;
   }
 }
 export const logOut = async (id) => {

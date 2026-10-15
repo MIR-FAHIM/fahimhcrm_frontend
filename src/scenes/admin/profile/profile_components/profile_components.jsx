@@ -1,17 +1,14 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Avatar,
   Box,
   Button,
   CircularProgress,
-  FormControl,
   Grid,
   TextField,
   Typography,
   IconButton,
   Paper,
-  Select,
-  MenuItem,
   Stack,
   Chip,
   Divider,
@@ -19,12 +16,9 @@ import {
   Tooltip,
 } from "@mui/material";
 import {
-  Edit as EditIcon,
-  Save as SaveIcon,
   Logout as LogoutIcon,
   Upload as UploadIcon,
   AccessTime as AccessTimeIcon,
-  AdminPanelSettings as AdminPanelSettingsIcon,
   Apartment as ApartmentIcon,
   Badge as BadgeIcon,
   Cake as CakeIcon,
@@ -34,12 +28,8 @@ import {
   WorkOutline as WorkOutlineIcon,
 } from "@mui/icons-material";
 import { alpha } from "@mui/material/styles";
-import { image_file_url } from "../../../../api/config";
-import {
-  getAttendanceMethodLabel,
-  METHOD_ICONS,
-  summarizeAttendanceMethod,
-} from "../../setting/attendance_method_utils";
+import { buildProfileForm, resolveProfilePhoto } from "../profile_edit_utils";
+import ProfileEditor from "./profile_editor";
 
 const SectionCard = ({ title, subtitle, icon, action, children, sx }) => {
   const theme = useTheme();
@@ -142,45 +132,6 @@ const ReadRow = ({ label, value }) => {
   );
 };
 
-const hasTimeValue = (value) => value !== null && value !== undefined && value !== "";
-
-const normalizeTimePart = (value, max) => {
-  const number = Number(value);
-  if (!Number.isFinite(number)) return 0;
-  return Math.min(Math.max(Math.trunc(number), 0), max);
-};
-
-const buildTimeValue = (hour, minute) => {
-  if (!hasTimeValue(hour) && !hasTimeValue(minute)) return "";
-  return `${String(normalizeTimePart(hour, 23)).padStart(2, "0")}:${String(
-    normalizeTimePart(minute, 59)
-  ).padStart(2, "0")}`;
-};
-
-const splitTimeValue = (timeValue) => {
-  if (!timeValue) return { hour: null, minute: null };
-  const [hour = "0", minute = "0"] = String(timeValue).split(":");
-  return {
-    hour: normalizeTimePart(hour, 23),
-    minute: normalizeTimePart(minute, 59),
-  };
-};
-
-const buildEditableProfileState = (profileData = {}) => ({
-  user_id: profileData.id || "",
-  name: profileData.name || "",
-  email: profileData.email || "",
-  phone: profileData.phone || "",
-  address: profileData.address || "",
-  birthdate: profileData.birthdate || "",
-  bio: profileData.bio || "",
-  start_hour: profileData.start_hour ?? "",
-  start_min: profileData.start_min ?? "",
-  end_hour: profileData.end_hour ?? "",
-  end_min: profileData.end_min ?? "",
-  office_start_time: buildTimeValue(profileData.start_hour, profileData.start_min),
-  office_end_time: buildTimeValue(profileData.end_hour, profileData.end_min),
-});
 
 const ProfileComponent = ({
   handleFileChange,
@@ -195,35 +146,26 @@ const ProfileComponent = ({
   isSuperAdmin = false,
   assignmentOptions = { roles: [], departments: [], designations: [] },
   attendanceMethodOptions = [],
-  assignmentValues = { role_id: "", department_id: "", designation_id: "" },
   assignmentLoading = false,
-  assignmentSaving = { role: false, department: false, designation: false },
-  onAssignmentChange = () => {},
-  onAssignmentSave = () => {},
-  onAttendanceMethodSave = () => {},
+  assignmentError = "",
+  onRetryOptions,
+  uploading = false,
+  selectedFile,
 }) => {
   const theme = useTheme();
   const brand = theme.palette.blueAccent?.main ?? theme.palette.primary.main;
   const brandDark = theme.palette.blueAccent?.dark ?? theme.palette.primary.dark;
   const brandContrast = theme.palette.blueAccent?.contrastText ?? theme.palette.primary.contrastText;
 
-  const [editData, setEditData] = useState({});
   const [passwordData, setPasswordData] = useState({});
   const [avatarError, setAvatarError] = useState(false);
   const [passwordError, setPasswordError] = useState("");
-  const [isEditable, setIsEditable] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-
   const fileRef = useRef(null);
-  const isMyProfile = parseInt(userID, 10) === profileData?.id;
+  const isMyProfile = String(userID) === String(profileData?.id);
+  const canEditProfile = isMyProfile || canManageProfile;
 
   useEffect(() => {
-    if (!profileData) return;
-    const roleId = profileData?.role?.id;
-    setIsEditable(roleId === 1 || roleId === 2);
-
-    setEditData(buildEditableProfileState(profileData));
-
+    setAvatarError(false);
     setPasswordData({
       user_id: profileData.id || "",
       current_password: "",
@@ -231,36 +173,11 @@ const ProfileComponent = ({
       confirm_new_password: "",
     });
   }, [profileData]);
-
-  const onEditField = (e) => {
-    const { name, value } = e.target;
-    setEditData((p) => ({ ...p, [name]: value }));
-  };
-
   const onPasswordField = (e) => {
     const { name, value } = e.target;
     setPasswordData((p) => ({ ...p, [name]: value }));
   };
 
-  const handleSave = () => {
-    const { office_start_time, office_end_time, ...profilePayload } = editData;
-    const startTime = splitTimeValue(office_start_time);
-    const endTime = splitTimeValue(office_end_time);
-
-    handleUpdateData({
-      ...profilePayload,
-      start_hour: startTime.hour,
-      start_min: startTime.minute,
-      end_hour: endTime.hour,
-      end_min: endTime.minute,
-    });
-    setIsEditing(false);
-  };
-
-  const handleCancelEdit = () => {
-    setEditData(buildEditableProfileState(profileData));
-    setIsEditing(false);
-  };
 
   const handlePasswordSave = () => {
     setPasswordError("");
@@ -292,48 +209,10 @@ const ProfileComponent = ({
       .join("")
       .toUpperCase() || "BT";
 
-  const placeholderAvatar = "https://placehold.co/240x240/3A86FF/FFFFFF?text=BT";
-  const photoSrc = avatarError
-    ? placeholderAvatar
-    : imageUrl || (profileData?.photo ? `${image_file_url}/${profileData.photo}` : placeholderAvatar);
-
-  const canUpload = isMyProfile;
-  const canEditWorkingHours = isMyProfile || canManageProfile || isEditable || isSuperAdmin;
-  const assignmentRows = [
-    {
-      key: "role",
-      field: "role_id",
-      label: "Role",
-      valueKey: "id",
-      labelKey: "role_name",
-      options: assignmentOptions.roles || [],
-      saving: assignmentSaving.role,
-    },
-    {
-      key: "department",
-      field: "department_id",
-      label: "Department",
-      valueKey: "id",
-      labelKey: "department_name",
-      options: assignmentOptions.departments || [],
-      saving: assignmentSaving.department,
-    },
-    {
-      key: "designation",
-      field: "designation_id",
-      label: "Designation",
-      valueKey: "id",
-      labelKey: "designation_name",
-      options: assignmentOptions.designations || [],
-      saving: assignmentSaving.designation,
-    },
-  ];
-
-  const officeTimeLabel = useMemo(() => {
-    if (!editData.office_start_time && !editData.office_end_time) return "Not set";
-    return `${editData.office_start_time || "Not set"} - ${editData.office_end_time || "Not set"}`;
-  }, [editData.office_start_time, editData.office_end_time]);
-
+  const photoSrc = avatarError ? undefined : imageUrl || resolveProfilePhoto(profileData?.photo);
+  const canUpload = canEditProfile;
+  const officeTimes = buildProfileForm(profileData);
+  const officeTimeLabel = `${officeTimes.office_start_time || "Not set"} - ${officeTimes.office_end_time || "Not set"}`;
   const profileHighlights = [
     { label: "Email", value: profileData?.email, icon: <EmailIcon /> },
     { label: "Phone", value: profileData?.phone, icon: <PhoneIcon /> },
@@ -341,17 +220,6 @@ const ProfileComponent = ({
     { label: "Office Time", value: officeTimeLabel, icon: <AccessTimeIcon /> },
   ];
 
-  const getSelectedOptionLabel = (row) => {
-    const selected = row.options.find(
-      (option) => String(option[row.valueKey]) === String(assignmentValues[row.field])
-    );
-    return selected?.[row.labelKey] || "Not selected";
-  };
-
-  const selectedAttendanceMethod = attendanceMethodOptions.find(
-    (method) => String(method.id) === String(assignmentValues.attendance_method_id)
-  );
-  const CurrentAttendanceIcon = METHOD_ICONS[selectedAttendanceMethod?.method] || AccessTimeIcon;
 
   return (
     <Box
@@ -406,6 +274,7 @@ const ProfileComponent = ({
                   <IconButton
                     size="small"
                     onClick={() => fileRef.current?.click()}
+                    disabled={uploading}
                     sx={{
                       position: "absolute",
                       right: -6,
@@ -429,6 +298,7 @@ const ProfileComponent = ({
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
+                disabled={uploading}
               />
             </Box>
           </Grid>
@@ -491,8 +361,9 @@ const ProfileComponent = ({
             <Grid item xs={12} md="auto">
               <Button
                 onClick={handleUpload}
+                disabled={uploading || !selectedFile}
                 variant="contained"
-                startIcon={<UploadIcon />}
+                startIcon={uploading ? <CircularProgress size={16} color="inherit" /> : <UploadIcon />}
                 sx={{
                   textTransform: "none",
                   bgcolor: brand,
@@ -504,400 +375,27 @@ const ProfileComponent = ({
               >
                 Upload Photo
               </Button>
+              {selectedFile && <Typography variant="caption" display="block" sx={{ mt: 1, overflowWrap: "anywhere" }}>{selectedFile.name}</Typography>}
             </Grid>
           )}
         </Grid>
       </SectionCard>
 
 
-      {isSuperAdmin && (
-        <SectionCard
-          title="Super Admin Controls"
-          subtitle="Change this employee's role, department, or designation. Each field saves independently."
-          icon={<AdminPanelSettingsIcon fontSize="small" />}
-          sx={{ mb: 2 }}
-        >
-          <Grid container spacing={2}>
-            {assignmentRows.map((row) => (
-              <Grid key={row.key} item xs={12} md={4}>
-                <Box
-                  sx={{
-                    height: "100%",
-                    p: 1.5,
-                    borderRadius: 1.5,
-                    bgcolor: alpha(theme.palette.text.primary, 0.035),
-                    border: `1px solid ${theme.palette.divider}`,
-                  }}
-                >
-                  <Stack spacing={1.25}>
-                    <Box>
-                      <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
-                        {row.label}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 700 }}>
-                        {getSelectedOptionLabel(row)}
-                      </Typography>
-                    </Box>
-                  <FormControl fullWidth size="small" disabled={!isSuperAdmin || assignmentLoading || row.saving}>
-                    <Select
-                      displayEmpty
-                      value={assignmentValues[row.field] || ""}
-                      onChange={(event) => onAssignmentChange(row.field, event.target.value)}
-                      sx={{
-                        bgcolor: theme.palette.background.paper,
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: alpha(brand, 0.20),
-                        },
-                      }}
-                    >
-                      <MenuItem value="" disabled>
-                        Select {row.label}
-                      </MenuItem>
-                      {row.options.map((option) => (
-                        <MenuItem key={option[row.valueKey]} value={String(option[row.valueKey])}>
-                          {option[row.labelKey] || `#${option[row.valueKey]}`}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => onAssignmentSave(row.key)}
-                    disabled={!isSuperAdmin || assignmentLoading || row.saving || !assignmentValues[row.field]}
-                    startIcon={row.saving ? <CircularProgress size={15} color="inherit" /> : <SaveIcon />}
-                    sx={{
-                      textTransform: "none",
-                      fontWeight: 700,
-                      bgcolor: brand,
-                      color: brandContrast,
-                      "&:hover": { bgcolor: brandDark },
-                    }}
-                  >
-                    Save {row.label}
-                  </Button>
-                  </Stack>
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
-        </SectionCard>
-      )}
-
-      {isSuperAdmin && (
-        <SectionCard
-          title="Attendance Method"
-          subtitle="Assign or clear this employee's attendance validation method."
-          icon={<AccessTimeIcon fontSize="small" />}
-          sx={{ mb: 2 }}
-        >
-          <Grid container spacing={2} alignItems="stretch">
-            <Grid item xs={12} md={5}>
-              <Box
-                sx={{
-                  height: "100%",
-                  p: 1.5,
-                  borderRadius: 1.5,
-                  bgcolor: alpha(theme.palette.text.primary, 0.035),
-                  border: `1px solid ${theme.palette.divider}`,
-                }}
-              >
-                <Stack direction="row" spacing={1.25} alignItems="center">
-                  <Avatar
-                    variant="rounded"
-                    sx={{
-                      bgcolor: alpha(brand, 0.12),
-                      color: brand,
-                      width: 40,
-                      height: 40,
-                    }}
-                  >
-                    <CurrentAttendanceIcon fontSize="small" />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
-                      Current Method
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: theme.palette.text.primary, fontWeight: 800 }}>
-                      {selectedAttendanceMethod
-                        ? getAttendanceMethodLabel(selectedAttendanceMethod.method)
-                        : profileData?.attendance_method
-                          ? getAttendanceMethodLabel(profileData.attendance_method.method)
-                          : "Not assigned"}
-                    </Typography>
-                  </Box>
-                </Stack>
-                <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mt: 1.25, lineHeight: 1.6 }}>
-                  {selectedAttendanceMethod
-                    ? summarizeAttendanceMethod(selectedAttendanceMethod)
-                    : profileData?.attendance_method
-                      ? summarizeAttendanceMethod(profileData.attendance_method)
-                      : "This employee will use the default active attendance method if backend fallback is enabled."}
-                </Typography>
-              </Box>
-            </Grid>
-
-            <Grid item xs={12} md={7}>
-              <Box
-                sx={{
-                  height: "100%",
-                  p: 1.5,
-                  borderRadius: 1.5,
-                  bgcolor: alpha(theme.palette.text.primary, 0.035),
-                  border: `1px solid ${theme.palette.divider}`,
-                }}
-              >
-                <Stack spacing={1.25}>
-                  <FormControl fullWidth size="small" disabled={!isSuperAdmin || assignmentLoading || assignmentSaving.attendanceMethod}>
-                    <Select
-                      displayEmpty
-                      value={assignmentValues.attendance_method_id || ""}
-                      onChange={(event) => onAssignmentChange("attendance_method_id", event.target.value)}
-                      sx={{
-                        bgcolor: theme.palette.background.paper,
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: alpha(brand, 0.20),
-                        },
-                      }}
-                    >
-                      <MenuItem value="">No assigned method</MenuItem>
-                      {attendanceMethodOptions.map((method) => (
-                        <MenuItem key={method.id} value={String(method.id)}>
-                          {getAttendanceMethodLabel(method.method)} {method.is_active ? "(Active)" : ""}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                    Clearing the field sends <strong>attendance_method_id: null</strong>.
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={onAttendanceMethodSave}
-                    disabled={!isSuperAdmin || assignmentLoading || assignmentSaving.attendanceMethod}
-                    startIcon={assignmentSaving.attendanceMethod ? <CircularProgress size={15} color="inherit" /> : <SaveIcon />}
-                    sx={{
-                      width: "fit-content",
-                      textTransform: "none",
-                      fontWeight: 700,
-                      bgcolor: brand,
-                      color: brandContrast,
-                      "&:hover": { bgcolor: brandDark },
-                    }}
-                  >
-                    Save Attendance Method
-                  </Button>
-                </Stack>
-              </Box>
-            </Grid>
-          </Grid>
-        </SectionCard>
-      )}
-      {/* General Info + Office Time */}
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={7}>
-          <SectionCard
-            title="General Information"
-            subtitle="Personal and contact details used across the HRM workspace."
-            icon={<BadgeIcon fontSize="small" />}
-            action={
-              isMyProfile && (
-                <Stack direction="row" spacing={1}>
-                  {isEditing && (
-                    <Button
-                      variant="outlined"
-                      onClick={handleCancelEdit}
-                      sx={{ textTransform: "none" }}
-                    >
-                      Cancel
-                    </Button>
-                  )}
-                  <Button
-                    variant={isEditing ? "contained" : "outlined"}
-                    onClick={isEditing ? handleSave : () => setIsEditing(true)}
-                    startIcon={isEditing ? <SaveIcon /> : <EditIcon />}
-                    sx={{
-                      textTransform: "none",
-                      fontWeight: 700,
-                      ...(isEditing
-                        ? {
-                            bgcolor: brand,
-                            color: brandContrast,
-                            "&:hover": { bgcolor: brandDark },
-                          }
-                        : {}),
-                    }}
-                    onMouseDown={(e) => e.preventDefault()}
-                  >
-                    {isEditing ? "Save" : "Edit Profile"}
-                  </Button>
-                </Stack>
-              )
-            }
-          >
-            <Grid container spacing={2}>
-              {[
-                { name: "name", label: "Name" },
-                { name: "email", label: "Email", disabled: !isEditable },
-                { name: "phone", label: "Phone" },
-                { name: "address", label: "Address" },
-              ].map((f) => (
-                <Grid key={f.name} item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label={f.label}
-                    name={f.name}
-                    value={editData[f.name] ?? ""}
-                    onChange={onEditField}
-                    size="small"
-                    disabled={!isEditing || f.disabled}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        bgcolor: theme.palette.background.default,
-                      },
-                    }}
-                  />
-                </Grid>
-              ))}
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Birthdate"
-                  name="birthdate"
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  value={editData.birthdate ? editData.birthdate.split("T")[0] : ""}
-                  onChange={onEditField}
-                  size="small"
-                  disabled={!isEditing}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      bgcolor: theme.palette.background.default,
-                    },
-                  }}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Bio"
-                  name="bio"
-                  multiline
-                  minRows={3}
-                  value={editData.bio ?? ""}
-                  onChange={onEditField}
-                  size="small"
-                  disabled={!isEditing}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      bgcolor: theme.palette.background.default,
-                    },
-                  }}
-                />
-              </Grid>
-
-              {isMyProfile && isEditing && (
-                <Grid item xs={12}>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                    Review your changes, then use Save at the top of this section.
-                  </Typography>
-                </Grid>
-              )}
-            </Grid>
-          </SectionCard>
-        </Grid>
-
-        <Grid item xs={12} md={5}>
-          <SectionCard
-            title="Working Hours"
-            subtitle="Office timing used for attendance and early leave checks."
-            icon={<AccessTimeIcon fontSize="small" />}
-          >
-            <Box
-              sx={{
-                p: 1.5,
-                mb: 1.5,
-                borderRadius: 1.5,
-                bgcolor: alpha(brand, 0.08),
-                border: `1px solid ${alpha(brand, 0.18)}`,
-              }}
-            >
-              <Stack direction="row" spacing={1.25} alignItems="center">
-                <AccessTimeIcon fontSize="small" sx={{ color: brand }} />
-                <Box>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}>
-                    Current Schedule
-                  </Typography>
-                  <Typography variant="subtitle1" sx={{ color: theme.palette.text.primary, fontWeight: 700, lineHeight: 1.1 }}>
-                    {officeTimeLabel}
-                  </Typography>
-                </Box>
-              </Stack>
-            </Box>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Office Start Time"
-                  name="office_start_time"
-                  type="time"
-                  size="small"
-                  value={editData.office_start_time ?? ""}
-                  onChange={onEditField}
-                  disabled={!canEditWorkingHours}
-                  InputLabelProps={{ shrink: true }}
-                  inputProps={{ step: 300 }}
-                  sx={{ "& .MuiOutlinedInput-root": { bgcolor: theme.palette.background.default } }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Office End Time"
-                  name="office_end_time"
-                  type="time"
-                  size="small"
-                  value={editData.office_end_time ?? ""}
-                  onChange={onEditField}
-                  disabled={!canEditWorkingHours}
-                  InputLabelProps={{ shrink: true }}
-                  inputProps={{ step: 300 }}
-                  sx={{ "& .MuiOutlinedInput-root": { bgcolor: theme.palette.background.default } }}
-                />
-              </Grid>
-              {canEditWorkingHours && (
-                <Grid item xs={12}>
-                  <Button
-                    onClick={handleSave}
-                    variant="contained"
-                    startIcon={<SaveIcon />}
-                    sx={{
-                      textTransform: "none",
-                      bgcolor: brand,
-                      color: brandContrast,
-                      fontWeight: 700,
-                      "&:hover": { bgcolor: brandDark },
-                    }}
-                  >
-                    Save Working Hours
-                  </Button>
-                </Grid>
-              )}
-              {!canEditWorkingHours && (
-                <Grid item xs={12}>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                    Working hours are view-only for this profile.
-                  </Typography>
-                </Grid>
-              )}
-            </Grid>
-          </SectionCard>
-        </Grid>
-      </Grid>
-
+      <ProfileEditor
+        key={profileData.id}
+        profile={profileData}
+        canEditProfile={canEditProfile}
+        canManageProfile={canManageProfile}
+        isSuperAdmin={isSuperAdmin}
+        options={assignmentOptions}
+        attendanceMethods={attendanceMethodOptions}
+        optionsLoading={assignmentLoading}
+        optionsError={assignmentError}
+        onRetryOptions={onRetryOptions}
+        onSave={handleUpdateData}
+        onStatusSave={handleUpdateData}
+      />
       {/* Password */}
       {isMyProfile && (
         <SectionCard

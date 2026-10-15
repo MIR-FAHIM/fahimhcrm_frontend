@@ -171,20 +171,26 @@ const EmployeesList = () => {
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
+    const loadEmployees = async () => {
       try {
         const res = await fetchEmployees();
         if (!mounted) return;
-        if (res.status === "success") setEmployees(res.data || []);
+        if (res.status === "success") {
+          setEmployees(res.data || []);
+          setError(null);
+        }
         else setError("Failed to fetch employees");
       } catch {
         if (mounted) setError("Error fetching data");
       } finally {
         if (mounted) setLoading(false);
       }
-    })();
+    };
+    loadEmployees();
+    window.addEventListener("employee-profile-updated", loadEmployees);
     return () => {
       mounted = false;
+      window.removeEventListener("employee-profile-updated", loadEmployees);
     };
   }, []);
 

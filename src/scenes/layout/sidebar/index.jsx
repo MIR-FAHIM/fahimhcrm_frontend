@@ -35,6 +35,7 @@ import {
   SettingsOutlined,
   SourceOutlined,
   SyncProblemRounded,
+  SystemUpdateAltRounded as SystemUpdateAltRoundedIcon,
   ViewListOutlined,
 } from "@mui/icons-material";
 
@@ -48,6 +49,7 @@ import {
 import { getProspectViewPreference } from "../../../api/controller/admin_controller/prospect_controller";
 import { ToggledContext } from "../../../App";
 import logo from "../../../assets/images/logo.png";
+import { canManageProspectTeams } from "../../admin/prospect/prospect_team_utils";
 
 const SideBar = () => {
   const userID = localStorage.getItem("userId");
@@ -64,6 +66,7 @@ const SideBar = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const [permissions, setPermissions] = useState({});
   const [isAdmin, setIsAdmin] = useState(0);
+  const canManageTeams = canManageProspectTeams(user);
   const [prospectViewLoading, setProspectViewLoading] = useState(false);
 
   const iconColor = theme.palette.blueAccent?.main || colors.blueAccent[500];
@@ -390,6 +393,11 @@ const SideBar = () => {
             path: "/new-system-update",
             icon: <NewReleasesOutlined sx={muiIconSx} />,
           },
+          {
+            title: "App Updates",
+            path: "/app-update-management",
+            icon: <SystemUpdateAltRoundedIcon sx={muiIconSx} />,
+          },
         ],
       },
 
@@ -419,9 +427,15 @@ const SideBar = () => {
       {
         id: "setting",
         label: "Settings",
-        show: permissions.setting,
+        show: permissions.setting || canManageTeams,
         icon: imageIcon(AppIcons.Setting, 26, "Settings"),
         items: [
+          ...(canManageTeams ? [{
+            title: "Prospect Teams",
+            path: "/admin/prospect-teams",
+            icon: <PeopleAltOutlined sx={muiIconSx} />,
+          }] : []),
+          ...(permissions.setting ? [
           {
             title: "Add Department",
             path: "/department-view",
@@ -467,10 +481,11 @@ const SideBar = () => {
             path: "/error-logs",
             icon: <SyncProblemRounded sx={muiIconSx} />,
           },
+          ] : []),
         ],
       },
     ],
-    [permissions, isAdmin, iconColor, prospectViewLoading, handleSalesPipelineNavigate]
+    [permissions, isAdmin, iconColor, prospectViewLoading, handleSalesPipelineNavigate, canManageTeams]
   );
 
   const normalizedSearch = search.trim().toLowerCase();

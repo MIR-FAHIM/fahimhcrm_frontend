@@ -65,6 +65,32 @@ const getNumeric = (value) => Number(value || 0);
 
 const currentTimestamp = () => new Date().toISOString();
 
+const DEFAULT_ATTENDANCE_COORDS = { lat: 23.78055764, lng: 90.42252348 };
+
+const hasValidAttendanceCoords = (coords) => {
+  const lat = Number(coords?.lat);
+  const lng = Number(coords?.lng);
+  return Number.isFinite(lat) && Number.isFinite(lng);
+};
+
+const buildAttendanceLocationPayload = ({ prefix, useLocation, location, address }) => {
+  const hasBrowserLocation = useLocation && hasValidAttendanceCoords(location);
+  const lat = hasBrowserLocation ? Number(location.lat) : DEFAULT_ATTENDANCE_COORDS.lat;
+  const lng = hasBrowserLocation ? Number(location.lng) : DEFAULT_ATTENDANCE_COORDS.lng;
+  const locationText = useLocation
+    ? address || `Lat: ${lat}, Lon: ${lng}`
+    : "No Address";
+
+  return {
+    [`${prefix}_location`]: locationText,
+    [`${prefix}_lat`]: lat,
+    [`${prefix}_lon`]: lng,
+    location: locationText,
+    latitude: lat,
+    longitude: lng,
+  };
+};
+
 const hasScheduleValue = (value) => value !== null && value !== undefined && value !== "";
 
 const isBeforeConfiguredEndTime = (profile) => {
@@ -399,9 +425,12 @@ function Dashboard() {
       const response = await checkInNow({
         user_id: userID,
         check_in_time: currentTimestamp(),
-        check_in_location: useLocation ? address || "No Address" : "No Address",
-        check_in_lat: useLocation ? location.lat : "23.78055764",
-        check_in_lon: useLocation ? location.lng : "90.42252348",
+        ...buildAttendanceLocationPayload({
+          prefix: "check_in",
+          useLocation,
+          location,
+          address,
+        }),
       });
 
       if (response.status === "success") {
@@ -436,9 +465,12 @@ function Dashboard() {
       const response = await checkOutNow({
         user_id: userID,
         check_out_time: currentTimestamp(),
-        check_out_location: useLocation ? address || "No Address" : "No Address",
-        check_out_lat: useLocation ? location.lat : "23.78055764",
-        check_out_lon: useLocation ? location.lng : "90.42252348",
+        ...buildAttendanceLocationPayload({
+          prefix: "check_out",
+          useLocation,
+          location,
+          address,
+        }),
         attendance_id: attendanceId,
         early_leave_reason: earlyLeaveReason || null,
       });
