@@ -464,3 +464,15 @@ export const changeEmployeeDesignation = async (userId, data) => {
   }
 };
 
+export const deleteEmployeeController = async (userId) => {
+  try {
+    const response = await axiosInstance.delete(API_URL.deleteEmployeeById(userId), {
+      headers: { token: getUserAppToken() },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting employee:", error);
+    throw error;
+  }
+};
+

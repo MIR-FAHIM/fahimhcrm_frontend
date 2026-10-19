@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo, useRef, useContext } from "react";
 import {
-  Alert, Avatar, Box, Button, Chip, CircularProgress, Paper, Snackbar, Stack, Tab, Tabs, Typography, useTheme,
+  Alert, Avatar, Box, Button, Chip, CircularProgress, Dialog, DialogActions,
+  DialogContent, DialogContentText, DialogTitle, Paper, Snackbar, Stack, Tab, Tabs, Typography, useTheme,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
@@ -13,12 +14,13 @@ import HistoryIcon from "@mui/icons-material/History";
 import BadgeIcon from "@mui/icons-material/Badge";
 import ApartmentIcon from "@mui/icons-material/Apartment";
 import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useParams, useNavigate } from "react-router-dom";
 
 import {
   getProfile, uploadProfileImage, logOut,
   modulePermission, changePassController, getUserActivity,
-  updateEmployeeInfo
+  updateEmployeeInfo, deleteEmployeeController
 } from "../../../api/controller/admin_controller/user_controller";
 
 import { fetchAttendanceMethods, getAttendanceReportByUser } from "../../../api/controller/admin_controller/attendance_controller";
@@ -60,11 +62,12 @@ const EmpProfile = () => {
   const [permissions, setPermissions] = useState({});
   const { userProfileData, setUserProfileData } = useProfile();
   const { setColorMode } = useContext(ColorModeContext);
-  const isSuperAdmin = userProfileData?.role?.role_name === "Super Admin";
+  const isSuperAdmin = userProfileData?.role?.role_name?.trim()?.toLowerCase() === "super admin" || userProfileData?.role?.role_name === "Super Admin";
   const canManageProfile = isSuperAdmin || (
     Number(userProfileData?.role_id ?? userProfileData?.role?.id) === 2 && Boolean(permissions.employee)
   );
   const canEditProfile = canManageProfile || String(userID) === String(profileData?.id);
+  const canDeleteEmployee = isSuperAdmin && String(userID) !== String(profileData?.id);
 
   const [roleOptions, setRoleOptions] = useState([]);
   const [departmentOptions, setDepartmentOptions] = useState([]);
@@ -74,6 +77,8 @@ const EmpProfile = () => {
   const [assignmentError, setAssignmentError] = useState("");
   const [uploading, setUploading] = useState(false);
   const [snack, setSnack] = useState({ open: false, msg: "", sev: "success" });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const getInitials = (name = "") =>
     name
@@ -291,6 +296,23 @@ const EmpProfile = () => {
     }
   };
 
+  const handleDeleteEmployee = async () => {
+    if (!canDeleteEmployee || !profileData?.id) return;
+    setDeleting(true);
+    try {
+      const response = await deleteEmployeeController(profileData.id);
+      setDeleteDialogOpen(false);
+      window.dispatchEvent(new Event("employee-profile-updated"));
+      showSnack(response?.message || "Employee deleted successfully.");
+      navigate("/employee-list-view", { replace: true });
+    } catch (err) {
+      const message = profileErrorMessage(err, "Failed to delete employee.");
+      showSnack(message, "error");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const fetchAttendance = async (userIdToFetch, selectedMonth, selectedYear) => {
     if (!userIdToFetch) {
       console.warn("User ID is not available to fetch attendance.");
@@ -418,10 +440,33 @@ const EmpProfile = () => {
                 </Box>
               </Stack>
 
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap alignItems="center">
                 <Chip icon={<BadgeIcon />} label={profileData?.role?.role_name || "Role not set"} variant="outlined" />
                 <Chip icon={<ApartmentIcon />} label={profileData?.department?.department_name || "Department not set"} variant="outlined" />
                 <Chip icon={<WorkOutlineIcon />} label={profileData?.designation?.designation_name || "Designation not set"} variant="outlined" />
+                {isSuperAdmin && (
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    startIcon={deleting ? <CircularProgress size={16} color="inherit" /> : <DeleteOutlineIcon />}
+                    disabled={deleting || String(userID) === String(profileData?.id)}
+                    onClick={() => setDeleteDialogOpen(true)}
+                    sx={{
+                      borderRadius: 1.5,
+                      fontWeight: 600,
+                      textTransform: "none",
+                      borderColor: alpha(theme.palette.error.main, 0.5),
+                      color: theme.palette.error.main,
+                      "&:hover": {
+                        borderColor: theme.palette.error.main,
+                        bgcolor: alpha(theme.palette.error.main, 0.08),
+                      },
+                    }}
+                  >
+                    Delete Employee
+                  </Button>
+                )}
               </Stack>
             </Stack>
           </Paper>
@@ -527,6 +572,55 @@ const EmpProfile = () => {
           </Box>
         </Box>
       )}
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => !deleting && setDeleteDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          elevation: 24,
+          sx: {
+            borderRadius: 2.5,
+            p: 1,
+            bgcolor: theme.palette.background.paper,
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, pb: 1, color: theme.palette.error.main, display: "flex", alignItems: "center", gap: 1 }}>
+          <DeleteOutlineIcon color="error" />
+          Delete Employee
+        </DialogTitle>
+        <DialogContent sx={{ pt: 1 }}>
+          <DialogContentText sx={{ color: theme.palette.text.primary, mb: 1.5 }}>
+            Are you sure you want to permanently delete <strong>{profileData?.name}</strong> (ID #{profileData?.id})?
+          </DialogContentText>
+          <Alert severity="warning" sx={{ mt: 1 }}>
+            This action is permanent and cannot be undone. All prospect assignments and employee associations will be removed.
+          </Alert>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            disabled={deleting}
+            color="inherit"
+            sx={{ fontWeight: 600 }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteEmployee}
+            disabled={deleting}
+            color="error"
+            variant="contained"
+            startIcon={deleting ? <CircularProgress size={16} color="inherit" /> : <DeleteOutlineIcon />}
+            sx={{ fontWeight: 600 }}
+          >
+            {deleting ? "Deleting..." : "Confirm Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar open={snack.open} autoHideDuration={3000} onClose={() => setSnack((state) => ({ ...state, open: false }))} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
         <Alert severity={snack.sev} sx={{ width: "100%" }} onClose={() => setSnack((state) => ({ ...state, open: false }))}>
           {snack.msg}

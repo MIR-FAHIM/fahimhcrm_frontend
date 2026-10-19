@@ -62,6 +62,7 @@ const API_URL = {
   createProduct: `/api/createProduct`,
   deleteDepartmentById: (id) => `/api/delete-department/${id}`,
   deleteDesignationById: (id) => `/api/delete-designation/${id}`,
+  deleteEmployeeById: (id) => `/api/delete-employee/${id}`,
   deleteFollowupById: (id) => `/api/delete-followup/${id}`,
   deleteNotice: `/api/delete-notice`,
   deletePriorityById: (id) => `/api/delete-priority/${id}`,
